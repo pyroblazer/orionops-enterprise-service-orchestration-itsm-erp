@@ -1,0 +1,21 @@
+services:
+  orionops:
+    url: http://orionops-api:8080/api/v1/integrations/opa
+
+bundles:
+  orionops:
+    service: orionops
+    resource: policies
+    polling:
+      min_delay_seconds: 30
+      max_delay_seconds: 120
+
+decision_logs:
+  console: true
+
+status:
+  console: true
+
+default_decision: orionops/allow
+
+default_reference: data.orionops.allow

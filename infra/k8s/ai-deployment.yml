@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orionops-ai
+  namespace: orionops
+  labels:
+    app.kubernetes.io/name: orionops-ai
+    app.kubernetes.io/component: ai-service
+    app.kubernetes.io/part-of: orionops-platform
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: orionops-ai
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: orionops-ai
+        app.kubernetes.io/component: ai-service
+    spec:
+      containers:
+        - name: ai
+          image: orionops/ai:latest
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+          env:
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              valueFrom:
+                configMapKeyRef:
+                  name: orionops-config
+                  key: OTEL_ENDPOINT
+                  optional: true
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "256Mi"
+            limits:
+              cpu: "1000m"
+              memory: "1Gi"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: orionops-ai
+  namespace: orionops
+  labels:
+    app.kubernetes.io/name: orionops-ai
+    app.kubernetes.io/component: ai-service
+spec:
+  type: ClusterIP
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: orionops-ai
+  ports:
+    - name: http
+      port: 8000
+      targetPort: http
+      protocol: TCP

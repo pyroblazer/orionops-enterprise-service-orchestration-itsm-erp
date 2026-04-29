@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xmlns:flowable="http://flowable.org/bpmn"
+             xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+             xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC"
+             xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI"
+             typeLanguage="http://www.w3.org/2001/XMLSchema"
+             expressionLanguage="http://www.w3.org/1999/XPath"
+             targetNamespace="http://orionops.com/workflows">
+
+    <process id="incidentEscalationProcess" name="Incident Escalation" isExecutable="true">
+
+        <!-- Start Event -->
+        <startEvent id="startEvent" name="Incident Escalation Triggered" />
+
+        <!-- Service Task: Check Priority -->
+        <serviceTask id="checkPriority" name="Check Priority"
+                     flowable:delegateExpression="${checkPriorityDelegate}" />
+
+        <!-- Exclusive Gateway: Priority Routing -->
+        <exclusiveGateway id="priorityGateway" name="Priority Gateway" />
+
+        <!-- User Task: Manager Review (for critical/high priority) -->
+        <userTask id="managerReview" name="Manager Review"
+                  flowable:candidateGroups="management">
+            <documentation>Review escalated incident with critical or high priority. Decide on further escalation or resolution.</documentation>
+        </userTask>
+
+        <!-- Timer Boundary Event: 30-minute auto-escalation from Manager Review -->
+        <boundaryEvent id="managerReviewTimer" name="30 min auto-escalate"
+                       attachedToRef="managerReview" cancelActivity="true">
+            <timerEventDefinition>
+                <timeDuration>PT30M</timeDuration>
+            </timerEventDefinition>
+        </boundaryEvent>
+
+        <!-- Service Task: Escalate -->
+        <serviceTask id="escalateTask" name="Escalate"
+                     flowable:delegateExpression="${escalateIncidentDelegate}" />
+
+        <!-- End Event: Escalation Complete -->
+        <endEvent id="escalationEnd" name="Escalation Complete" />
+
+        <!-- User Task: Agent Triage (for medium/low priority) -->
+        <userTask id="agentTriage" name="Agent Triage"
+                  flowable:candidateGroups="it-operations">
+            <documentation>Triage the escalated incident with medium or low priority. Assign to appropriate resolver.</documentation>
+        </userTask>
+
+        <!-- End Event: Triage Complete -->
+        <endEvent id="triageEnd" name="Triage Complete" />
+
+        <!-- Sequence Flows -->
+        <sequenceFlow id="flow1" sourceRef="startEvent" targetRef="checkPriority" />
+
+        <sequenceFlow id="flow2" sourceRef="checkPriority" targetRef="priorityGateway" />
+
+        <!-- Critical/High path -->
+        <sequenceFlow id="flow3" name="Critical or High" sourceRef="priorityGateway" targetRef="managerReview">
+            <conditionExpression xsi:type="tFormalExpression">
+                ${priority == 'critical' or priority == 'high'}
+            </conditionExpression>
+        </sequenceFlow>
+
+        <!-- Manager Review to Escalate (manual escalation after review) -->
+        <sequenceFlow id="flow4" sourceRef="managerReview" targetRef="escalateTask" />
+
+        <!-- Timer auto-escalation to Escalate -->
+        <sequenceFlow id="flow5" sourceRef="managerReviewTimer" targetRef="escalateTask" />
+
+        <!-- Escalate to End -->
+        <sequenceFlow id="flow6" sourceRef="escalateTask" targetRef="escalationEnd" />
+
+        <!-- Medium/Low path -->
+        <sequenceFlow id="flow7" name="Medium or Low" sourceRef="priorityGateway" targetRef="agentTriage">
+            <conditionExpression xsi:type="tFormalExpression">
+                ${priority == 'medium' or priority == 'low'}
+            </conditionExpression>
+        </sequenceFlow>
+
+        <!-- Agent Triage to End -->
+        <sequenceFlow id="flow8" sourceRef="agentTriage" targetRef="triageEnd" />
+
+    </process>
+
+</definitions>

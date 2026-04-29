@@ -1,0 +1,227 @@
+# ---------------------------------------------------------------------------
+# OrionOps Backend - Spring Boot Application Configuration
+# ---------------------------------------------------------------------------
+
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+  shutdown: graceful
+
+spring:
+  application:
+    name: orionops-backend
+
+  # --- DataSource (PostgreSQL) ---
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB:orionops}
+    username: ${POSTGRES_USER:orionops}
+    password: ${POSTGRES_PASSWORD:orionops_dev}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      idle-timeout: 300000
+      connection-timeout: 20000
+      max-lifetime: 1200000
+      pool-name: OrionOpsHikariPool
+
+  # --- JPA / Hibernate ---
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    ddl-auto: validate
+    show-sql: false
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+        jdbc:
+          time_zone: UTC
+        types:
+          json_format_mapper: org.hibernate.type.jackson.JacksonJsonFormatMapper
+
+  # --- Redis ---
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      timeout: 5000
+      lettuce:
+        pool:
+          max-active: 16
+          max-idle: 8
+          min-idle: 4
+          max-wait: 3000
+
+  # --- Kafka ---
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: all
+      retries: 3
+      properties:
+        enable.idempotence: true
+        spring.json.add.type.headers: false
+    consumer:
+      group-id: ${spring.application.name}
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      auto-offset-reset: earliest
+      properties:
+        spring.json.trusted.packages: "com.orionops.*"
+    listener:
+      ack-mode: manual_immediate
+
+  # --- Flyway ---
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    baseline-version: "0"
+    validate-on-migrate: true
+    clean-disabled: true
+
+  # --- Jackson ---
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+      fail-on-empty-beans: false
+    deserialization:
+      fail-on-unknown-properties: false
+    default-property-inclusion: non_null
+    date-format: com.fasterxml.jackson.databind.util.ISO8601DateFormat
+
+  # --- Servlet Multipart ---
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 100MB
+
+# ---------------------------------------------------------------------------
+# Flowable BPMN Engine
+# ---------------------------------------------------------------------------
+flowable:
+  database-schema-update: false
+  async-executor-activate: true
+  process-definition-location-prefix: classpath*:/processes/
+  history-level: full
+
+# ---------------------------------------------------------------------------
+# OpenSearch
+# ---------------------------------------------------------------------------
+opensearch:
+  host: ${OPENSEARCH_HOST:localhost}
+  port: ${OPENSEARCH_PORT:9200}
+  protocol: ${OPENSEARCH_PROTOCOL:http}
+  username: ${OPENSEARCH_USERNAME:admin}
+  password: ${OPENSEARCH_PASSWORD:admin}
+
+# ---------------------------------------------------------------------------
+# MinIO Object Storage
+# ---------------------------------------------------------------------------
+minio:
+  endpoint: ${MINIO_ENDPOINT:http://localhost:9000}
+  access-key: ${MINIO_ACCESS_KEY:minioadmin}
+  secret-key: ${MINIO_SECRET_KEY:minioadmin}
+  bucket: ${MINIO_BUCKET:orionops}
+
+# ---------------------------------------------------------------------------
+# Keycloak
+# ---------------------------------------------------------------------------
+keycloak:
+  auth-server-url: ${KEYCLOAK_AUTH_SERVER_URL:http://localhost:8081}
+  realm: ${KEYCLOAK_REALM:orionops}
+  client-id: ${KEYCLOAK_CLIENT_ID:orionops-backend}
+  client-secret: ${KEYCLOAK_CLIENT_SECRET:}
+  admin:
+    username: ${KEYCLOAK_ADMIN_USER:admin}
+    password: ${KEYCLOAK_ADMIN_PASSWORD:admin}
+  resourceserver:
+    jwt:
+      issuer-uri: ${keycloak.auth-server-url}/realms/${keycloak.realm}
+      jwk-set-uri: ${keycloak.auth-server-url}/realms/${keycloak.realm}/protocol/openid-connect/certs
+
+# ---------------------------------------------------------------------------
+# OPA (Open Policy Agent)
+# ---------------------------------------------------------------------------
+opa:
+  endpoint: ${OPA_ENDPOINT:http://localhost:8181}
+  policy-path: ${OPA_POLICY_PATH:/v1/data/orionops/allow}
+
+# ---------------------------------------------------------------------------
+# Stripe
+# ---------------------------------------------------------------------------
+stripe:
+  api-key: ${STRIPE_API_KEY:sk_test_placeholder}
+  webhook-secret: ${STRIPE_WEBHOOK_SECRET:whsec_placeholder}
+
+# ---------------------------------------------------------------------------
+# OpenTelemetry
+# ---------------------------------------------------------------------------
+otel:
+  exporter:
+    otlp:
+      endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:http://localhost:4317}
+  traces:
+    exporter: ${OTEL_TRACES_EXPORTER:otlp}
+  metrics:
+    exporter: ${OTEL_METRICS_EXPORTER:otlp}
+  logs:
+    exporter: ${OTEL_LOGS_EXPORTER:otlp}
+  resource:
+    attributes:
+      service.name: ${spring.application.name}
+
+# ---------------------------------------------------------------------------
+# Springdoc / Swagger-UI
+# ---------------------------------------------------------------------------
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
+    try-it-out-enabled: true
+    oauth2-redirect-url: /api/swagger-ui/oauth2-redirect.html
+
+# ---------------------------------------------------------------------------
+# Actuator
+# ---------------------------------------------------------------------------
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: when-authorized
+      probes:
+        enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+  tracing:
+    sampling:
+      probability: ${OTEL_TRACING_SAMPLER_PROBABILITY:1.0}
+
+# ---------------------------------------------------------------------------
+# Logging
+# ---------------------------------------------------------------------------
+logging:
+  level:
+    root: INFO
+    com.orionops: DEBUG
+    org.springframework.security: DEBUG
+    org.hibernate.SQL: WARN
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.flowable: INFO
+    org.apache.kafka: WARN
+    org.springframework.kafka: INFO
+    io.opensearch: WARN
+    io.minio: WARN

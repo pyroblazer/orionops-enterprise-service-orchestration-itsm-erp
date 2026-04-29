@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Incident Assigned - OrionOps</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background-color: #f5f7fa; }
+        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .header { background: linear-gradient(135deg, #1a73e8, #0d47a1); padding: 24px 32px; color: #ffffff; }
+        .header h1 { margin: 0; font-size: 20px; font-weight: 600; }
+        .header .logo { font-size: 14px; opacity: 0.9; }
+        .content { padding: 24px 32px; }
+        .priority-badge { display: inline-block; padding: 4px 12px; border-radius: 4px; font-size: 12px; font-weight: 600; text-transform: uppercase; }
+        .priority-critical { background-color: #fce8e6; color: #c5221f; }
+        .priority-high { background-color: #fef7e0; color: #b06000; }
+        .priority-medium { background-color: #e8f0fe; color: #1a73e8; }
+        .priority-low { background-color: #e6f4ea; color: #1e8e3e; }
+        .field-row { margin-bottom: 16px; }
+        .field-label { font-size: 12px; color: #5f6368; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+        .field-value { font-size: 14px; color: #202124; }
+        .divider { border-top: 1px solid #e8eaed; margin: 20px 0; }
+        .cta-button { display: inline-block; padding: 10px 24px; background-color: #1a73e8; color: #ffffff; text-decoration: none; border-radius: 4px; font-weight: 500; font-size: 14px; }
+        .footer { padding: 16px 32px; background-color: #f5f7fa; font-size: 12px; color: #5f6368; text-align: center; }
+        .assigned-by { background-color: #e8f0fe; border-left: 4px solid #1a73e8; padding: 12px 16px; margin: 16px 0; border-radius: 0 4px 4px 0; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <div class="logo">OrionOps Platform</div>
+        <h1>Incident Assigned to You</h1>
+    </div>
+    <div class="content">
+        <p>Hello <strong th:text="${assigneeName}">Assignee</strong>,</p>
+        <p>An incident has been assigned to you by <strong th:text="${assignedBy}">Manager</strong>.</p>
+
+        <div class="assigned-by">
+            <strong>Assignment Note:</strong>
+            <span th:text="${assignmentNote != null ? assignmentNote : 'No note provided.'}">Please handle this incident promptly.</span>
+        </div>
+
+        <div class="field-row">
+            <div class="field-label">Incident ID</div>
+            <div class="field-value" th:text="${incidentId}">INC-000001</div>
+        </div>
+
+        <div class="field-row">
+            <div class="field-label">Title</div>
+            <div class="field-value" th:text="${title}">Incident Title</div>
+        </div>
+
+        <div class="field-row">
+            <div class="field-label">Priority</div>
+            <div class="field-value">
+                <span class="priority-badge"
+                      th:classappend="'priority-' + ${#strings.toLowerCase(priority)}"
+                      th:text="${priority}">MEDIUM</span>
+            </div>
+        </div>
+
+        <div class="field-row" th:if="${slaTarget != null}">
+            <div class="field-label">SLA Response Target</div>
+            <div class="field-value" th:text="${slaTarget}">2025-01-15 14:00 UTC</div>
+        </div>
+
+        <div class="field-row" th:if="${groupName != null}">
+            <div class="field-label">Support Group</div>
+            <div class="field-value" th:text="${groupName}">IT Operations</div>
+        </div>
+
+        <div class="divider"></div>
+
+        <p style="text-align: center;">
+            <a th:href="${incidentUrl}" class="cta-button">Accept &amp; View Incident</a>
+        </p>
+    </div>
+    <div class="footer">
+        <p>This notification was sent by OrionOps ITSM Platform.</p>
+    </div>
+</div>
+</body>
+</html>

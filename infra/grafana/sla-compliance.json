@@ -1,0 +1,109 @@
+{
+  "dashboard": {
+    "title": "OrionOps - SLA Compliance & Business Metrics",
+    "tags": ["orionops", "business", "sla"],
+    "panels": [
+      {
+        "id": 1,
+        "title": "SLA Compliance Rate",
+        "type": "gauge",
+        "gridPos": { "h": 6, "w": 8, "x": 0, "y": 0 },
+        "targets": [
+          {
+            "expr": "1 - (sum(rate(orionops_sla_breaches_total[24h])) / sum(rate(orionops_sla_instances_total[24h])))"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "thresholds": { "steps": [{ "color": "red", "value": 0 }, { "color": "yellow", "value": 0.9 }, { "color": "green", "value": 0.95 }] },
+            "unit": "percentunit",
+            "max": 1, "min": 0
+          }
+        }
+      },
+      {
+        "id": 2,
+        "title": "Active SLA Instances by Status",
+        "type": "piechart",
+        "gridPos": { "h": 6, "w": 8, "x": 8, "y": 0 },
+        "targets": [
+          { "expr": "orionops_sla_instances_active_count", "legendFormat": "{{status}}" }
+        ]
+      },
+      {
+        "id": 3,
+        "title": "SLA Breaches Over Time",
+        "type": "timeseries",
+        "gridPos": { "h": 6, "w": 8, "x": 16, "y": 0 },
+        "targets": [
+          { "expr": "increase(orionops_sla_breaches_total[1h])", "legendFormat": "Breaches/hour" }
+        ]
+      },
+      {
+        "id": 4,
+        "title": "Open Incidents by Priority",
+        "type": "barchart",
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 6 },
+        "targets": [
+          { "expr": "orionops_incidents_open_count", "legendFormat": "{{priority}}" }
+        ]
+      },
+      {
+        "id": 5,
+        "title": "MTTR (Mean Time to Resolve)",
+        "type": "timeseries",
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 6 },
+        "targets": [
+          { "expr": "orionops_incident_mttr_seconds", "legendFormat": "MTTR" }
+        ],
+        "fieldConfig": { "defaults": { "unit": "s" } }
+      },
+      {
+        "id": 6,
+        "title": "MTTA (Mean Time to Acknowledge)",
+        "type": "timeseries",
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 14 },
+        "targets": [
+          { "expr": "orionops_incident_mtta_seconds", "legendFormat": "MTTA" }
+        ],
+        "fieldConfig": { "defaults": { "unit": "s" } }
+      },
+      {
+        "id": 7,
+        "title": "Incident Volume Trend",
+        "type": "timeseries",
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 14 },
+        "targets": [
+          { "expr": "increase(orionops_incidents_created_total[1d])", "legendFormat": "Created/day" },
+          { "expr": "increase(orionops_incidents_resolved_total[1d])", "legendFormat": "Resolved/day" }
+        ]
+      },
+      {
+        "id": 8,
+        "title": "Change Success Rate",
+        "type": "gauge",
+        "gridPos": { "h": 6, "w": 12, "x": 0, "y": 22 },
+        "targets": [
+          {
+            "expr": "sum(rate(orionops_changes_completed_total{outcome=\"success\"}[7d])) / sum(rate(orionops_changes_completed_total[7d]))"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "thresholds": { "steps": [{ "color": "red", "value": 0 }, { "color": "yellow", "value": 0.8 }, { "color": "green", "value": 0.95 }] },
+            "unit": "percentunit"
+          }
+        }
+      },
+      {
+        "id": 9,
+        "title": "Backlog by Team",
+        "type": "barchart",
+        "gridPos": { "h": 6, "w": 12, "x": 12, "y": 22 },
+        "targets": [
+          { "expr": "orionops_assignment_backlog_count", "legendFormat": "{{team}}" }
+        ]
+      }
+    ]
+  }
+}

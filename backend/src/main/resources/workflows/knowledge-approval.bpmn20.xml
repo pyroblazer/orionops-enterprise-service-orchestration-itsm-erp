@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:flowable="http://flowable.org/bpmn"
+             targetNamespace="http://orionops.com/workflows">
+
+    <process id="knowledgeApproval" name="Knowledge Article Approval" isExecutable="true">
+
+        <startEvent id="start" name="Article Submitted for Review"/>
+
+        <sequenceFlow id="flow1" sourceRef="start" targetRef="initialReview"/>
+
+        <userTask id="initialReview" name="Technical Review"
+                  flowable:candidateGroups="knowledge-reviewers"/>
+
+        <sequenceFlow id="flow2" sourceRef="initialReview" targetRef="reviewDecision"/>
+
+        <exclusiveGateway id="reviewDecision" name="Review Outcome"/>
+
+        <sequenceFlow id="flow3" sourceRef="reviewDecision" targetRef="editorialReview">
+            <conditionExpression>${reviewOutcome == 'approve'}</conditionExpression>
+        </sequenceFlow>
+
+        <sequenceFlow id="flow4" sourceRef="reviewDecision" targetRef="requestRevision">
+            <conditionExpression>${reviewOutcome == 'revision'}</conditionExpression>
+        </sequenceFlow>
+
+        <sequenceFlow id="flow5" sourceRef="reviewDecision" targetRef="rejectArticle">
+            <conditionExpression>${reviewOutcome == 'reject'}</conditionExpression>
+        </sequenceFlow>
+
+        <userTask id="editorialReview" name="Editorial Review"
+                  flowable:candidateGroups="knowledge-editors"/>
+
+        <sequenceFlow id="flow6" sourceRef="editorialReview" targetRef="editorialDecision"/>
+
+        <exclusiveGateway id="editorialDecision" name="Editorial Outcome"/>
+
+        <sequenceFlow id="flow7" sourceRef="editorialDecision" targetRef="publishArticle">
+            <conditionExpression>${editorialOutcome == 'approve'}</conditionExpression>
+        </sequenceFlow>
+
+        <sequenceFlow id="flow8" sourceRef="editorialDecision" targetRef="requestRevision">
+            <conditionExpression>${editorialOutcome == 'revision'}</conditionExpression>
+        </sequenceFlow>
+
+        <serviceTask id="publishArticle" name="Publish Article"
+                     flowable:delegateExpression="${knowledgePublishDelegate}"/>
+
+        <serviceTask id="requestRevision" name="Request Revision"
+                     flowable:delegateExpression="${revisionRequestDelegate}"/>
+
+        <serviceTask id="rejectArticle" name="Reject Article"
+                     flowable:delegateExpression="${articleRejectionDelegate}"/>
+
+        <sequenceFlow id="flow9" sourceRef="publishArticle" targetRef="endPublished"/>
+        <sequenceFlow id="flow10" sourceRef="requestRevision" targetRef="endRevision"/>
+        <sequenceFlow id="flow11" sourceRef="rejectArticle" targetRef="endRejected"/>
+
+        <endEvent id="endPublished" name="Article Published"/>
+        <endEvent id="endRevision" name="Revision Requested"/>
+        <endEvent id="endRejected" name="Article Rejected"/>
+
+    </process>
+
+</definitions>

@@ -1,0 +1,96 @@
+{
+  "dashboard": {
+    "title": "OrionOps - System Health",
+    "tags": ["orionops", "system"],
+    "timezone": "utc",
+    "panels": [
+      {
+        "id": 1,
+        "title": "API Request Rate",
+        "type": "timeseries",
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+        "targets": [
+          {
+            "expr": "sum(rate(http_server_requests_seconds_count[5m])) by (uri)",
+            "legendFormat": "{{uri}}"
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "title": "API Latency (P50, P95, P99)",
+        "type": "timeseries",
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+        "targets": [
+          { "expr": "histogram_quantile(0.50, rate(http_server_requests_seconds_bucket[5m]))", "legendFormat": "P50" },
+          { "expr": "histogram_quantile(0.95, rate(http_server_requests_seconds_bucket[5m]))", "legendFormat": "P95" },
+          { "expr": "histogram_quantile(0.99, rate(http_server_requests_seconds_bucket[5m]))", "legendFormat": "P99" }
+        ]
+      },
+      {
+        "id": 3,
+        "title": "Error Rate by Endpoint",
+        "type": "timeseries",
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+        "targets": [
+          {
+            "expr": "sum(rate(http_server_requests_seconds_count{status=~\"5..\"}[5m])) by (uri) / sum(rate(http_server_requests_seconds_count[5m])) by (uri)",
+            "legendFormat": "{{uri}}"
+          }
+        ]
+      },
+      {
+        "id": 4,
+        "title": "JVM Heap Memory",
+        "type": "timeseries",
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+        "targets": [
+          { "expr": "jvm_memory_used_bytes{area=\"heap\"}", "legendFormat": "Used" },
+          { "expr": "jvm_memory_max_bytes{area=\"heap\"}", "legendFormat": "Max" }
+        ]
+      },
+      {
+        "id": 5,
+        "title": "Database Connection Pool",
+        "type": "gauge",
+        "gridPos": { "h": 4, "w": 6, "x": 0, "y": 16 },
+        "targets": [
+          { "expr": "hikaricp_connections_active / hikaricp_connections_max" }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "thresholds": { "steps": [{ "color": "green", "value": 0 }, { "color": "yellow", "value": 0.7 }, { "color": "red", "value": 0.9 }] },
+            "unit": "percentunit"
+          }
+        }
+      },
+      {
+        "id": 6,
+        "title": "Kafka Consumer Lag",
+        "type": "stat",
+        "gridPos": { "h": 4, "w": 6, "x": 6, "y": 16 },
+        "targets": [
+          { "expr": "sum(kafka_consumer_group_lag)" }
+        ]
+      },
+      {
+        "id": 7,
+        "title": "Active Workflows",
+        "type": "stat",
+        "gridPos": { "h": 4, "w": 6, "x": 12, "y": 16 },
+        "targets": [
+          { "expr": "flowable_process_instance_count{status=\"running\"}" }
+        ]
+      },
+      {
+        "id": 8,
+        "title": "Flowable Job Queue",
+        "type": "stat",
+        "gridPos": { "h": 4, "w": 6, "x": 18, "y": 16 },
+        "targets": [
+          { "expr": "flowable_async_job_count" }
+        ]
+      }
+    ]
+  }
+}

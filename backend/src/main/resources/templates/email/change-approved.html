@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Change Request Approved - OrionOps</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background-color: #f5f7fa; }
+        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .header { background: linear-gradient(135deg, #1e8e3e, #0d652d); padding: 24px 32px; color: #ffffff; }
+        .header h1 { margin: 0; font-size: 20px; font-weight: 600; }
+        .header .logo { font-size: 14px; opacity: 0.9; }
+        .content { padding: 24px 32px; }
+        .change-badge { display: inline-block; padding: 4px 12px; border-radius: 4px; font-size: 12px; font-weight: 600; text-transform: uppercase; }
+        .type-standard { background-color: #e6f4ea; color: #1e8e3e; }
+        .type-normal { background-color: #e8f0fe; color: #1a73e8; }
+        .type-emergency { background-color: #fce8e6; color: #c5221f; }
+        .field-row { margin-bottom: 16px; }
+        .field-label { font-size: 12px; color: #5f6368; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+        .field-value { font-size: 14px; color: #202124; }
+        .divider { border-top: 1px solid #e8eaed; margin: 20px 0; }
+        .cta-button { display: inline-block; padding: 10px 24px; background-color: #1e8e3e; color: #ffffff; text-decoration: none; border-radius: 4px; font-weight: 500; font-size: 14px; }
+        .footer { padding: 16px 32px; background-color: #f5f7fa; font-size: 12px; color: #5f6368; text-align: center; }
+        .approval-info { background-color: #e6f4ea; border-left: 4px solid #1e8e3e; padding: 12px 16px; margin: 16px 0; border-radius: 0 4px 4px 0; }
+        .schedule-info { background-color: #e8f0fe; border-left: 4px solid #1a73e8; padding: 12px 16px; margin: 16px 0; border-radius: 0 4px 4px 0; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <div class="logo">OrionOps Platform</div>
+        <h1>Change Request Approved</h1>
+    </div>
+    <div class="content">
+        <p>Hello <strong th:text="${recipientName}">Team</strong>,</p>
+        <p>A change request has been approved and is ready for implementation.</p>
+
+        <div class="approval-info">
+            <strong>Approved By:</strong>
+            <span th:text="${approverName}">CAB Chair</span><br/>
+            <strong>Approval Date:</strong>
+            <span th:text="${approvedAt}">2025-01-15 10:00 UTC</span><br/>
+            <strong th:if="${approvalNotes != null}">Notes:</strong>
+            <span th:if="${approvalNotes != null}" th:text="${approvalNotes}">Approved with conditions</span>
+        </div>
+
+        <div class="field-row">
+            <div class="field-label">Change ID</div>
+            <div class="field-value" th:text="${changeId}">CHG-000001</div>
+        </div>
+
+        <div class="field-row">
+            <div class="field-label">Title</div>
+            <div class="field-value" th:text="${title}">Server Migration</div>
+        </div>
+
+        <div class="field-row">
+            <div class="field-label">Change Type</div>
+            <div class="field-value">
+                <span class="change-badge"
+                      th:classappend="'type-' + ${#strings.toLowerCase(changeType)}"
+                      th:text="${changeType}">STANDARD</span>
+            </div>
+        </div>
+
+        <div class="field-row">
+            <div class="field-label">Risk Level</div>
+            <div class="field-value" th:text="${riskLevel}">MEDIUM</div>
+        </div>
+
+        <div class="schedule-info">
+            <strong>Scheduled Implementation Window</strong><br/>
+            <strong>Start:</strong> <span th:text="${plannedStart}">2025-01-20 22:00 UTC</span><br/>
+            <strong>End:</strong> <span th:text="${plannedEnd}">2025-01-21 02:00 UTC</span>
+        </div>
+
+        <div class="field-row">
+            <div class="field-label">Implementation Plan</div>
+            <div class="field-value" th:text="${implementationPlan}">Step-by-step plan</div>
+        </div>
+
+        <div class="divider"></div>
+
+        <p style="text-align: center;">
+            <a th:href="${changeUrl}" class="cta-button">View Change Request</a>
+        </p>
+    </div>
+    <div class="footer">
+        <p>This notification was sent by OrionOps ITSM Platform.</p>
+        <p>Please ensure the implementation follows the approved plan and rollback procedure.</p>
+    </div>
+</div>
+</body>
+</html>

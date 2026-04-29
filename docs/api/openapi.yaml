@@ -1,0 +1,1410 @@
+openapi: 3.1.0
+info:
+  title: OrionOps API
+  description: Enterprise Service Orchestration Platform - ITSM + ERP Extensions
+  version: 1.0.0
+  contact:
+    name: OrionOps Team
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Local development
+
+security:
+  - BearerAuth: []
+
+tags:
+  - name: Auth
+    description: Authentication and user management
+  - name: Incidents
+    description: Incident management
+  - name: Problems
+    description: Problem management
+  - name: Changes
+    description: Change management
+  - name: Requests
+    description: Service request management
+  - name: CMDB
+    description: Configuration management database
+  - name: SLA
+    description: SLA definitions and instances
+  - name: Knowledge
+    description: Knowledge base articles
+  - name: Workflow
+    description: BPMN workflow management
+  - name: Finance
+    description: Financial management
+  - name: Procurement
+    description: Procurement management
+  - name: Inventory
+    description: Inventory and asset management
+  - name: Vendors
+    description: Vendor management
+  - name: Workforce
+    description: Workforce and HR operations
+  - name: Billing
+    description: Service billing and chargeback
+  - name: Notifications
+    description: Notification management
+  - name: Audit
+    description: Audit log queries
+  - name: Search
+    description: Global search
+  - name: Integrations
+    description: Webhook and integration management
+
+paths:
+  # ---- Auth ----
+  /auth/me:
+    get:
+      tags: [Auth]
+      summary: Get current user
+      operationId: getCurrentUser
+      responses:
+        '200':
+          description: Current user info
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse_UserResponse_'
+
+  /auth/sync-user:
+    post:
+      tags: [Auth]
+      summary: Sync user from Keycloak
+      operationId: syncUser
+      responses:
+        '200':
+          description: User synced
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse_UserResponse_'
+
+  # ---- Incidents ----
+  /incidents:
+    get:
+      tags: [Incidents]
+      summary: List incidents
+      operationId: listIncidents
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/SizeParam'
+        - $ref: '#/components/parameters/SortParam'
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [open, in_progress, resolved, closed, cancelled]
+        - name: priority
+          in: query
+          schema:
+            type: string
+            enum: [critical, high, medium, low]
+        - name: assigneeId
+          in: query
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Paginated list of incidents
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse_PagedResponse_IncidentResponse__'
+    post:
+      tags: [Incidents]
+      summary: Create incident
+      operationId: createIncident
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateIncidentRequest'
+      responses:
+        '201':
+          description: Incident created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse_IncidentResponse_'
+
+  /incidents/{id}:
+    get:
+      tags: [Incidents]
+      summary: Get incident by ID
+      operationId: getIncident
+      parameters:
+        - $ref: '#/components/parameters/EntityIdParam'
+      responses:
+        '200':
+          description: Incident details
+    put:
+      tags: [Incidents]
+      summary: Update incident
+      operationId: updateIncident
+      parameters:
+        - $ref: '#/components/parameters/EntityIdParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateIncidentRequest'
+      responses:
+        '200':
+          description: Incident updated
+    delete:
+      tags: [Incidents]
+      summary: Soft delete incident
+      operationId: deleteIncident
+      parameters:
+        - $ref: '#/components/parameters/EntityIdParam'
+      responses:
+        '204':
+          description: Incident deleted
+
+  /incidents/{id}/assign:
+    patch:
+      tags: [Incidents]
+      summary: Assign incident
+      operationId: assignIncident
+      parameters:
+        - $ref: '#/components/parameters/EntityIdParam'
+      responses:
+        '200':
+          description: Incident assigned
+
+  /incidents/{id}/escalate:
+    patch:
+      tags: [Incidents]
+      summary: Escalate incident
+      operationId: escalateIncident
+      parameters:
+        - $ref: '#/components/parameters/EntityIdParam'
+      responses:
+        '200':
+          description: Incident escalated
+
+  /incidents/{id}/resolve:
+    patch:
+      tags: [Incidents]
+      summary: Resolve incident
+      operationId: resolveIncident
+      parameters:
+        - $ref: '#/components/parameters/EntityIdParam'
+      responses:
+        '200':
+          description: Incident resolved
+
+  /incidents/{id}/close:
+    patch:
+      tags: [Incidents]
+      summary: Close incident
+      operationId: closeIncident
+      parameters:
+        - $ref: '#/components/parameters/EntityIdParam'
+      responses:
+        '200':
+          description: Incident closed
+
+  # ---- Problems ----
+  /problems:
+    get:
+      tags: [Problems]
+      summary: List problems
+      operationId: listProblems
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/SizeParam'
+      responses:
+        '200':
+          description: Paginated list
+    post:
+      tags: [Problems]
+      summary: Create problem
+      operationId: createProblem
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProblemRequest'
+      responses:
+        '201':
+          description: Problem created
+
+  /problems/{id}:
+    get:
+      tags: [Problems]
+      summary: Get problem
+      parameters:
+        - $ref: '#/components/parameters/EntityIdParam'
+      responses:
+        '200':
+          description: Problem details
+    put:
+      tags: [Problems]
+      summary: Update problem
+      parameters:
+        - $ref: '#/components/parameters/EntityIdParam'
+      responses:
+        '200':
+          description: Problem updated
+    delete:
+      tags: [Problems]
+      summary: Delete problem
+      parameters:
+        - $ref: '#/components/parameters/EntityIdParam'
+      responses:
+        '204':
+          description: Deleted
+
+  /problems/{id}/link-incident:
+    patch:
+      tags: [Problems]
+      summary: Link incident to problem
+      parameters:
+        - $ref: '#/components/parameters/EntityIdParam'
+      responses:
+        '200':
+          description: Incident linked
+
+  /problems/{id}/root-cause:
+    patch:
+      tags: [Problems]
+      summary: Set root cause
+      parameters:
+        - $ref: '#/components/parameters/EntityIdParam'
+      responses:
+        '200':
+          description: Root cause set
+
+  # ---- Changes ----
+  /changes:
+    get:
+      tags: [Changes]
+      summary: List change requests
+      operationId: listChanges
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/SizeParam'
+      responses:
+        '200':
+          description: Paginated list
+    post:
+      tags: [Changes]
+      summary: Create change request
+      operationId: createChange
+      responses:
+        '201':
+          description: Change created
+
+  /changes/{id}:
+    get:
+      tags: [Changes]
+      summary: Get change request
+      parameters:
+        - $ref: '#/components/parameters/EntityIdParam'
+      responses:
+        '200':
+          description: Change details
+    put:
+      tags: [Changes]
+      summary: Update change
+      parameters:
+        - $ref: '#/components/parameters/EntityIdParam'
+      responses:
+        '200':
+          description: Updated
+    delete:
+      tags: [Changes]
+      summary: Delete change
+      parameters:
+        - $ref: '#/components/parameters/EntityIdParam'
+      responses:
+        '204':
+          description: Deleted
+
+  /changes/{id}/approve:
+    patch:
+      tags: [Changes]
+      summary: Approve change
+      parameters:
+        - $ref: '#/components/parameters/EntityIdParam'
+      responses:
+        '200':
+          description: Change approved
+
+  /changes/{id}/reject:
+    patch:
+      tags: [Changes]
+      summary: Reject change
+      parameters:
+        - $ref: '#/components/parameters/EntityIdParam'
+      responses:
+        '200':
+          description: Change rejected
+
+  /changes/{id}/implement:
+    patch:
+      tags: [Changes]
+      summary: Implement change
+      parameters:
+        - $ref: '#/components/parameters/EntityIdParam'
+      responses:
+        '200':
+          description: Change implemented
+
+  /changes/{id}/close:
+    patch:
+      tags: [Changes]
+      summary: Close change
+      parameters:
+        - $ref: '#/components/parameters/EntityIdParam'
+      responses:
+        '200':
+          description: Change closed
+
+  # ---- Service Requests ----
+  /requests:
+    get:
+      tags: [Requests]
+      summary: List service requests
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/SizeParam'
+      responses:
+        '200':
+          description: Paginated list
+    post:
+      tags: [Requests]
+      summary: Create service request
+      responses:
+        '201':
+          description: Request created
+
+  /requests/{id}:
+    get:
+      tags: [Requests]
+      summary: Get service request
+      parameters:
+        - $ref: '#/components/parameters/EntityIdParam'
+      responses:
+        '200':
+          description: Request details
+    put:
+      tags: [Requests]
+      summary: Update request
+      parameters:
+        - $ref: '#/components/parameters/EntityIdParam'
+      responses:
+        '200':
+          description: Updated
+    delete:
+      tags: [Requests]
+      summary: Delete request
+      parameters:
+        - $ref: '#/components/parameters/EntityIdParam'
+      responses:
+        '204':
+          description: Deleted
+
+  /requests/{id}/approve:
+    patch:
+      tags: [Requests]
+      summary: Approve request
+      parameters:
+        - $ref: '#/components/parameters/EntityIdParam'
+      responses:
+        '200':
+          description: Approved
+
+  /requests/{id}/fulfill:
+    patch:
+      tags: [Requests]
+      summary: Fulfill request
+      parameters:
+        - $ref: '#/components/parameters/EntityIdParam'
+      responses:
+        '200':
+          description: Fulfilled
+
+  /requests/{id}/close:
+    patch:
+      tags: [Requests]
+      summary: Close request
+      parameters:
+        - $ref: '#/components/parameters/EntityIdParam'
+      responses:
+        '200':
+          description: Closed
+
+  # ---- CMDB ----
+  /cmdb/configuration-items:
+    get:
+      tags: [CMDB]
+      summary: List configuration items
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/SizeParam'
+        - name: ciType
+          in: query
+          schema:
+            type: string
+        - name: environment
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Paginated list
+    post:
+      tags: [CMDB]
+      summary: Create configuration item
+      responses:
+        '201':
+          description: CI created
+
+  /cmdb/configuration-items/{id}:
+    get:
+      tags: [CMDB]
+      summary: Get CI
+      parameters:
+        - $ref: '#/components/parameters/EntityIdParam'
+      responses:
+        '200':
+          description: CI details
+    put:
+      tags: [CMDB]
+      summary: Update CI
+      parameters:
+        - $ref: '#/components/parameters/EntityIdParam'
+      responses:
+        '200':
+          description: Updated
+    delete:
+      tags: [CMDB]
+      summary: Delete CI
+      parameters:
+        - $ref: '#/components/parameters/EntityIdParam'
+      responses:
+        '204':
+          description: Deleted
+
+  /cmdb/configuration-items/{id}/relationships:
+    get:
+      tags: [CMDB]
+      summary: Get CI relationships
+      parameters:
+        - $ref: '#/components/parameters/EntityIdParam'
+      responses:
+        '200':
+          description: Relationship graph
+
+  /cmdb/configuration-items/{id}/impact-analysis:
+    get:
+      tags: [CMDB]
+      summary: Change impact analysis
+      parameters:
+        - $ref: '#/components/parameters/EntityIdParam'
+      responses:
+        '200':
+          description: Impact analysis
+
+  /cmdb/services:
+    get:
+      tags: [CMDB]
+      summary: List services
+      responses:
+        '200':
+          description: Service list
+    post:
+      tags: [CMDB]
+      summary: Create service
+      responses:
+        '201':
+          description: Service created
+
+  /cmdb/services/{id}:
+    get:
+      tags: [CMDB]
+      summary: Get service
+      parameters:
+        - $ref: '#/components/parameters/EntityIdParam'
+      responses:
+        '200':
+          description: Service details
+    put:
+      tags: [CMDB]
+      summary: Update service
+      parameters:
+        - $ref: '#/components/parameters/EntityIdParam'
+      responses:
+        '200':
+          description: Updated
+    delete:
+      tags: [CMDB]
+      summary: Delete service
+      parameters:
+        - $ref: '#/components/parameters/EntityIdParam'
+      responses:
+        '204':
+          description: Deleted
+
+  # ---- SLA ----
+  /sla/definitions:
+    get:
+      tags: [SLA]
+      summary: List SLA definitions
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/SizeParam'
+      responses:
+        '200':
+          description: Paginated list
+    post:
+      tags: [SLA]
+      summary: Create SLA definition
+      responses:
+        '201':
+          description: Definition created
+
+  /sla/definitions/{id}:
+    get:
+      tags: [SLA]
+      summary: Get SLA definition
+      parameters:
+        - $ref: '#/components/parameters/EntityIdParam'
+      responses:
+        '200':
+          description: Definition details
+    put:
+      tags: [SLA]
+      summary: Update SLA definition
+      parameters:
+        - $ref: '#/components/parameters/EntityIdParam'
+      responses:
+        '200':
+          description: Updated
+    delete:
+      tags: [SLA]
+      summary: Delete SLA definition
+      parameters:
+        - $ref: '#/components/parameters/EntityIdParam'
+      responses:
+        '204':
+          description: Deleted
+
+  /sla/apply:
+    post:
+      tags: [SLA]
+      summary: Apply SLA to entity
+      responses:
+        '201':
+          description: SLA instance created
+
+  /sla/instances:
+    get:
+      tags: [SLA]
+      summary: List SLA instances
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [active, at_risk, breached, paused, completed]
+      responses:
+        '200':
+          description: SLA instances
+
+  # ---- Knowledge ----
+  /knowledge:
+    get:
+      tags: [Knowledge]
+      summary: List knowledge articles
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/SizeParam'
+        - name: category
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Paginated list
+    post:
+      tags: [Knowledge]
+      summary: Create article
+      responses:
+        '201':
+          description: Article created
+
+  /knowledge/{id}:
+    get:
+      tags: [Knowledge]
+      summary: Get article
+      parameters:
+        - $ref: '#/components/parameters/EntityIdParam'
+      responses:
+        '200':
+          description: Article details
+    put:
+      tags: [Knowledge]
+      summary: Update article
+      parameters:
+        - $ref: '#/components/parameters/EntityIdParam'
+      responses:
+        '200':
+          description: Updated
+    delete:
+      tags: [Knowledge]
+      summary: Delete article
+      parameters:
+        - $ref: '#/components/parameters/EntityIdParam'
+      responses:
+        '204':
+          description: Deleted
+
+  /knowledge/{id}/submit-for-review:
+    patch:
+      tags: [Knowledge]
+      summary: Submit for review
+      parameters:
+        - $ref: '#/components/parameters/EntityIdParam'
+      responses:
+        '200':
+          description: Submitted
+
+  /knowledge/{id}/publish:
+    patch:
+      tags: [Knowledge]
+      summary: Publish article
+      parameters:
+        - $ref: '#/components/parameters/EntityIdParam'
+      responses:
+        '200':
+          description: Published
+
+  # ---- Workflow ----
+  /workflows/definitions:
+    get:
+      tags: [Workflow]
+      summary: List workflow definitions
+      responses:
+        '200':
+          description: Definition list
+    post:
+      tags: [Workflow]
+      summary: Create workflow definition
+      responses:
+        '201':
+          description: Definition created
+
+  /workflows/definitions/{id}/start:
+    post:
+      tags: [Workflow]
+      summary: Start workflow
+      parameters:
+        - $ref: '#/components/parameters/EntityIdParam'
+      responses:
+        '201':
+          description: Workflow started
+
+  /workflows/instances/{id}/tasks:
+    get:
+      tags: [Workflow]
+      summary: Get workflow tasks
+      parameters:
+        - $ref: '#/components/parameters/EntityIdParam'
+      responses:
+        '200':
+          description: Task list
+
+  /workflows/tasks/{taskId}/complete:
+    post:
+      tags: [Workflow]
+      summary: Complete workflow task
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Task completed
+
+  # ---- Finance ----
+  /finance/cost-centers:
+    get:
+      tags: [Finance]
+      summary: List cost centers
+      responses:
+        '200':
+          description: Cost center list
+    post:
+      tags: [Finance]
+      summary: Create cost center
+      responses:
+        '201':
+          description: Created
+
+  /finance/budgets:
+    get:
+      tags: [Finance]
+      summary: List budgets
+      responses:
+        '200':
+          description: Budget list
+    post:
+      tags: [Finance]
+      summary: Create budget
+      responses:
+        '201':
+          description: Created
+
+  /finance/budgets/{id}/utilization:
+    get:
+      tags: [Finance]
+      summary: Get budget utilization
+      parameters:
+        - $ref: '#/components/parameters/EntityIdParam'
+      responses:
+        '200':
+          description: Budget utilization
+
+  /finance/expenses:
+    get:
+      tags: [Finance]
+      summary: List expenses
+      responses:
+        '200':
+          description: Expense list
+    post:
+      tags: [Finance]
+      summary: Create expense
+      responses:
+        '201':
+          description: Created
+
+  /finance/invoices:
+    get:
+      tags: [Finance]
+      summary: List invoices
+      responses:
+        '200':
+          description: Invoice list
+    post:
+      tags: [Finance]
+      summary: Create invoice
+      responses:
+        '201':
+          description: Created
+
+  # ---- Procurement ----
+  /procurement/requests:
+    get:
+      tags: [Procurement]
+      summary: List purchase requests
+      responses:
+        '200':
+          description: Purchase request list
+    post:
+      tags: [Procurement]
+      summary: Create purchase request
+      responses:
+        '201':
+          description: Created
+
+  /procurement/requests/{id}/submit:
+    post:
+      tags: [Procurement]
+      summary: Submit purchase request
+      parameters:
+        - $ref: '#/components/parameters/EntityIdParam'
+      responses:
+        '200':
+          description: Submitted
+
+  /procurement/requests/{id}/create-po:
+    post:
+      tags: [Procurement]
+      summary: Create purchase order from request
+      parameters:
+        - $ref: '#/components/parameters/EntityIdParam'
+      responses:
+        '201':
+          description: PO created
+
+  /procurement/orders:
+    get:
+      tags: [Procurement]
+      summary: List purchase orders
+      responses:
+        '200':
+          description: PO list
+
+  /procurement/contracts:
+    get:
+      tags: [Procurement]
+      summary: List contracts
+      responses:
+        '200':
+          description: Contract list
+    post:
+      tags: [Procurement]
+      summary: Create contract
+      responses:
+        '201':
+          description: Created
+
+  # ---- Inventory ----
+  /inventory/items:
+    get:
+      tags: [Inventory]
+      summary: List inventory items
+      responses:
+        '200':
+          description: Item list
+    post:
+      tags: [Inventory]
+      summary: Create inventory item
+      responses:
+        '201':
+          description: Created
+
+  /inventory/items/low-stock:
+    get:
+      tags: [Inventory]
+      summary: Get low stock items
+      responses:
+        '200':
+          description: Low stock items
+
+  /inventory/assets:
+    get:
+      tags: [Inventory]
+      summary: List assets
+      responses:
+        '200':
+          description: Asset list
+    post:
+      tags: [Inventory]
+      summary: Create asset
+      responses:
+        '201':
+          description: Created
+
+  /inventory/warehouses:
+    get:
+      tags: [Inventory]
+      summary: List warehouses
+      responses:
+        '200':
+          description: Warehouse list
+    post:
+      tags: [Inventory]
+      summary: Create warehouse
+      responses:
+        '201':
+          description: Created
+
+  /inventory/movements:
+    post:
+      tags: [Inventory]
+      summary: Record stock movement
+      responses:
+        '201':
+          description: Movement recorded
+
+  # ---- Vendors ----
+  /vendors:
+    get:
+      tags: [Vendors]
+      summary: List vendors
+      responses:
+        '200':
+          description: Vendor list
+    post:
+      tags: [Vendors]
+      summary: Create vendor
+      responses:
+        '201':
+          description: Created
+
+  /vendors/{id}:
+    get:
+      tags: [Vendors]
+      summary: Get vendor
+      parameters:
+        - $ref: '#/components/parameters/EntityIdParam'
+      responses:
+        '200':
+          description: Vendor details
+    put:
+      tags: [Vendors]
+      summary: Update vendor
+      parameters:
+        - $ref: '#/components/parameters/EntityIdParam'
+      responses:
+        '200':
+          description: Updated
+    delete:
+      tags: [Vendors]
+      summary: Delete vendor
+      parameters:
+        - $ref: '#/components/parameters/EntityIdParam'
+      responses:
+        '204':
+          description: Deleted
+
+  /vendors/{id}/performance:
+    get:
+      tags: [Vendors]
+      summary: Get vendor performance
+      parameters:
+        - $ref: '#/components/parameters/EntityIdParam'
+      responses:
+        '200':
+          description: Performance metrics
+    post:
+      tags: [Vendors]
+      summary: Record performance
+      parameters:
+        - $ref: '#/components/parameters/EntityIdParam'
+      responses:
+        '201':
+          description: Recorded
+
+  # ---- Workforce ----
+  /workforce/employees:
+    get:
+      tags: [Workforce]
+      summary: List employees
+      responses:
+        '200':
+          description: Employee list
+    post:
+      tags: [Workforce]
+      summary: Create employee
+      responses:
+        '201':
+          description: Created
+
+  /workforce/employees/by-skills:
+    get:
+      tags: [Workforce]
+      summary: Search employees by skills
+      parameters:
+        - name: skills
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Matching employees
+
+  /workforce/skills:
+    get:
+      tags: [Workforce]
+      summary: List skills
+      responses:
+        '200':
+          description: Skill list
+    post:
+      tags: [Workforce]
+      summary: Create skill
+      responses:
+        '201':
+          description: Created
+
+  /workforce/capacity:
+    get:
+      tags: [Workforce]
+      summary: Get capacity overview
+      responses:
+        '200':
+          description: Capacity data
+
+  # ---- Billing ----
+  /billing/usage:
+    get:
+      tags: [Billing]
+      summary: List service usage
+      responses:
+        '200':
+          description: Usage list
+
+  /billing/record-usage:
+    post:
+      tags: [Billing]
+      summary: Record service usage
+      responses:
+        '201':
+          description: Usage recorded
+
+  /billing/records:
+    get:
+      tags: [Billing]
+      summary: List billing records
+      responses:
+        '200':
+          description: Billing records
+
+  /billing/generate-invoice:
+    post:
+      tags: [Billing]
+      summary: Generate billing records for period
+      responses:
+        '201':
+          description: Records generated
+
+  /billing/cost-models:
+    get:
+      tags: [Billing]
+      summary: List cost models
+      responses:
+        '200':
+          description: Cost model list
+    post:
+      tags: [Billing]
+      summary: Create cost model
+      responses:
+        '201':
+          description: Created
+
+  # ---- Notifications ----
+  /notifications:
+    get:
+      tags: [Notifications]
+      summary: Get current user notifications
+      responses:
+        '200':
+          description: Notification list
+
+  /notifications/{id}/read:
+    patch:
+      tags: [Notifications]
+      summary: Mark notification as read
+      parameters:
+        - $ref: '#/components/parameters/EntityIdParam'
+      responses:
+        '200':
+          description: Marked as read
+
+  /notifications/read-all:
+    patch:
+      tags: [Notifications]
+      summary: Mark all as read
+      responses:
+        '200':
+          description: All marked as read
+
+  # ---- Audit ----
+  /audit:
+    get:
+      tags: [Audit]
+      summary: Query audit logs
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/SizeParam'
+        - name: entityType
+          in: query
+          schema:
+            type: string
+        - name: userId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: fromDate
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: toDate
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Paginated audit logs
+
+  /audit/entity/{type}/{id}:
+    get:
+      tags: [Audit]
+      summary: Get audit trail for entity
+      parameters:
+        - name: type
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Entity audit trail
+
+  # ---- Search ----
+  /search:
+    post:
+      tags: [Search]
+      summary: Global search
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                query:
+                  type: string
+                types:
+                  type: array
+                  items:
+                    type: string
+                  description: Entity types to search
+                page:
+                  type: integer
+                  default: 0
+                size:
+                  type: integer
+                  default: 20
+      responses:
+        '200':
+          description: Search results
+
+  # ---- Integrations ----
+  /integrations:
+    get:
+      tags: [Integrations]
+      summary: List integration endpoints
+      responses:
+        '200':
+          description: Integration list
+    post:
+      tags: [Integrations]
+      summary: Create integration endpoint
+      responses:
+        '201':
+          description: Created
+
+  /integrations/{id}:
+    get:
+      tags: [Integrations]
+      summary: Get integration
+      parameters:
+        - $ref: '#/components/parameters/EntityIdParam'
+      responses:
+        '200':
+          description: Integration details
+    put:
+      tags: [Integrations]
+      summary: Update integration
+      parameters:
+        - $ref: '#/components/parameters/EntityIdParam'
+      responses:
+        '200':
+          description: Updated
+    delete:
+      tags: [Integrations]
+      summary: Delete integration
+      parameters:
+        - $ref: '#/components/parameters/EntityIdParam'
+      responses:
+        '204':
+          description: Deleted
+
+  /integrations/{id}/test:
+    post:
+      tags: [Integrations]
+      summary: Test integration endpoint
+      parameters:
+        - $ref: '#/components/parameters/EntityIdParam'
+      responses:
+        '200':
+          description: Test result
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    PageParam:
+      name: page
+      in: query
+      schema:
+        type: integer
+        default: 0
+      description: Page number (0-indexed)
+    SizeParam:
+      name: size
+      in: query
+      schema:
+        type: integer
+        default: 20
+      description: Page size
+    SortParam:
+      name: sort
+      in: query
+      schema:
+        type: string
+        default: createdAt,desc
+      description: Sort field and direction
+    EntityIdParam:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: Entity UUID
+
+  schemas:
+    ApiResponse_UserResponse_:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+        message:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+
+    ApiResponse_PagedResponse_IncidentResponse__:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            content:
+              type: array
+              items: {}
+            pageNumber:
+              type: integer
+            pageSize:
+              type: integer
+            totalElements:
+              type: integer
+            totalPages:
+              type: integer
+            last:
+              type: boolean
+
+    ApiResponse_IncidentResponse_:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+        message:
+          type: string
+        timestamp:
+          type: string
+
+    CreateIncidentRequest:
+      type: object
+      required:
+        - title
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 500
+        description:
+          type: string
+        priority:
+          type: string
+          enum: [critical, high, medium, low]
+        impact:
+          type: string
+          enum: [high, medium, low]
+        urgency:
+          type: string
+          enum: [high, medium, low]
+        category:
+          type: string
+        subcategory:
+          type: string
+        serviceId:
+          type: string
+          format: uuid
+        ciId:
+          type: string
+          format: uuid
+        assigneeId:
+          type: string
+          format: uuid
+        assignmentGroupId:
+          type: string
+          format: uuid
+
+    UpdateIncidentRequest:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        priority:
+          type: string
+          enum: [critical, high, medium, low]
+        impact:
+          type: string
+        urgency:
+          type: string
+        category:
+          type: string
+        subcategory:
+          type: string
+        serviceId:
+          type: string
+          format: uuid
+        ciId:
+          type: string
+          format: uuid
+        resolutionCode:
+          type: string
+        resolutionNotes:
+          type: string
+
+    ProblemRequest:
+      type: object
+      required:
+        - title
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        priority:
+          type: string
+        category:
+          type: string
+        serviceId:
+          type: string
+          format: uuid
+        assigneeId:
+          type: string
+          format: uuid

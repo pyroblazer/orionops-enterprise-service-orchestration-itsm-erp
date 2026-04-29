@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xmlns:flowable="http://flowable.org/bpmn"
+             xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+             xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC"
+             xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI"
+             typeLanguage="http://www.w3.org/2001/XMLSchema"
+             expressionLanguage="http://www.w3.org/1999/XPath"
+             targetNamespace="http://orionops.com/workflows">
+
+    <process id="procurementApproval" name="Procurement Approval" isExecutable="true">
+
+        <!-- Start Event -->
+        <startEvent id="startEvent" name="Procurement Request Submitted" />
+
+        <!-- Service Task: Check Budget -->
+        <serviceTask id="checkBudget" name="Check Budget"
+                     flowable:delegateExpression="${budgetCheckDelegate}" />
+
+        <!-- Exclusive Gateway: Budget Threshold -->
+        <exclusiveGateway id="budgetGateway" name="Budget Threshold Gateway" />
+
+        <!-- ========== Under Threshold ($5000) Path ========== -->
+        <sequenceFlow id="flowUnderThreshold" name="Under $5000" sourceRef="budgetGateway" targetRef="managerApprove">
+            <conditionExpression xsi:type="tFormalExpression">
+                ${amount &lt; 5000}
+            </conditionExpression>
+        </sequenceFlow>
+
+        <!-- User Task: Manager Approve -->
+        <userTask id="managerApprove" name="Manager Approve"
+                  flowable:candidateGroups="management">
+            <documentation>Approve procurement request under the $5000 threshold.</documentation>
+        </userTask>
+
+        <!-- ========== Over Threshold Path ========== -->
+        <sequenceFlow id="flowOverThreshold" name="Over $5000" sourceRef="budgetGateway" targetRef="directorApprove">
+            <conditionExpression xsi:type="tFormalExpression">
+                ${amount &gt;= 5000}
+            </conditionExpression>
+        </sequenceFlow>
+
+        <!-- User Task: Director Approve -->
+        <userTask id="directorApprove" name="Director Approve"
+                  flowable:candidateGroups="directors">
+            <documentation>Director-level approval required for procurement requests exceeding $5000.</documentation>
+        </userTask>
+
+        <!-- User Task: Finance Approve -->
+        <userTask id="financeApprove" name="Finance Approve"
+                  flowable:candidateGroups="finance">
+            <documentation>Finance department final approval for high-value procurement.</documentation>
+        </userTask>
+
+        <!-- End Events -->
+        <endEvent id="endApproved" name="Procurement Approved" />
+
+        <!-- ========== Sequence Flows ========== -->
+        <sequenceFlow id="flow1" sourceRef="startEvent" targetRef="checkBudget" />
+        <sequenceFlow id="flow2" sourceRef="checkBudget" targetRef="budgetGateway" />
+
+        <!-- Under threshold: Manager -> End -->
+        <sequenceFlow id="flow3" sourceRef="managerApprove" targetRef="endApproved" />
+
+        <!-- Over threshold: Director -> Finance -> End -->
+        <sequenceFlow id="flow4" sourceRef="directorApprove" targetRef="financeApprove" />
+        <sequenceFlow id="flow5" sourceRef="financeApprove" targetRef="endApproved" />
+
+    </process>
+
+</definitions>

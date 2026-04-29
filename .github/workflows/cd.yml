@@ -1,0 +1,195 @@
+name: CD Pipeline
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: cd-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  # -----------------------------------------------------------------------
+  # Build & push Docker images
+  # -----------------------------------------------------------------------
+  build-backend:
+    name: Build & Push Backend Image
+    runs-on: ubuntu-latest
+    needs: []  # In production, add: needs: [ci-backend]
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}/backend
+          tags: |
+            type=sha,prefix=
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push backend image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  build-web:
+    name: Build & Push Web Image
+    runs-on: ubuntu-latest
+    needs: []
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}/web
+          tags: |
+            type=sha,prefix=
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push web image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./apps/web
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  build-ai:
+    name: Build & Push AI Image
+    runs-on: ubuntu-latest
+    needs: []
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}/ai
+          tags: |
+            type=sha,prefix=
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push AI image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./apps/ai
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # -----------------------------------------------------------------------
+  # Deploy to Kubernetes
+  # -----------------------------------------------------------------------
+  deploy:
+    name: Deploy to Kubernetes
+    runs-on: ubuntu-latest
+    needs: [build-backend, build-web, build-ai]
+    environment: production
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: "v1.30.0"
+
+      - name: Configure kubeconfig
+        run: |
+          mkdir -p $HOME/.kube
+          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
+          chmod 600 $HOME/.kube/config
+
+      - name: Verify cluster access
+        run: kubectl cluster-info
+
+      - name: Apply namespace
+        run: kubectl apply -f infra/k8s/namespace.yml
+
+      - name: Deploy infrastructure components
+        run: |
+          kubectl apply -f infra/k8s/postgres.yml
+          kubectl apply -f infra/k8s/redis.yml
+          kubectl apply -f infra/k8s/kafka.yml
+          kubectl apply -f infra/k8s/opensearch.yml
+          kubectl apply -f infra/k8s/minio.yml
+          kubectl apply -f infra/k8s/keycloak.yml
+          kubectl apply -f infra/k8s/opa.yml
+
+      - name: Deploy application services
+        run: |
+          kubectl apply -f infra/k8s/backend-deployment.yml
+          kubectl apply -f infra/k8s/web-deployment.yml
+          kubectl apply -f infra/k8s/ai-deployment.yml
+
+      - name: Update image tags
+        run: |
+          kubectl set image deployment/orionops-backend backend=ghcr.io/${{ github.repository }}/backend:${{ github.sha }} -n orionops
+          kubectl set image deployment/orionops-web web=ghcr.io/${{ github.repository }}/web:${{ github.sha }} -n orionops
+          kubectl set image deployment/orionops-ai ai=ghcr.io/${{ github.repository }}/ai:${{ github.sha }} -n orionops
+
+      - name: Rollout status
+        run: |
+          kubectl rollout status deployment/orionops-backend -n orionops --timeout=300s
+          kubectl rollout status deployment/orionops-web -n orionops --timeout=300s
+          kubectl rollout status deployment/orionops-ai -n orionops --timeout=300s
+
+      - name: Verify deployments
+        run: |
+          kubectl get pods -n orionops
+          kubectl get services -n orionops

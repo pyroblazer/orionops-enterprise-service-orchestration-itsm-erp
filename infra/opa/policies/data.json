@@ -1,0 +1,70 @@
+{
+  "roles": {
+    "admin": {
+      "permissions": ["*"]
+    },
+    "change_manager": {
+      "permissions": ["change_request:*", "approval:*", "workflow:read", "report:read"]
+    },
+    "service_desk_agent": {
+      "permissions": ["incident:*", "service_request:*", "knowledge:read", "cmdb:read", "notification:*"]
+    },
+    "resolver_engineer": {
+      "permissions": ["incident:read", "incident:update", "problem:read", "problem:update", "knowledge:read"]
+    },
+    "service_owner": {
+      "permissions": ["service:*", "sla_definition:*", "report:read", "incident:read", "cmdb:read"]
+    },
+    "viewer": {
+      "permissions": ["*:read"]
+    },
+    "finance_manager": {
+      "permissions": ["budget:*", "expense:*", "invoice:*", "payment_record:*", "cost_center:*", "billing:*"]
+    }
+  },
+  "users": {
+    "admin@orionops.local": {
+      "roles": ["admin"],
+      "tenant_id": "default",
+      "group_ids": [],
+      "on_call": false
+    },
+    "agent@orionops.local": {
+      "roles": ["service_desk_agent"],
+      "tenant_id": "default",
+      "group_ids": ["it-operations"],
+      "on_call": false
+    },
+    "engineer@orionops.local": {
+      "roles": ["resolver_engineer"],
+      "tenant_id": "default",
+      "group_ids": ["infrastructure"],
+      "on_call": true
+    },
+    "change-mgr@orionops.local": {
+      "roles": ["change_manager"],
+      "tenant_id": "default",
+      "group_ids": ["it-operations"],
+      "on_call": true
+    },
+    "service-owner@orionops.local": {
+      "roles": ["service_owner"],
+      "tenant_id": "default",
+      "group_ids": ["it-operations"],
+      "on_call": false
+    },
+    "viewer@orionops.local": {
+      "roles": ["viewer"],
+      "tenant_id": "default",
+      "group_ids": [],
+      "on_call": false
+    }
+  },
+  "groups": [
+    { "id": "it-operations", "name": "IT Operations" },
+    { "id": "development", "name": "Development" },
+    { "id": "infrastructure", "name": "Infrastructure" },
+    { "id": "security", "name": "Security" },
+    { "id": "management", "name": "Management" }
+  ]
+}

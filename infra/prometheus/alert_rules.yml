@@ -1,0 +1,94 @@
+groups:
+  - name: orionops-system
+    rules:
+      - alert: HighErrorRate
+        expr: rate(http_server_requests_seconds_count{status=~"5.."}[5m]) / rate(http_server_requests_seconds_count[5m]) > 0.05
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High error rate on {{ $labels.uri }}"
+          description: "Error rate is {{ $value | humanizePercentage }} on {{ $labels.uri }}"
+
+      - alert: HighLatency
+        expr: histogram_quantile(0.99, rate(http_server_requests_seconds_bucket[5m])) > 1.0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "P99 latency above 1s"
+          description: "P99 latency is {{ $value }}s"
+
+      - alert: HighMemoryUsage
+        expr: jvm_memory_used_bytes{area="heap"} / jvm_memory_max_bytes{area="heap"} > 0.9
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "JVM heap usage above 90%"
+
+      - alert: DatabaseConnectionPoolExhaustion
+        expr: hikaricp_connections_active / hikaricp_connections_max > 0.9
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Database connection pool near exhaustion"
+
+      - alert: KafkaConsumerLag
+        expr: kafka_consumer_group_lag > 1000
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Kafka consumer group {{ $labels.group }} has high lag"
+
+      - alert: RedisConnectionFailure
+        expr: up{job="redis"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Redis is down"
+
+      - alert: FlowableJobQueueBacklog
+        expr: flowable_async_job_count > 500
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Flowable async job queue backlog above 500"
+
+  - name: orionops-business
+    rules:
+      - alert: SLABreachRateHigh
+        expr: rate(orionops_sla_breaches_total[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "SLA breach rate exceeds 10% over 5 minutes"
+
+      - alert: IncidentBacklogGrowing
+        expr: orionops_incidents_open_count - orionops_incidents_open_count offset 1h > 50
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Open incident count growing ({{ $value }} increase in last hour)"
+
+      - alert: CriticalIncidentsUnassigned
+        expr: orionops_incidents_open_count{priority="critical", assignee="none"} > 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "{{ $value }} critical incidents are unassigned"
+
+      - alert: ChangeApprovalStalled
+        expr: orionops_changes_pending_approval_count > 20
+        for: 30m
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $value }} changes pending approval for over 30 minutes"

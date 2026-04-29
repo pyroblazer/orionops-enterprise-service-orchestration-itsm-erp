@@ -1,0 +1,25 @@
+{
+  "name": "orionops",
+  "version": "0.1.0",
+  "private": true,
+  "description": "OrionOps - Enterprise Service Orchestration Platform (ITSM + ERP Extensions)",
+  "scripts": {
+    "dev:web": "pnpm --filter @orionops/web dev",
+    "dev:mobile": "pnpm --filter @orionops/mobile start",
+    "build:web": "pnpm --filter @orionops/web build",
+    "build:mobile": "pnpm --filter @orionops/mobile build",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "format": "prettier --write \"apps/**/*.{ts,tsx,js,jsx,json,css,md}\""
+  },
+  "devDependencies": {
+    "turbo": "^2.3.0",
+    "typescript": "^5.7.0",
+    "prettier": "^3.4.0",
+    "@types/node": "^22.10.0"
+  },
+  "packageManager": "pnpm@9.15.0",
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

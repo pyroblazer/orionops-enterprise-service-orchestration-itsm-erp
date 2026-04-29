@@ -1,0 +1,382 @@
+{
+  "realm": "orionops",
+  "enabled": true,
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": true,
+  "editUsernameAllowed": false,
+  "bruteForceProtected": true,
+  "permanentLockout": false,
+  "maxFailureWaitSeconds": 900,
+  "minimumQuickLoginWaitSeconds": 60,
+  "waitIncrementSeconds": 60,
+  "maxDeltaTimeSeconds": 43200,
+  "failureFactor": 30,
+  "sslRequired": "external",
+  "accessTokenLifespan": 900,
+  "accessTokenLifespanForImplicitFlow": 900,
+  "ssoSessionIdleTimeout": 1800,
+  "ssoSessionMaxLifespan": 36000,
+  "offlineSessionIdleTimeout": 2592000,
+  "attributes": {
+    "frontendUrl": "http://localhost:8081"
+  },
+  "roles": {
+    "realm": [
+      {
+        "name": "admin",
+        "description": "Full system administrator with unrestricted access"
+      },
+      {
+        "name": "change_manager",
+        "description": "Change manager overseeing change request approvals and CAB coordination"
+      },
+      {
+        "name": "service_desk_agent",
+        "description": "Service desk agent handling incidents and service requests"
+      },
+      {
+        "name": "resolver_engineer",
+        "description": "Engineer resolving assigned incidents, problems, and implementing changes"
+      },
+      {
+        "name": "service_owner",
+        "description": "Service owner managing service definitions, SLAs, and operational health"
+      },
+      {
+        "name": "viewer",
+        "description": "Read-only access to all platform resources"
+      },
+      {
+        "name": "finance_manager",
+        "description": "Financial management access for procurement and billing"
+      }
+    ]
+  },
+  "groups": [
+    {
+      "name": "IT Operations"
+    },
+    {
+      "name": "Development"
+    },
+    {
+      "name": "Infrastructure"
+    },
+    {
+      "name": "Security"
+    },
+    {
+      "name": "Management"
+    }
+  ],
+  "clients": [
+    {
+      "clientId": "orionops-api",
+      "enabled": true,
+      "secret": "orionops-api-secret",
+      "bearerOnly": false,
+      "confidential": true,
+      "standardFlowEnabled": false,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": true,
+      "authorizationEnabled": true,
+      "authorizationServicesEnabled": true,
+      "redirectUris": [],
+      "webOrigins": [],
+      "attributes": {
+        "access.token.lifespan": "900",
+        "oauth2.device.authorization.grant.enabled": "false",
+        "client.secret.creation.time": "1700000000",
+        "login_theme": "keycloak",
+        "post.logout.redirect.uris": "+"
+      }
+    },
+    {
+      "clientId": "orionops-web",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": false,
+      "redirectUris": [
+        "http://localhost:3000/*"
+      ],
+      "webOrigins": [
+        "http://localhost:3000"
+      ],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "access.token.lifespan": "900",
+        "post.logout.redirect.uris": "http://localhost:3000/*"
+      }
+    },
+    {
+      "clientId": "orionops-mobile",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": false,
+      "redirectUris": [
+        "orionops://callback"
+      ],
+      "webOrigins": [],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "access.token.lifespan": "900",
+        "post.logout.redirect.uris": "orionops://callback"
+      }
+    }
+  ],
+  "users": [
+    {
+      "username": "admin",
+      "email": "admin@orionops.local",
+      "firstName": "System",
+      "lastName": "Administrator",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "admin",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "admin"
+      ],
+      "groups": [
+        "Management"
+      ]
+    },
+    {
+      "username": "agent",
+      "email": "agent@orionops.local",
+      "firstName": "Service Desk",
+      "lastName": "Agent",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "agent",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "service_desk_agent"
+      ],
+      "groups": [
+        "IT Operations"
+      ]
+    },
+    {
+      "username": "engineer",
+      "email": "engineer@orionops.local",
+      "firstName": "Resolver",
+      "lastName": "Engineer",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "engineer",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "resolver_engineer"
+      ],
+      "groups": [
+        "Infrastructure"
+      ]
+    },
+    {
+      "username": "changemgr",
+      "email": "changemgr@orionops.local",
+      "firstName": "Change",
+      "lastName": "Manager",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "changemgr",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "change_manager"
+      ],
+      "groups": [
+        "IT Operations"
+      ]
+    }
+  ],
+  "authenticationFlows": [
+    {
+      "alias": "browser",
+      "description": "Browser based authentication with conditional OTP",
+      "providerId": "basic-flow",
+      "topLevel": true,
+      "builtIn": false,
+      "authenticationExecutions": [
+        {
+          "authenticator": "auth-cookie",
+          "requirement": "ALTERNATIVE",
+          "priority": 10,
+          "userSetupAllowed": false,
+          "autheticatorFlow": false
+        },
+        {
+          "authenticator": "identity-provider-redirector",
+          "requirement": "ALTERNATIVE",
+          "priority": 20,
+          "userSetupAllowed": false,
+          "autheticatorFlow": false
+        },
+        {
+          "requirement": "ALTERNATIVE",
+          "priority": 30,
+          "userSetupAllowed": false,
+          "autheticatorFlow": true,
+          "flowAlias": "browser forms",
+          "authenticator": "conditional-user-configured"
+        }
+      ]
+    },
+    {
+      "alias": "browser forms",
+      "description": "Username/password forms with conditional OTP",
+      "providerId": "basic-flow",
+      "topLevel": false,
+      "builtIn": false,
+      "authenticationExecutions": [
+        {
+          "authenticator": "auth-username-password-form",
+          "requirement": "REQUIRED",
+          "priority": 10,
+          "userSetupAllowed": false,
+          "autheticatorFlow": false
+        },
+        {
+          "authenticator": "conditional-user-configured",
+          "requirement": "CONDITIONAL",
+          "priority": 20,
+          "userSetupAllowed": false,
+          "autheticatorFlow": true,
+          "flowAlias": "browser conditional otp"
+        }
+      ]
+    },
+    {
+      "alias": "browser conditional otp",
+      "description": "Conditional OTP form for browser flow",
+      "providerId": "basic-flow",
+      "topLevel": false,
+      "builtIn": false,
+      "authenticationExecutions": [
+        {
+          "authenticator": "conditional-user-configured",
+          "requirement": "REQUIRED",
+          "priority": 10,
+          "userSetupAllowed": false,
+          "autheticatorFlow": false
+        },
+        {
+          "authenticator": "auth-otp-form",
+          "requirement": "REQUIRED",
+          "priority": 20,
+          "userSetupAllowed": false,
+          "autheticatorFlow": false
+        }
+      ]
+    },
+    {
+      "alias": "direct-grant",
+      "description": "Direct grant with conditional OTP",
+      "providerId": "basic-flow",
+      "topLevel": true,
+      "builtIn": false,
+      "authenticationExecutions": [
+        {
+          "authenticator": "direct-grant-validate-username",
+          "requirement": "REQUIRED",
+          "priority": 10,
+          "userSetupAllowed": false,
+          "autheticatorFlow": false
+        },
+        {
+          "authenticator": "direct-grant-validate-password",
+          "requirement": "REQUIRED",
+          "priority": 20,
+          "userSetupAllowed": false,
+          "autheticatorFlow": false
+        },
+        {
+          "authenticator": "direct-grant-validate-otp",
+          "requirement": "CONDITIONAL",
+          "priority": 30,
+          "userSetupAllowed": false,
+          "autheticatorFlow": false
+        }
+      ]
+    }
+  ],
+  "requiredActions": [
+    {
+      "alias": "CONFIGURE_TOTP",
+      "name": "Configure OTP",
+      "enabled": true,
+      "defaultAction": false,
+      "priority": 10
+    },
+    {
+      "alias": "TERMS_AND_CONDITIONS",
+      "name": "Terms and Conditions",
+      "enabled": false,
+      "defaultAction": false,
+      "priority": 20
+    },
+    {
+      "alias": "UPDATE_PASSWORD",
+      "name": "Update Password",
+      "enabled": true,
+      "defaultAction": false,
+      "priority": 30
+    },
+    {
+      "alias": "UPDATE_PROFILE",
+      "name": "Update Profile",
+      "enabled": true,
+      "defaultAction": false,
+      "priority": 40
+    },
+    {
+      "alias": "VERIFY_EMAIL",
+      "name": "Verify Email",
+      "enabled": true,
+      "defaultAction": false,
+      "priority": 50
+    }
+  ],
+  "smtpServer": {
+    "host": "${SMTP_HOST:localhost}",
+    "port": "${SMTP_PORT:587}",
+    "from": "${SMTP_FROM:noreply@orionops.io}",
+    "fromDisplayName": "OrionOps Platform",
+    "envelopeFrom": "",
+    "auth": "${SMTP_AUTH:true}",
+    "user": "${SMTP_USER:}",
+    "password": "${SMTP_PASSWORD:}",
+    "ssl": "${SMTP_SSL:false}",
+    "starttls": "${SMTP_STARTTLS:true}",
+    "debug": "false"
+  }
+}

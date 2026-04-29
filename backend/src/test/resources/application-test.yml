@@ -1,0 +1,65 @@
+spring:
+  datasource:
+    url: jdbc:tc:postgresql:16:///orionops_test
+    username: test
+    password: test
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+  kafka:
+    bootstrap-servers: ${spring.embedded.kafka.brokers:localhost:9092}
+    consumer:
+      group-id: test-group
+      auto-offset-reset: earliest
+    producer:
+      bootstrap-servers: ${spring.embedded.kafka.brokers:localhost:9092}
+  data:
+    redis:
+      host: localhost
+      port: 6379
+  flyway:
+    enabled: false
+  mail:
+    host: localhost
+    port: 3025
+    username: test
+    password: test
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+
+flowable:
+  async-executor-activate: false
+  database-schema-update: true
+
+keycloak:
+  realm: orionops-test
+  resource: orionops-api-test
+  auth-server-url: http://localhost:8081/auth
+  credentials:
+    secret: test-secret
+  bearer-only: true
+
+opa:
+  url: http://localhost:8181
+  enabled: false
+
+stripe:
+  api-key: sk_test_key
+  webhook-secret: whsec_test_secret
+
+opensearch:
+  host: localhost
+  port: 9200
+
+minio:
+  endpoint: http://localhost:9000
+  access-key: minioadmin
+  secret-key: minioadmin
+  bucket: orionops-test
+
+logging:
+  level:
+    com.orionops: DEBUG
+    org.springframework: WARN

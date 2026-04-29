@@ -1,0 +1,145 @@
+name: Security Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: security-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # -----------------------------------------------------------------------
+  # Java dependency vulnerability scan (OWASP)
+  # -----------------------------------------------------------------------
+  java-security:
+    name: Java Dependency Check
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: "21"
+          distribution: "temurin"
+          cache: "maven"
+
+      - name: Run OWASP Dependency Check
+        run: |
+          mvn org.owasp:dependency-check-maven:check \
+            -DfailBuildOnCVSS=7 \
+            -DsuppressionFile=dependency-check-suppressions.xml \
+            -B
+        continue-on-error: true
+
+      - name: Upload OWASP report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: owasp-dependency-check-report
+          path: backend/target/dependency-check-report.html
+          retention-days: 14
+
+  # -----------------------------------------------------------------------
+  # Node.js audit
+  # -----------------------------------------------------------------------
+  node-security:
+    name: Node.js Security Audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Install dependencies (web)
+        working-directory: apps/web
+        run: pnpm install --frozen-lockfile
+
+      - name: npm audit (web)
+        working-directory: apps/web
+        run: pnpm audit --audit-level=high || true
+
+      - name: Install dependencies (mobile)
+        working-directory: apps/mobile
+        run: pnpm install --frozen-lockfile
+
+      - name: npm audit (mobile)
+        working-directory: apps/mobile
+        run: pnpm audit --audit-level=high || true
+
+  # -----------------------------------------------------------------------
+  # Python security scan
+  # -----------------------------------------------------------------------
+  python-security:
+    name: Python Security Audit
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/ai
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+          cache-dependency-path: apps/ai/requirements.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install safety pip-audit
+
+      - name: Run safety check
+        run: safety check -r requirements.txt --full-report || true
+
+      - name: Run pip-audit
+        run: pip-audit -r requirements.txt --desc || true
+
+  # -----------------------------------------------------------------------
+  # SAST scan
+  # -----------------------------------------------------------------------
+  sast:
+    name: Static Application Security Testing
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: java, javascript, python
+          queries: security-extended
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Perform CodeQL analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{ matrix.language }}"
+          upload: true

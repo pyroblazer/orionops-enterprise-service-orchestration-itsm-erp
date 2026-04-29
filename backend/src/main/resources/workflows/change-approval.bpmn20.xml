@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xmlns:flowable="http://flowable.org/bpmn"
+             xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+             xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC"
+             xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI"
+             typeLanguage="http://www.w3.org/2001/XMLSchema"
+             expressionLanguage="http://www.w3.org/1999/XPath"
+             targetNamespace="http://orionops.com/workflows">
+
+    <process id="changeApprovalProcess" name="Change Approval" isExecutable="true">
+
+        <!-- Start Event -->
+        <startEvent id="startEvent" name="Change Request Submitted" />
+
+        <!-- Service Task: Risk Assessment -->
+        <serviceTask id="riskAssessment" name="Risk Assessment"
+                     flowable:delegateExpression="${riskAssessmentDelegate}" />
+
+        <!-- Exclusive Gateway: Change Type Routing -->
+        <exclusiveGateway id="changeTypeGateway" name="Change Type Gateway" />
+
+        <!-- ========== Emergency Path ========== -->
+        <sequenceFlow id="flowEmergency" name="Emergency" sourceRef="changeTypeGateway" targetRef="autoApproveEmergency">
+            <conditionExpression xsi:type="tFormalExpression">
+                ${changeType == 'emergency'}
+            </conditionExpression>
+        </sequenceFlow>
+
+        <!-- Service Task: Auto-approve Emergency (if on-call) -->
+        <serviceTask id="autoApproveEmergency" name="Auto-approve Emergency"
+                     flowable:delegateExpression="${emergencyAutoApprovalDelegate}" />
+
+        <!-- User Task: Implement Emergency Change -->
+        <userTask id="implementEmergency" name="Implement Emergency Change"
+                  flowable:candidateGroups="it-operations">
+            <documentation>Implement the emergency change immediately.</documentation>
+        </userTask>
+
+        <sequenceFlow id="flowEmergencyImpl" sourceRef="autoApproveEmergency" targetRef="implementEmergency" />
+
+        <!-- ========== Normal Path ========== -->
+        <sequenceFlow id="flowNormal" name="Normal" sourceRef="changeTypeGateway" targetRef="riskLevelGateway">
+            <conditionExpression xsi:type="tFormalExpression">
+                ${changeType == 'normal'}
+            </conditionExpression>
+        </sequenceFlow>
+
+        <!-- Exclusive Gateway: Risk Level for Normal Changes -->
+        <exclusiveGateway id="riskLevelGateway" name="Risk Level Gateway" />
+
+        <!-- High Risk: CAB Approval -->
+        <sequenceFlow id="flowHighRisk" name="High Risk" sourceRef="riskLevelGateway" targetRef="cabApproval">
+            <conditionExpression xsi:type="tFormalExpression">
+                ${riskLevel == 'high' or riskLevel == 'very_high'}
+            </conditionExpression>
+        </sequenceFlow>
+
+        <!-- Medium/Low Risk: Manager Approval -->
+        <sequenceFlow id="flowLowRisk" name="Medium/Low Risk" sourceRef="riskLevelGateway" targetRef="managerApproval">
+            <conditionExpression xsi:type="tFormalExpression">
+                ${riskLevel == 'medium' or riskLevel == 'low'}
+            </conditionExpression>
+        </sequenceFlow>
+
+        <!-- User Task: CAB Approval -->
+        <userTask id="cabApproval" name="CAB Approval"
+                  flowable:candidateGroups="change-advisory-board">
+            <documentation>Change Advisory Board review for high-risk normal changes.</documentation>
+        </userTask>
+
+        <!-- Exclusive Gateway: CAB Decision -->
+        <exclusiveGateway id="cabDecisionGateway" name="CAB Decision" />
+
+        <sequenceFlow id="flowCabReview" sourceRef="cabApproval" targetRef="cabDecisionGateway" />
+
+        <!-- CAB Approved -->
+        <sequenceFlow id="flowCabApproved" name="Approved" sourceRef="cabDecisionGateway" targetRef="implementNormal">
+            <conditionExpression xsi:type="tFormalExpression">
+                ${approved == true}
+            </conditionExpression>
+        </sequenceFlow>
+
+        <!-- CAB Rejected -->
+        <sequenceFlow id="flowCabRejected" name="Rejected" sourceRef="cabDecisionGateway" targetRef="notifyRejected">
+            <conditionExpression xsi:type="tFormalExpression">
+                ${approved == false}
+            </conditionExpression>
+        </sequenceFlow>
+
+        <!-- User Task: Manager Approval -->
+        <userTask id="managerApproval" name="Manager Approval"
+                  flowable:candidateGroups="management">
+            <documentation>Management review for medium/low risk normal changes.</documentation>
+        </userTask>
+
+        <!-- Exclusive Gateway: Manager Decision -->
+        <exclusiveGateway id="managerDecisionGateway" name="Manager Decision" />
+
+        <sequenceFlow id="flowManagerReview" sourceRef="managerApproval" targetRef="managerDecisionGateway" />
+
+        <!-- Manager Approved -->
+        <sequenceFlow id="flowManagerApproved" name="Approved" sourceRef="managerDecisionGateway" targetRef="implementNormal">
+            <conditionExpression xsi:type="tFormalExpression">
+                ${approved == true}
+            </conditionExpression>
+        </sequenceFlow>
+
+        <!-- Manager Rejected -->
+        <sequenceFlow id="flowManagerRejected" name="Rejected" sourceRef="managerDecisionGateway" targetRef="notifyRejected">
+            <conditionExpression xsi:type="tFormalExpression">
+                ${approved == false}
+            </conditionExpression>
+        </sequenceFlow>
+
+        <!-- ========== Standard Path ========== -->
+        <sequenceFlow id="flowStandard" name="Standard" sourceRef="changeTypeGateway" targetRef="standardManagerApproval">
+            <conditionExpression xsi:type="tFormalExpression">
+                ${changeType == 'standard'}
+            </conditionExpression>
+        </sequenceFlow>
+
+        <!-- User Task: Manager Approval for Standard -->
+        <userTask id="standardManagerApproval" name="Manager Approval"
+                  flowable:candidateGroups="management">
+            <documentation>Quick management review for standard changes.</documentation>
+        </userTask>
+
+        <sequenceFlow id="flowStandardApproved" sourceRef="standardManagerApproval" targetRef="implementStandard" />
+
+        <!-- ========== Implementation Tasks ========== -->
+        <userTask id="implementNormal" name="Implement Change"
+                  flowable:candidateGroups="it-operations">
+            <documentation>Implement the approved normal change.</documentation>
+        </userTask>
+
+        <userTask id="implementStandard" name="Implement Change"
+                  flowable:candidateGroups="it-operations">
+            <documentation>Implement the approved standard change.</documentation>
+        </userTask>
+
+        <!-- ========== Rollback Subprocess (Called Activity) ========== -->
+        <callActivity id="rollbackSubprocess" name="Rollback Change"
+                      calledElement="rollbackProcess" />
+
+        <!-- ========== Service Tasks ========== -->
+        <serviceTask id="notifyRejected" name="Notify Rejection"
+                     flowable:delegateExpression="${rejectionNotificationDelegate}" />
+
+        <serviceTask id="notifyCompleted" name="Notify Completion"
+                     flowable:delegateExpression="${completionNotificationDelegate}" />
+
+        <!-- ========== End Events ========== -->
+        <endEvent id="endApproved" name="Change Completed" />
+        <endEvent id="endRejected" name="Change Rejected" />
+
+        <!-- ========== Implementation Flows ========== -->
+        <!-- Normal implementation -> Rollback subprocess -> Notify -> End -->
+        <sequenceFlow id="flowImplNormalToRollback" sourceRef="implementNormal" targetRef="rollbackSubprocess" />
+        <sequenceFlow id="flowRollbackToNotify" sourceRef="rollbackSubprocess" targetRef="notifyCompleted" />
+        <sequenceFlow id="flowNotifyToEnd" sourceRef="notifyCompleted" targetRef="endApproved" />
+
+        <!-- Standard implementation -> Rollback subprocess -> Notify -> End -->
+        <sequenceFlow id="flowImplStandardToRollback" sourceRef="implementStandard" targetRef="rollbackSubprocess" />
+
+        <!-- Emergency implementation -> Rollback subprocess -> Notify -> End (shared flows) -->
+        <sequenceFlow id="flowImplEmergencyToRollback" sourceRef="implementEmergency" targetRef="rollbackSubprocess" />
+
+        <!-- Rejection flow -->
+        <sequenceFlow id="flowRejectToEnd" sourceRef="notifyRejected" targetRef="endRejected" />
+
+        <!-- ========== Main Flow ========== -->
+        <sequenceFlow id="flowStartToRisk" sourceRef="startEvent" targetRef="riskAssessment" />
+        <sequenceFlow id="flowRiskToGateway" sourceRef="riskAssessment" targetRef="changeTypeGateway" />
+
+    </process>
+
+</definitions>

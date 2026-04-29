@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xmlns:flowable="http://flowable.org/bpmn"
+             xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+             xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC"
+             xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI"
+             typeLanguage="http://www.w3.org/2001/XMLSchema"
+             expressionLanguage="http://www.w3.org/1999/XPath"
+             targetNamespace="http://orionops.com/workflows">
+
+    <process id="serviceRequestFulfillment" name="Service Request Fulfillment" isExecutable="true">
+
+        <!-- Start Event -->
+        <startEvent id="startEvent" name="Service Request Submitted" />
+
+        <!-- User Task: Review Request -->
+        <userTask id="reviewRequest" name="Review Request"
+                  flowable:candidateGroups="service-owners">
+            <documentation>Review the submitted service request for completeness and feasibility.</documentation>
+        </userTask>
+
+        <!-- Exclusive Gateway: Approved? -->
+        <exclusiveGateway id="approvalGateway" name="Approved?" />
+
+        <!-- ========== Approved Path ========== -->
+        <sequenceFlow id="flowApproved" name="Yes" sourceRef="approvalGateway" targetRef="forkGateway">
+            <conditionExpression xsi:type="tFormalExpression">
+                ${approved == true}
+            </conditionExpression>
+        </sequenceFlow>
+
+        <!-- Parallel Gateway: Fork -->
+        <parallelGateway id="forkGateway" name="Parallel Fulfillment" />
+
+        <!-- Service Task: Provision Resources -->
+        <serviceTask id="provisionResources" name="Provision Resources"
+                     flowable:delegateExpression="${resourceProvisioningDelegate}" />
+
+        <!-- User Task: Manual Fulfillment -->
+        <userTask id="manualFulfillment" name="Manual Fulfillment"
+                  flowable:candidateGroups="it-operations">
+            <documentation>Perform manual fulfillment tasks that require human intervention.</documentation>
+        </userTask>
+
+        <!-- Parallel Gateway: Join -->
+        <parallelGateway id="joinGateway" name="Join" />
+
+        <!-- Service Task: Send Completion Notification -->
+        <serviceTask id="sendCompletionNotification" name="Send Completion Notification"
+                     flowable:delegateExpression="${completionNotificationDelegate}" />
+
+        <!-- ========== Rejected Path ========== -->
+        <sequenceFlow id="flowRejected" name="No" sourceRef="approvalGateway" targetRef="sendRejectionNotification">
+            <conditionExpression xsi:type="tFormalExpression">
+                ${approved == false}
+            </conditionExpression>
+        </sequenceFlow>
+
+        <!-- Service Task: Send Rejection Notification -->
+        <serviceTask id="sendRejectionNotification" name="Send Rejection Notification"
+                     flowable:delegateExpression="${rejectionNotificationDelegate}" />
+
+        <!-- End Events -->
+        <endEvent id="endCompleted" name="Request Fulfilled" />
+        <endEvent id="endRejected" name="Request Rejected" />
+
+        <!-- ========== Sequence Flows ========== -->
+        <sequenceFlow id="flow1" sourceRef="startEvent" targetRef="reviewRequest" />
+        <sequenceFlow id="flow2" sourceRef="reviewRequest" targetRef="approvalGateway" />
+
+        <!-- Fork to parallel tasks -->
+        <sequenceFlow id="flow3" sourceRef="forkGateway" targetRef="provisionResources" />
+        <sequenceFlow id="flow4" sourceRef="forkGateway" targetRef="manualFulfillment" />
+
+        <!-- Parallel tasks to join -->
+        <sequenceFlow id="flow5" sourceRef="provisionResources" targetRef="joinGateway" />
+        <sequenceFlow id="flow6" sourceRef="manualFulfillment" targetRef="joinGateway" />
+
+        <!-- Join to completion notification -->
+        <sequenceFlow id="flow7" sourceRef="joinGateway" targetRef="sendCompletionNotification" />
+
+        <!-- Completion to end -->
+        <sequenceFlow id="flow8" sourceRef="sendCompletionNotification" targetRef="endCompleted" />
+
+        <!-- Rejection to end -->
+        <sequenceFlow id="flow9" sourceRef="sendRejectionNotification" targetRef="endRejected" />
+
+    </process>
+
+</definitions>

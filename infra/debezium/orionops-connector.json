@@ -1,0 +1,32 @@
+{
+  "name": "orionops-postgres-connector",
+  "config": {
+    "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
+    "database.hostname": "postgres",
+    "database.port": "5432",
+    "database.user": "orionops",
+    "database.password": "orionops_dev",
+    "database.dbname": "orionops",
+    "database.server.name": "orionops",
+    "plugin.name": "pgoutput",
+    "slot.name": "orionops_cdc",
+    "publication.name": "orionops_pub",
+    "table.include.list": "public.incidents,public.problems,public.change_requests,public.service_requests,public.sla_instances,public.configuration_items,public.knowledge_articles,public.notifications,public.event_store",
+    "topic.prefix": "orionops.cdc",
+    "topic.creation.default.replication.factor": 1,
+    "topic.creation.default.partitions": 4,
+    "topic.creation.default.cleanup.policy": "delete",
+    "topic.creation.default.retention.ms": 604800000,
+    "schema.history.internal.kafka.bootstrap.servers": "kafka:9092",
+    "schema.history.internal.kafka.topic": "orionops.schema-changes",
+    "transforms": "unwrap",
+    "transforms.unwrap.type": "io.debezium.transforms.ExtractNewRecordState",
+    "transforms.unwrap.drop.tombstones": "false",
+    "transforms.unwrap.delete.handling.mode": "rewrite",
+    "transforms.unwrap.add.fields": "op,ts_ms",
+    "decimal.handling.mode": "string",
+    "time.precision.mode": "connect",
+    "snapshot.mode": "initial",
+    "snapshot.lock.timeout.ms": "10000"
+  }
+}

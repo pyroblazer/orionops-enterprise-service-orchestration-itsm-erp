@@ -1,0 +1,146 @@
+# ---------------------------------------------------------------------------
+# OrionOps - Monitoring Alert to Incident Mapping Configuration
+# ---------------------------------------------------------------------------
+# Maps alert severities from external monitoring systems to OrionOps incident
+# priorities, and maps alert labels to services and configuration items (CIs).
+# ---------------------------------------------------------------------------
+
+# Mapping from monitoring system severity levels to OrionOps incident priorities
+severity-mapping:
+  # Prometheus Alertmanager severity labels
+  alertmanager:
+    critical: CRITICAL
+    high: HIGH
+    warning: MEDIUM
+    info: LOW
+
+  # Datadog alert priority levels
+  datadog:
+    critical: CRITICAL
+    high: HIGH
+    warning: MEDIUM
+    info: LOW
+    notify: LOW
+
+  # New Relic issue severity levels
+  newrelic:
+    critical: CRITICAL
+    high: HIGH
+    medium: MEDIUM
+    low: LOW
+    info: LOW
+
+  # Generic/fallback severity mapping
+  generic:
+    critical: CRITICAL
+    crit: CRITICAL
+    p1: CRITICAL
+    sev1: CRITICAL
+    high: HIGH
+    error: HIGH
+    p2: HIGH
+    sev2: HIGH
+    warning: MEDIUM
+    warn: MEDIUM
+    medium: MEDIUM
+    p3: MEDIUM
+    sev3: MEDIUM
+    info: LOW
+    low: LOW
+    p4: LOW
+    sev4: LOW
+
+# Mapping from alert labels to OrionOps service identifiers.
+# When an alert contains a matching label key/value, the corresponding
+# OrionOps service ID will be set on the created incident.
+label-to-service-mapping:
+  # Prometheus label mappings
+  - label-key: "service"
+    service-name-pattern: ".*"
+    description: "Map 'service' label to OrionOps service"
+
+  - label-key: "job"
+    service-name-pattern: ".*"
+    description: "Map Prometheus 'job' label to OrionOps service"
+
+  # Datadog mappings
+  - label-key: "monitor_name"
+    service-name-pattern: ".*"
+    description: "Map Datadog monitor name to OrionOps service"
+
+  # New Relic mappings
+  - label-key: "account_id"
+    service-name-pattern: ".*"
+    description: "Map New Relic account to OrionOps service"
+
+# Mapping from alert labels to OrionOps Configuration Items (CIs)
+label-to-ci-mapping:
+  # Infrastructure CIs
+  - label-key: "instance"
+    ci-type: SERVER
+    description: "Map Prometheus instance label to server CI"
+
+  - label-key: "host"
+    ci-type: SERVER
+    description: "Map host label to server CI"
+
+  - label-key: "hostname"
+    ci-type: SERVER
+    description: "Map hostname label to server CI"
+
+  - label-key: "device"
+    ci-type: NETWORK_DEVICE
+    description: "Map device label to network device CI"
+
+  - label-key: "application"
+    ci-type: APPLICATION
+    description: "Map application label to application CI"
+
+  - label-key: "database"
+    ci-type: DATABASE
+    description: "Map database label to database CI"
+
+# Default incident category mapping based on alert labels
+category-mapping:
+  infrastructure:
+    labels: ["node", "host", "instance", "server", "hardware"]
+    category: "infrastructure"
+    subcategory: "monitoring"
+
+  application:
+    labels: ["app", "application", "service", "job"]
+    category: "application"
+    subcategory: "monitoring"
+
+  network:
+    labels: ["network", "device", "router", "switch", "firewall"]
+    category: "network"
+    subcategory: "monitoring"
+
+  database:
+    labels: ["database", "db", "mysql", "postgres", "mongodb"]
+    category: "database"
+    subcategory: "monitoring"
+
+  security:
+    labels: ["security", "cert", "ssl", "vulnerability"]
+    category: "security"
+    subcategory: "monitoring"
+
+# Auto-escalation rules for critical monitoring alerts
+auto-escalation:
+  enabled: true
+  rules:
+    - severity: CRITICAL
+      action: ESCALATE_IMMEDIATELY
+      assignee-group: "IT Operations"
+      notification:
+        - EMAIL
+        - SLACK
+        - PUSH
+    - severity: HIGH
+      action: CREATE_WITH_HIGH_PRIORITY
+      assignee-group: "Infrastructure"
+      notification:
+        - EMAIL
+        - SLACK
