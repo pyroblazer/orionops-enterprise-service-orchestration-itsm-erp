@@ -6,9 +6,7 @@ metric values and return anomaly scores, flags, and threshold metadata.
 
 from __future__ import annotations
 
-import math
 import time
-from dataclasses import dataclass
 from typing import Optional
 
 import numpy as np

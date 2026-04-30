@@ -14,7 +14,7 @@ env:
   JAVA_VERSION: "21"
   NODE_VERSION: "20"
   PYTHON_VERSION: "3.12"
-  PNPM_VERSION: 9
+  PNPM_VERSION: 9.15.0
 
 # ---------------------------------------------------------------------------
 # Jobs

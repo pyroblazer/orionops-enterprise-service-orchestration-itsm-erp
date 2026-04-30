@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import pytest
 from httpx import Response
 
 
@@ -53,6 +52,7 @@ class TestRootCause:
         body = response.json()
         # Should have at least one suggestion mentioning resource exhaustion
         causes = [s["cause"].lower() for s in body["suggestions"]]
+        assert any("resource" in c or "exhaustion" in c for c in causes)
         # At least one suggestion should be related to resource/performance
         assert len(body["suggestions"]) >= 1
 

@@ -32,7 +32,8 @@
         <stripe.version>28.3.0</stripe.version>
         <keycloak-admin.version>26.0.3</keycloak-admin.version>
         <springdoc.version>2.8.6</springdoc.version>
-        <opentelemetry.version>2.14.0</opentelemetry.version>
+        <resilience4j.version>2.2.0</resilience4j.version>
+        <httpclient.version>4.5.14</httpclient.version>
     </properties>
 
     <dependencyManagement>
@@ -161,13 +162,6 @@
             <version>${keycloak-admin.version}</version>
         </dependency>
 
-        <!-- OpenTelemetry (Micrometer + OTel) -->
-        <dependency>
-            <groupId>io.opentelemetry.instrumentation</groupId>
-            <artifactId>opentelemetry-spring-boot-starter</artifactId>
-            <version>${opentelemetry.version}</version>
-        </dependency>
-
         <!-- Springdoc OpenAPI / Swagger -->
         <dependency>
             <groupId>org.springdoc</groupId>
@@ -186,6 +180,7 @@
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
+            <version>${httpclient.version}</version>
         </dependency>
 
         <!-- Spring Web Services (SOAP connector support) -->
@@ -198,7 +193,7 @@
         <dependency>
             <groupId>io.github.resilience4j</groupId>
             <artifactId>resilience4j-spring-boot3</artifactId>
-            <version>2.2.0</version>
+            <version>${resilience4j.version}</version>
         </dependency>
 
         <!-- Jackson JSR310 (Java 8 Date/Time) -->

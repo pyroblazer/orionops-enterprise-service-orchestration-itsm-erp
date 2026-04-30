@@ -7,7 +7,6 @@ similarity router and by the root-cause analysis service.
 from __future__ import annotations
 
 import time
-from typing import Optional
 
 import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -20,7 +19,6 @@ from models.schemas import (
     SimilarTicket,
     SimilarityRequest,
     SimilarityResponse,
-    TicketData,
 )
 
 
