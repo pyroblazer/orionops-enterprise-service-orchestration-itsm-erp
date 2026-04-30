@@ -71,12 +71,10 @@ jobs:
         run: pnpm install --no-frozen-lockfile
 
       - name: npm audit (web)
-        working-directory: apps/web
-        run: pnpm audit --audit-level=high || true
+        run: cd apps/web && pnpm audit --audit-level=high || true
 
       - name: npm audit (mobile)
-        working-directory: apps/mobile
-        run: pnpm audit --audit-level=high || true
+        run: cd apps/mobile && pnpm audit --audit-level=high || true
 
   # -----------------------------------------------------------------------
   # Python security scan

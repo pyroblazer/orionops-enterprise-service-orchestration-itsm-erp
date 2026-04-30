@@ -15,7 +15,7 @@ const config: Config = {
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
     '\\.(svg|png|jpg|jpeg|gif|webp|ico)$': '<rootDir>/src/__mocks__/fileMock.js',
   },
-  setupFilesAfterSetup: ['<rootDir>/jest.setup.ts'],
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',
     '!src/**/*.d.ts',
@@ -23,7 +23,7 @@ const config: Config = {
     '!src/**/__tests__/**',
     '!src/**/__mocks__/**',
   ],
-  coverageThresholds: {
+  coverageThreshold: {
     global: {
       branches: 80,
       functions: 80,

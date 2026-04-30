@@ -199,9 +199,6 @@ jobs:
   web-build:
     name: Web Lint & Build
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: apps/web
     steps:
       - uses: actions/checkout@v4
 
@@ -216,13 +213,12 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
-        working-directory: .
 
       - name: Lint
-        run: pnpm --filter web lint
+        run: pnpm --filter @orionops/web lint
 
       - name: Build
-        run: pnpm --filter web build
+        run: pnpm --filter @orionops/web build
 
   # =========================================================================
   # WEB - Unit & Component Tests (Jest)
@@ -231,9 +227,6 @@ jobs:
     name: Web Unit Tests
     runs-on: ubuntu-latest
     needs: web-build
-    defaults:
-      run:
-        working-directory: apps/web
     steps:
       - uses: actions/checkout@v4
 
@@ -248,10 +241,9 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
-        working-directory: .
 
       - name: Run unit tests
-        run: pnpm --filter web test -- --coverage --ci --reporters=default
+        run: pnpm --filter @orionops/web test -- --coverage --ci --reporters=default
 
       - name: Upload coverage
         if: always()
@@ -268,9 +260,6 @@ jobs:
     name: Web Accessibility Tests
     runs-on: ubuntu-latest
     needs: web-build
-    defaults:
-      run:
-        working-directory: apps/web
     steps:
       - uses: actions/checkout@v4
 
@@ -285,10 +274,9 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
-        working-directory: .
 
       - name: Run accessibility tests
-        run: pnpm --filter web test:a11y -- --ci
+        run: pnpm --filter @orionops/web test:a11y -- --ci
 
   # =========================================================================
   # WEB - E2E Tests (Playwright)
@@ -297,9 +285,6 @@ jobs:
     name: Web E2E Tests
     runs-on: ubuntu-latest
     needs: web-build
-    defaults:
-      run:
-        working-directory: apps/web
     steps:
       - uses: actions/checkout@v4
 
@@ -314,13 +299,12 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
-        working-directory: .
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium firefox
 
       - name: Run E2E tests
-        run: pnpm --filter web test:e2e
+        run: pnpm --filter @orionops/web test:e2e
 
       - name: Upload Playwright report
         if: always()
@@ -344,9 +328,6 @@ jobs:
   mobile-tests:
     name: Mobile Typecheck & Tests
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: apps/mobile
     steps:
       - uses: actions/checkout@v4
 
@@ -361,13 +342,12 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
-        working-directory: .
 
       - name: Typecheck
-        run: pnpm --filter mobile exec tsc --noEmit
+        run: pnpm --filter @orionops/mobile exec tsc --noEmit
 
       - name: Run tests
-        run: pnpm --filter mobile test
+        run: pnpm --filter @orionops/mobile test
         env:
           NODE_ENV: test
 

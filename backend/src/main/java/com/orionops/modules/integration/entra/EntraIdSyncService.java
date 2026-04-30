@@ -73,7 +73,6 @@ public class EntraIdSyncService {
 
         try {
             log.info("Starting scheduled Entra ID synchronization");
-        try {
             SyncResult userResult = syncUsers();
             SyncResult groupResult = syncGroups();
             log.info("Entra ID sync complete: users={}, groups={}", userResult, groupResult);

@@ -54,6 +54,8 @@
     "@types/jest": "^29.5.0",
     "ts-jest": "^29.2.0",
     "jest-axe": "^9.0.0",
+    "identity-obj-proxy": "^3.0.0",
+    "@playwright/test": "^1.49.0",
     "msw": "^2.6.0"
   }
 }
