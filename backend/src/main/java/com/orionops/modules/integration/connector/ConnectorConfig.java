@@ -55,14 +55,30 @@ public class ConnectorConfig {
     }
 
     /**
-     * RestTemplate for synchronous REST calls (used by legacy integrations).
+     * RestTemplate for synchronous REST calls with connection pooling.
+     * Uses Apache HttpClient with a bounded connection pool instead of
+     * SimpleClientHttpRequestFactory which opens a new connection per request.
      */
     @Bean
     public RestTemplate connectorRestTemplate() {
-        org.springframework.http.client.SimpleClientHttpRequestFactory factory =
-                new org.springframework.http.client.SimpleClientHttpRequestFactory();
-        factory.setConnectTimeout(connectTimeout);
-        factory.setReadTimeout(readTimeout);
+        org.apache.http.impl.conn.PoolingHttpClientConnectionManager connManager =
+                new org.apache.http.impl.conn.PoolingHttpClientConnectionManager();
+        connManager.setMaxTotal(50);
+        connManager.setDefaultMaxPerRoute(10);
+
+        org.apache.http.client.config.RequestConfig requestConfig = org.apache.http.client.config.RequestConfig.custom()
+                .setConnectTimeout(connectTimeout)
+                .setSocketTimeout(readTimeout)
+                .setConnectionRequestTimeout(5000)
+                .build();
+
+        org.apache.http.impl.client.CloseableHttpClient httpClient = org.apache.http.impl.client.HttpClients.custom()
+                .setConnectionManager(connManager)
+                .setDefaultRequestConfig(requestConfig)
+                .build();
+
+        org.springframework.http.client.HttpComponentsClientHttpRequestFactory factory =
+                new org.springframework.http.client.HttpComponentsClientHttpRequestFactory(httpClient);
         return new RestTemplate(factory);
     }
 

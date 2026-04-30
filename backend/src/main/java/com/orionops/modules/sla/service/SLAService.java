@@ -102,7 +102,7 @@ public class SLAService {
         return instances.map(this::mapInstanceToResponse);
     }
 
-    @Scheduled(fixedRate = 60000)
+    @Scheduled(fixedDelay = 60000)
     @Transactional
     public void checkSLABreaches() {
         LocalDateTime now = LocalDateTime.now();
@@ -130,6 +130,22 @@ public class SLAService {
                 instanceRepository.save(instance);
             }
         }
+    }
+
+    @Transactional
+    public SLADefinitionResponse updateDefinition(UUID id, SLADefinitionRequest request) {
+        SLADefinition def = findDefinitionOrThrow(id);
+        def.setName(request.getName());
+        def.setDescription(request.getDescription());
+        def.setResponseTimeHours(request.getResponseTimeHours());
+        def.setResolutionTimeHours(request.getResolutionTimeHours());
+        def.setEntityType(request.getEntityType());
+        def.setPriority(request.getPriority());
+        def.setServiceId(request.getServiceId());
+        if (request.getSlaType() != null) {
+            def.setSlaType(request.getSlaType());
+        }
+        return mapDefinitionToResponse(definitionRepository.save(def));
     }
 
     @Transactional

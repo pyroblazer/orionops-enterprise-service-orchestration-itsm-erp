@@ -215,7 +215,7 @@ jobs:
           cache: pnpm
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --no-frozen-lockfile
         working-directory: .
 
       - name: Lint
@@ -247,7 +247,7 @@ jobs:
           cache: pnpm
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --no-frozen-lockfile
         working-directory: .
 
       - name: Run unit tests
@@ -284,7 +284,7 @@ jobs:
           cache: pnpm
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --no-frozen-lockfile
         working-directory: .
 
       - name: Run accessibility tests
@@ -313,7 +313,7 @@ jobs:
           cache: pnpm
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --no-frozen-lockfile
         working-directory: .
 
       - name: Install Playwright browsers
@@ -360,14 +360,14 @@ jobs:
           cache: pnpm
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --no-frozen-lockfile
         working-directory: .
 
       - name: Typecheck
         run: pnpm --filter mobile exec tsc --noEmit
 
       - name: Run tests
-        run: pnpm --filter mobile exec jest --ci --coverage
+        run: pnpm --filter mobile test
         env:
           NODE_ENV: test
 

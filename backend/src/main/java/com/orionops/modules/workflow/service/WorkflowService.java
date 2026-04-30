@@ -58,6 +58,17 @@ public class WorkflowService {
     }
 
     @Transactional
+    public WorkflowDefinitionResponse updateDefinition(UUID id, WorkflowDefinitionRequest request) {
+        WorkflowDefinition def = findDefinitionOrThrow(id);
+        def.setName(request.getName());
+        def.setDescription(request.getDescription());
+        def.setBpmnXml(request.getBpmnXml());
+        def.setProcessDefinitionKey(request.getProcessDefinitionKey());
+        def.setVersion(def.getVersion() + 1);
+        return mapDefinitionToResponse(definitionRepository.save(def));
+    }
+
+    @Transactional
     public WorkflowInstanceResponse startWorkflow(UUID definitionId, Map<String, Object> variables) {
         WorkflowDefinition def = findDefinitionOrThrow(definitionId);
 

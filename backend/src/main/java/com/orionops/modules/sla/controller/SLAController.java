@@ -7,6 +7,7 @@ import com.orionops.modules.sla.dto.SLADefinitionResponse;
 import com.orionops.modules.sla.dto.SLAInstanceResponse;
 import com.orionops.modules.sla.entity.SLAInstance;
 import com.orionops.modules.sla.service.SLAService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -43,6 +44,14 @@ public class SLAController {
     @PreAuthorize("hasAnyRole('AGENT', 'ENGINEER', 'MANAGER', 'ADMIN')")
     public ResponseEntity<ApiResponse<SLADefinitionResponse>> getDefinition(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.success(slaService.getDefinition(id)));
+    }
+
+    @PutMapping("/definitions/{id}")
+    @Operation(summary = "Update SLA definition", description = "Updates an existing SLA definition")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public ResponseEntity<ApiResponse<SLADefinitionResponse>> updateDefinition(
+            @PathVariable UUID id, @Valid @RequestBody SLADefinitionRequest request) {
+        return ResponseEntity.ok(ApiResponse.success(slaService.updateDefinition(id, request), "SLA definition updated"));
     }
 
     @DeleteMapping("/definitions/{id}")

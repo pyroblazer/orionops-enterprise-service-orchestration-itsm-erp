@@ -3,6 +3,7 @@ package com.orionops.modules.vendor.controller;
 import com.orionops.common.dto.ApiResponse;
 import com.orionops.modules.vendor.dto.VendorDTO;
 import com.orionops.modules.vendor.service.VendorService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -38,6 +39,14 @@ public class VendorController {
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'AGENT')")
     public ResponseEntity<ApiResponse<VendorDTO.VendorResponse>> getVendor(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.success(vendorService.getVendor(id)));
+    }
+
+    @PutMapping("/{id}")
+    @Operation(summary = "Update vendor", description = "Updates an existing vendor")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public ResponseEntity<ApiResponse<VendorDTO.VendorResponse>> updateVendor(
+            @PathVariable UUID id, @Valid @RequestBody VendorDTO.VendorRequest request) {
+        return ResponseEntity.ok(ApiResponse.success(vendorService.updateVendor(id, request), "Vendor updated"));
     }
 
     @GetMapping("/{id}/performance")

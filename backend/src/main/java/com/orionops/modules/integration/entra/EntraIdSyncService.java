@@ -18,6 +18,8 @@ import org.springframework.web.client.RestClient;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Service for synchronizing users and groups from Microsoft Entra ID (Azure AD).
@@ -41,9 +43,17 @@ public class EntraIdSyncService {
 
     /**
      * Cached OAuth2 access token for Microsoft Graph API.
+     * Uses AtomicReference for thread-safe publication of the token pair
+     * between the scheduled sync thread and manual API call threads.
      */
-    private String accessToken;
-    private long tokenExpiresAt;
+    private final AtomicReference<TokenHolder> tokenHolder = new AtomicReference<>(new TokenHolder(null, 0));
+    private final ReentrantLock syncLock = new ReentrantLock();
+
+    private record TokenHolder(String accessToken, long expiresAtEpochMs) {
+        boolean isExpired() {
+            return accessToken == null || System.currentTimeMillis() >= expiresAtEpochMs;
+        }
+    }
 
     /**
      * Scheduled hourly synchronization of users and groups from Entra ID.
@@ -56,13 +66,21 @@ public class EntraIdSyncService {
             return;
         }
 
-        log.info("Starting scheduled Entra ID synchronization");
+        if (!syncLock.tryLock()) {
+            log.warn("Entra ID sync already in progress, skipping scheduled invocation");
+            return;
+        }
+
+        try {
+            log.info("Starting scheduled Entra ID synchronization");
         try {
             SyncResult userResult = syncUsers();
             SyncResult groupResult = syncGroups();
             log.info("Entra ID sync complete: users={}, groups={}", userResult, groupResult);
         } catch (Exception e) {
             log.error("Entra ID scheduled sync failed: {}", e.getMessage(), e);
+        } finally {
+            syncLock.unlock();
         }
     }
 
@@ -377,13 +395,21 @@ public class EntraIdSyncService {
      * @return a valid OAuth2 access token
      */
     private String getAccessToken() {
-        if (accessToken != null && System.currentTimeMillis() < tokenExpiresAt) {
-            return accessToken;
+        TokenHolder current = tokenHolder.get();
+        if (!current.isExpired()) {
+            return current.accessToken();
         }
 
-        log.info("Requesting new OAuth2 access token for Microsoft Graph API");
-
+        syncLock.lock();
         try {
+            // Double-check after acquiring lock
+            current = tokenHolder.get();
+            if (!current.isExpired()) {
+                return current.accessToken();
+            }
+
+            log.info("Requesting new OAuth2 access token for Microsoft Graph API");
+
             MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
             formData.add("client_id", entraProperties.getClientId());
             formData.add("client_secret", entraProperties.getClientSecret());
@@ -398,19 +424,21 @@ public class EntraIdSyncService {
                     .body(String.class);
 
             JsonNode tokenResponse = objectMapper.readTree(response);
-            this.accessToken = tokenResponse.get("access_token").asText();
+            String newToken = tokenResponse.get("access_token").asText();
             int expiresIn = tokenResponse.has("expires_in")
                     ? tokenResponse.get("expires_in").asInt()
                     : 3600;
-            // Subtract 60 seconds as buffer
-            this.tokenExpiresAt = System.currentTimeMillis() + ((long) expiresIn - 60) * 1000;
+            long expiresAt = System.currentTimeMillis() + ((long) expiresIn - 60) * 1000;
 
+            tokenHolder.set(new TokenHolder(newToken, expiresAt));
             log.info("OAuth2 access token obtained, expires in {} seconds", expiresIn);
-            return this.accessToken;
+            return newToken;
 
         } catch (Exception e) {
             log.error("Failed to obtain OAuth2 access token: {}", e.getMessage(), e);
             throw new RuntimeException("Entra ID OAuth2 token acquisition failed", e);
+        } finally {
+            syncLock.unlock();
         }
     }
 

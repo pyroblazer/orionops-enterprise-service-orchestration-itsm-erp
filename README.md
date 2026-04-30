@@ -142,6 +142,200 @@ Existing ITSM tools (ServiceNow, BMC Helix, Jira Service Management) are expensi
 
 ## 3. Domain Design
 
+### PlantUML — System Context
+
+```plantuml
+@startuml orionops-system-context
+skinparam componentStyle rectangle
+
+actor "Service Desk Agent" as agent
+actor "Resolver Engineer" as engineer
+actor "Change Manager" as cm
+actor "IT Administrator" as admin
+actor "Executive" as exec
+actor "Mobile User" as mobile
+
+rectangle "OrionOps Platform" {
+    component [Web Portal\n(Next.js)] as web
+    component [Mobile App\n(React Native)] as app
+    component [API Server\n(Spring Boot)] as api
+    component [AI Service\n(FastAPI)] as ai
+    component [Workflow Engine\n(Flowable)] as wf
+}
+
+database "PostgreSQL" as pg
+database "Redis" as redis
+queue "Kafka" as kafka
+database "OpenSearch" as os
+cloud "Keycloak\n(IAM/SSO)" as kc
+cloud "Stripe\n(Billing)" as stripe
+
+agent --> web
+engineer --> web
+cm --> web
+admin --> web
+exec --> web
+mobile --> app
+
+web --> api : REST/JSON
+app --> api : REST/JSON
+api --> pg : JPA/Hibernate
+api --> redis : Spring Data
+api --> kafka : Spring Kafka
+api --> os : Search
+api --> wf : BPMN
+api --> kc : OIDC
+api --> stripe : Webhook
+ai --> api : Classification
+kafka --> ai : Events
+
+@enduml
+```
+
+### PlantUML — Incident Lifecycle (BPMN)
+
+```plantuml
+@startuml incident-lifecycle
+|Service Desk|
+start
+:Receive incident\n(portal/email/API);
+
+|AI Service|
+:Auto-classify\ncategory & priority;
+
+|SLA Engine|
+:Start SLA timer;
+
+|Assignment Engine|
+:Assign to resolver group\n(skill-based routing);
+
+|Resolver Group|
+:Acknowledge incident;
+:Diagnose & resolve;
+
+|SLA Engine|
+if (SLA breached?) then (yes)
+    :Escalate to manager;
+    :Send breach notification;
+else (no)
+endif
+
+|Service Desk|
+:Verify resolution\nwith reporter;
+:Close incident;
+
+|Knowledge Base|
+if (Resolution reusable?) then (yes)
+    :Create knowledge\narticle draft;
+else (no)
+endif
+
+stop
+@enduml
+```
+
+### PlantUML — Change Approval Workflow
+
+```plantuml
+@startuml change-approval
+start
+:Submit change request;
+
+switch (change type?)
+case (Emergency)
+    :Auto-approve if on-call\nengineer submits;
+    :Implement immediately;
+case (Normal)
+    :Risk assessment\n(impact × likelihood);
+    if (Risk > threshold?) then (yes)
+        :CAB Review Board\napproval;
+    else (no)
+        :Manager approval;
+    endif
+case (Standard)
+    :Quick review + approve;
+endswitch
+
+:Scheduled maintenance\nwindow check;
+:Implement change;
+if (Success?) then (yes)
+    :Close change;
+    :Update CMDB;
+else (no)
+    :Execute rollback plan;
+    :Create incident;\nlink to change;
+endif
+stop
+@enduml
+```
+
+### PlantUML — CQRS Event Flow
+
+```plantuml
+@startuml cqrs-event-flow
+skinparam backgroundColor #FEFEFE
+
+rectangle "Command Side (Write)" as write {
+    component [REST Controller] as ctrl
+    component [Command Handler] as cmd
+    database "Event Store\n(PostgreSQL)" as es
+    queue "Kafka Topic" as kt
+}
+
+rectangle "Query Side (Read)" as read {
+    component [Event Projector] as proj
+    database "Read Model\n(PostgreSQL +\nOpenSearch)" as rm
+    component [Query Handler] as qh
+}
+
+actor "Client" as client
+
+client --> ctrl : POST /api/v1/incidents
+ctrl --> cmd : CreateIncidentCommand
+cmd --> es : Append IncidentCreated event
+cmd --> kt : Publish event
+kt --> proj : Consume event
+proj --> rm : Update projection
+client --> qh : GET /api/v1/incidents
+qh --> rm : Read optimized query
+qh --> client : JSON response
+
+@enduml
+```
+
+### PlantUML — Multi-Tenant Data Isolation
+
+```plantuml
+@startuml multi-tenant-isolation
+skinparam componentStyle rectangle
+
+rectangle "Request Context" {
+    component [JWT Token] as jwt
+    note right of jwt : Contains tenant_id,\nuser roles, permissions
+}
+
+rectangle "Application Layer" {
+    component [Tenant Filter] as filter
+    component [OPA Policy\nEngine] as opa
+    component [Service Layer] as svc
+}
+
+rectangle "Data Layer" {
+    database "Schema A\n(Tenant A)" as sa
+    database "Schema B\n(Tenant B)" as sb
+    database "Shared Schema\n(Platform)" as sc
+}
+
+jwt --> filter : Extract tenant_id
+filter --> opa : Check access policy
+opa --> svc : Allow/Deny
+svc --> sa : Tenant A data
+svc --> sb : Tenant B data
+svc --> sc : Shared config\n(plans, templates)
+
+@enduml
+```
+
 ### Bounded Contexts
 
 The platform follows Domain-Driven Design with clear bounded contexts:
@@ -1059,3 +1253,83 @@ Built on **Radix UI primitives** + **Tailwind CSS**:
 ## License
 
 This project is licensed under the Apache License 2.0.
+
+---
+
+## Appendix A: Business Requirements Document (BRD) Summary
+
+### A.1 Business Objectives
+
+| ID | Objective | Success Metric | Priority |
+|----|-----------|---------------|----------|
+| OBJ-001 | Centralize IT service workflows in a single platform | 90% of IT tickets managed within OrionOps | Critical |
+| OBJ-002 | Enforce ISO 20000-aligned SLA tracking | 95% SLA compliance rate within 6 months | Critical |
+| OBJ-003 | Provide accessible, high-contrast UI for operations teams | WCAG 2.2 AA compliance, zero accessibility escalations | High |
+| OBJ-004 | Support mobile-first approval workflows | 80% of change approvals processed via mobile | High |
+| OBJ-005 | Enable composable ERP extensions without full ERP migration | 3+ ERP modules active within 12 months | Medium |
+| OBJ-006 | Achieve zero vendor lock-in for all core platform components | 100% open-source infrastructure stack | Critical |
+
+### A.2 Stakeholder Analysis
+
+| Stakeholder | Role | Key Concerns | Primary Features |
+|-------------|------|-------------|-----------------|
+| Service Desk Agent | Front-line support | Fast ticket triage, clear status visibility, keyboard efficiency | Incident list, quick actions, SLA timers |
+| Resolver Engineer | Technical support | Assignment accuracy, technical context, resolution tracking | Ticket detail, CMDB links, knowledge base |
+| Change Manager | Process governance | Approval traceability, risk visibility, CAB coordination | Change calendar, approval board, risk matrix |
+| Service Owner | Service health | SLA compliance, trend analysis, service quality | SLA dashboard, service health metrics |
+| IT Administrator | Platform config | User management, workflow customization, integration setup | Admin console, workflow designer, integration hub |
+| Executive / VP | Strategic oversight | KPI trends, cost visibility, compliance evidence | Executive dashboard, audit exports, cost reports |
+| Finance Manager | Cost tracking | Budget adherence, chargeback accuracy, invoice generation | Finance module, billing, cost centers |
+
+### A.3 Functional Requirements Matrix
+
+| Req ID | Requirement | Module | Priority | Status |
+|--------|------------|--------|----------|--------|
+| FR-001 | Create, update, assign, escalate, resolve incidents | Incident | Critical | Implemented |
+| FR-002 | Auto-classify incidents via AI (category, priority) | AI Service | High | Implemented |
+| FR-003 | Track SLA timers with breach detection and escalation | SLA Engine | Critical | Implemented |
+| FR-004 | BPMN-driven approval workflows for changes | Workflow | Critical | Implemented |
+| FR-005 | CMDB with relationship graph and impact analysis | CMDB | High | Implemented |
+| FR-006 | Knowledge base with article lifecycle and search | Knowledge | High | Implemented |
+| FR-007 | Multi-tenant data isolation with tenant provisioning | Tenant | Critical | Implemented |
+| FR-008 | Role-based and attribute-based access control | Security | Critical | Implemented |
+| FR-009 | Real-time notifications (email, push, in-app) | Notification | High | Implemented |
+| FR-010 | Full-text search across tickets, CIs, articles | Search | High | Implemented |
+| FR-011 | Budget allocation and expense tracking | Finance | Medium | Implemented |
+| FR-012 | Procurement lifecycle (PR → PO → fulfillment) | Procurement | Medium | Implemented |
+| FR-013 | Inventory tracking with low-stock alerts | Inventory | Medium | Implemented |
+| FR-014 | Vendor SLA compliance and performance scoring | Vendor | Medium | Implemented |
+| FR-015 | Workforce skill-based routing and capacity planning | Workforce | Medium | Implemented |
+| FR-016 | Usage-based billing with invoice generation | Billing | Medium | Implemented |
+| FR-017 | WCAG 2.2 AA accessible web UI with high contrast | Web UI | Critical | Implemented |
+| FR-018 | Mobile app for approvals, ticket updates, push notifications | Mobile | High | Implemented |
+| FR-019 | Immutable audit logging for compliance | Audit | Critical | Implemented |
+| FR-020 | Stripe integration for SaaS subscription billing | Tenant | High | Implemented |
+
+### A.4 Non-Functional Requirements
+
+| Req ID | Category | Requirement | Target |
+|--------|----------|------------|--------|
+| NFR-001 | Performance | API P95 latency | <200ms |
+| NFR-002 | Performance | Incident creation end-to-end | <100ms |
+| NFR-003 | Scalability | Concurrent users per tenant | 500+ |
+| NFR-004 | Scalability | Horizontal scaling for API layer | Linear |
+| NFR-005 | Availability | System uptime target | 99.9% |
+| NFR-006 | Security | OWASP Top 10 compliance | Full |
+| NFR-007 | Security | Encryption in transit and at rest | TLS 1.3 + AES-256 |
+| NFR-008 | Accessibility | WCAG 2.2 AA compliance | Full |
+| NFR-009 | Compliance | ISO 20000 process alignment | Full |
+| NFR-010 | Compliance | SOC 2 audit trail integrity | Full |
+
+### A.5 Integration Requirements
+
+| Integration | Direction | Protocol | Purpose |
+|-------------|-----------|----------|---------|
+| Microsoft Entra ID | Inbound | OIDC/SAML | SSO, user federation |
+| Keycloak | Internal | OIDC | Identity provider, MFA |
+| Stripe | Bidirectional | REST + Webhooks | Subscription billing |
+| Email (IMAP/SMTP) | Bidirectional | IMAP/SMTP | Ticket creation, notifications |
+| Webhooks | Outbound | HTTPS | External system notification |
+| OpenTelemetry | Internal | OTLP | Distributed tracing |
+| Prometheus | Internal | HTTP | Metrics scraping |
+| Debezium | Internal | CDC | Change data capture to Kafka |

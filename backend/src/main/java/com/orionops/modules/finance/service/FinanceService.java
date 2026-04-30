@@ -66,6 +66,19 @@ public class FinanceService {
     }
 
     @Transactional
+    public FinanceResponse.BudgetResponse updateBudget(UUID id, FinanceRequest.BudgetRequest request) {
+        Budget budget = findBudgetOrThrow(id);
+        budget.setName(request.getName());
+        budget.setDescription(request.getDescription());
+        budget.setTotalAmount(request.getTotalAmount());
+        budget.setStartDate(request.getStartDate());
+        budget.setEndDate(request.getEndDate());
+        budget.setFiscalYear(request.getFiscalYear());
+        budget.setCostCenterId(request.getCostCenterId());
+        return mapBudgetToResponse(budgetRepository.save(budget));
+    }
+
+    @Transactional
     public void deleteBudget(UUID id) {
         Budget budget = findBudgetOrThrow(id);
         budget.softDelete();
@@ -88,6 +101,28 @@ public class FinanceService {
                 .stream().map(this::mapCostCenterToResponse).collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
+    public FinanceResponse.CostCenterResponse getCostCenter(UUID id) {
+        return mapCostCenterToResponse(findCostCenterOrThrow(id));
+    }
+
+    @Transactional
+    public FinanceResponse.CostCenterResponse updateCostCenter(UUID id, FinanceRequest.CostCenterRequest request) {
+        CostCenter cc = findCostCenterOrThrow(id);
+        cc.setName(request.getName());
+        cc.setCode(request.getCode());
+        cc.setDescription(request.getDescription());
+        cc.setOwner(request.getOwner());
+        return mapCostCenterToResponse(costCenterRepository.save(cc));
+    }
+
+    @Transactional
+    public void deleteCostCenter(UUID id) {
+        CostCenter cc = findCostCenterOrThrow(id);
+        cc.softDelete();
+        costCenterRepository.save(cc);
+    }
+
     // --- Expense ---
     @Transactional
     public FinanceResponse.ExpenseResponse createExpense(FinanceRequest.ExpenseRequest request) {
@@ -103,6 +138,31 @@ public class FinanceService {
     public List<FinanceResponse.ExpenseResponse> listExpenses() {
         return expenseRepository.findByTenantIdAndDeletedAtIsNull(resolveTenantId())
                 .stream().map(this::mapExpenseToResponse).collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public FinanceResponse.ExpenseResponse getExpense(UUID id) {
+        return mapExpenseToResponse(findExpenseOrThrow(id));
+    }
+
+    @Transactional
+    public FinanceResponse.ExpenseResponse updateExpense(UUID id, FinanceRequest.ExpenseRequest request) {
+        Expense expense = findExpenseOrThrow(id);
+        expense.setDescription(request.getDescription());
+        expense.setAmount(request.getAmount());
+        expense.setBudgetId(request.getBudgetId());
+        expense.setCostCenterId(request.getCostCenterId());
+        expense.setCategory(request.getCategory());
+        expense.setExpenseDate(request.getExpenseDate());
+        expense.setSubmittedBy(request.getSubmittedBy());
+        return mapExpenseToResponse(expenseRepository.save(expense));
+    }
+
+    @Transactional
+    public void deleteExpense(UUID id) {
+        Expense expense = findExpenseOrThrow(id);
+        expense.softDelete();
+        expenseRepository.save(expense);
     }
 
     // --- Invoice ---
@@ -122,6 +182,31 @@ public class FinanceService {
                 .stream().map(this::mapInvoiceToResponse).collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
+    public FinanceResponse.InvoiceResponse getInvoice(UUID id) {
+        return mapInvoiceToResponse(findInvoiceOrThrow(id));
+    }
+
+    @Transactional
+    public FinanceResponse.InvoiceResponse updateInvoice(UUID id, FinanceRequest.InvoiceRequest request) {
+        Invoice invoice = findInvoiceOrThrow(id);
+        invoice.setInvoiceNumber(request.getInvoiceNumber());
+        invoice.setVendorId(request.getVendorId());
+        invoice.setAmount(request.getAmount());
+        invoice.setTaxAmount(request.getTaxAmount());
+        invoice.setInvoiceDate(request.getInvoiceDate());
+        invoice.setDueDate(request.getDueDate());
+        invoice.setDescription(request.getDescription());
+        return mapInvoiceToResponse(invoiceRepository.save(invoice));
+    }
+
+    @Transactional
+    public void deleteInvoice(UUID id) {
+        Invoice invoice = findInvoiceOrThrow(id);
+        invoice.softDelete();
+        invoiceRepository.save(invoice);
+    }
+
     // --- PaymentRecord ---
     @Transactional
     public FinanceResponse.PaymentResponse createPayment(FinanceRequest.PaymentRequest request) {
@@ -139,9 +224,53 @@ public class FinanceService {
                 .stream().map(this::mapPaymentToResponse).collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
+    public FinanceResponse.PaymentResponse getPayment(UUID id) {
+        return mapPaymentToResponse(findPaymentOrThrow(id));
+    }
+
+    @Transactional
+    public FinanceResponse.PaymentResponse updatePayment(UUID id, FinanceRequest.PaymentRequest request) {
+        PaymentRecord payment = findPaymentOrThrow(id);
+        payment.setInvoiceId(request.getInvoiceId());
+        payment.setAmount(request.getAmount());
+        payment.setPaymentDate(request.getPaymentDate());
+        payment.setMethod(request.getMethod());
+        payment.setReference(request.getReference());
+        payment.setNotes(request.getNotes());
+        return mapPaymentToResponse(paymentRecordRepository.save(payment));
+    }
+
+    @Transactional
+    public void deletePayment(UUID id) {
+        PaymentRecord payment = findPaymentOrThrow(id);
+        payment.softDelete();
+        paymentRecordRepository.save(payment);
+    }
+
     private Budget findBudgetOrThrow(UUID id) {
         return budgetRepository.findById(id).filter(b -> !b.isDeleted())
                 .orElseThrow(() -> new ResourceNotFoundException("Budget", id));
+    }
+
+    private CostCenter findCostCenterOrThrow(UUID id) {
+        return costCenterRepository.findById(id).filter(c -> !c.isDeleted())
+                .orElseThrow(() -> new ResourceNotFoundException("CostCenter", id));
+    }
+
+    private Expense findExpenseOrThrow(UUID id) {
+        return expenseRepository.findById(id).filter(e -> !e.isDeleted())
+                .orElseThrow(() -> new ResourceNotFoundException("Expense", id));
+    }
+
+    private Invoice findInvoiceOrThrow(UUID id) {
+        return invoiceRepository.findById(id).filter(i -> !i.isDeleted())
+                .orElseThrow(() -> new ResourceNotFoundException("Invoice", id));
+    }
+
+    private PaymentRecord findPaymentOrThrow(UUID id) {
+        return paymentRecordRepository.findById(id).filter(p -> !p.isDeleted())
+                .orElseThrow(() -> new ResourceNotFoundException("PaymentRecord", id));
     }
 
     private UUID resolveTenantId() {

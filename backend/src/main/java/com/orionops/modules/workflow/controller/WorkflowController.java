@@ -5,6 +5,7 @@ import com.orionops.modules.workflow.dto.WorkflowDefinitionRequest;
 import com.orionops.modules.workflow.dto.WorkflowDefinitionResponse;
 import com.orionops.modules.workflow.dto.WorkflowInstanceResponse;
 import com.orionops.modules.workflow.service.WorkflowService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -41,6 +42,14 @@ public class WorkflowController {
     @PreAuthorize("hasAnyRole('ENGINEER', 'MANAGER', 'ADMIN')")
     public ResponseEntity<ApiResponse<WorkflowDefinitionResponse>> getDefinition(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.success(workflowService.getDefinition(id)));
+    }
+
+    @PutMapping("/{id}")
+    @Operation(summary = "Update workflow definition", description = "Updates an existing workflow definition")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public ResponseEntity<ApiResponse<WorkflowDefinitionResponse>> updateDefinition(
+            @PathVariable UUID id, @Valid @RequestBody WorkflowDefinitionRequest request) {
+        return ResponseEntity.ok(ApiResponse.success(workflowService.updateDefinition(id, request), "Workflow definition updated"));
     }
 
     @PostMapping("/{id}/start")

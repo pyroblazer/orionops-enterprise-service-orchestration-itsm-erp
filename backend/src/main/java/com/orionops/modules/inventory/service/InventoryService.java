@@ -40,6 +40,32 @@ public class InventoryService {
     }
 
     @Transactional(readOnly = true)
+    public InventoryResponse.ItemResponse getItem(UUID id) {
+        return mapItem(findItemOrThrow(id));
+    }
+
+    @Transactional
+    public InventoryResponse.ItemResponse updateItem(UUID id, InventoryRequest.ItemRequest req) {
+        InventoryItem item = findItemOrThrow(id);
+        item.setName(req.getName());
+        item.setDescription(req.getDescription());
+        item.setSku(req.getSku());
+        item.setCategory(req.getCategory());
+        item.setMinimumQuantity(req.getMinimumQuantity());
+        item.setUnitPrice(req.getUnitPrice());
+        item.setWarehouseId(req.getWarehouseId());
+        item.setLocation(req.getLocation());
+        return mapItem(itemRepository.save(item));
+    }
+
+    @Transactional
+    public void deleteItem(UUID id) {
+        InventoryItem item = findItemOrThrow(id);
+        item.softDelete();
+        itemRepository.save(item);
+    }
+
+    @Transactional(readOnly = true)
     public List<InventoryResponse.ItemResponse> getLowStockItems() {
         return itemRepository.findLowStockItems(resolveTenantId()).stream().map(this::mapItem).collect(Collectors.toList());
     }
@@ -82,6 +108,33 @@ public class InventoryService {
         return assetRepository.findByTenantIdAndDeletedAtIsNull(resolveTenantId()).stream().map(this::mapAsset).collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
+    public InventoryResponse.AssetResponse getAsset(UUID id) {
+        return mapAsset(findAssetOrThrow(id));
+    }
+
+    @Transactional
+    public InventoryResponse.AssetResponse updateAsset(UUID id, InventoryRequest.AssetRequest req) {
+        Asset asset = findAssetOrThrow(id);
+        asset.setName(req.getName());
+        asset.setDescription(req.getDescription());
+        asset.setAssetTag(req.getAssetTag());
+        asset.setType(req.getType());
+        asset.setPurchasePrice(req.getPurchasePrice());
+        asset.setPurchaseDate(req.getPurchaseDate());
+        asset.setWarrantyExpiry(req.getWarrantyExpiry());
+        asset.setAssignedTo(req.getAssignedTo());
+        asset.setCiId(req.getCiId());
+        return mapAsset(assetRepository.save(asset));
+    }
+
+    @Transactional
+    public void deleteAsset(UUID id) {
+        Asset asset = findAssetOrThrow(id);
+        asset.softDelete();
+        assetRepository.save(asset);
+    }
+
     @Transactional
     public InventoryResponse.WarehouseResponse createWarehouse(InventoryRequest.WarehouseRequest req) {
         Warehouse wh = Warehouse.builder()
@@ -95,7 +148,43 @@ public class InventoryService {
         return warehouseRepository.findByTenantIdAndDeletedAtIsNull(resolveTenantId()).stream().map(this::mapWarehouse).collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
+    public InventoryResponse.WarehouseResponse getWarehouse(UUID id) {
+        return mapWarehouse(findWarehouseOrThrow(id));
+    }
+
+    @Transactional
+    public InventoryResponse.WarehouseResponse updateWarehouse(UUID id, InventoryRequest.WarehouseRequest req) {
+        Warehouse wh = findWarehouseOrThrow(id);
+        wh.setName(req.getName());
+        wh.setLocation(req.getLocation());
+        wh.setManager(req.getManager());
+        return mapWarehouse(warehouseRepository.save(wh));
+    }
+
+    @Transactional
+    public void deleteWarehouse(UUID id) {
+        Warehouse wh = findWarehouseOrThrow(id);
+        wh.softDelete();
+        warehouseRepository.save(wh);
+    }
+
     private UUID resolveTenantId() { return UUID.fromString("00000000-0000-0000-0000-000000000001"); }
+
+    private InventoryItem findItemOrThrow(UUID id) {
+        return itemRepository.findById(id).filter(i -> !i.isDeleted())
+                .orElseThrow(() -> new ResourceNotFoundException("InventoryItem", id));
+    }
+
+    private Asset findAssetOrThrow(UUID id) {
+        return assetRepository.findById(id).filter(a -> !a.isDeleted())
+                .orElseThrow(() -> new ResourceNotFoundException("Asset", id));
+    }
+
+    private Warehouse findWarehouseOrThrow(UUID id) {
+        return warehouseRepository.findById(id).filter(w -> !w.isDeleted())
+                .orElseThrow(() -> new ResourceNotFoundException("Warehouse", id));
+    }
 
     private InventoryResponse.ItemResponse mapItem(InventoryItem i) {
         return InventoryResponse.ItemResponse.builder().id(i.getId()).name(i.getName())

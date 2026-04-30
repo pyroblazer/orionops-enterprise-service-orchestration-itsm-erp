@@ -182,6 +182,12 @@
             <optional>true</optional>
         </dependency>
 
+        <!-- Apache HttpClient (connection pooling for REST/SOAP connectors) -->
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+        </dependency>
+
         <!-- Jackson JSR310 (Java 8 Date/Time) -->
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>

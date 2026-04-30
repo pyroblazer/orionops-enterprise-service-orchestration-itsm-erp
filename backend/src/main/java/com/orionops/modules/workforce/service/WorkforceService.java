@@ -39,6 +39,32 @@ public class WorkforceService {
     }
 
     @Transactional(readOnly = true)
+    public WorkforceDTO.EmployeeResponse getEmployee(UUID id) {
+        return mapEmployee(findEmployeeOrThrow(id));
+    }
+
+    @Transactional
+    public WorkforceDTO.EmployeeResponse updateEmployee(UUID id, WorkforceDTO.EmployeeRequest req) {
+        Employee emp = findEmployeeOrThrow(id);
+        emp.setFirstName(req.getFirstName());
+        emp.setLastName(req.getLastName());
+        emp.setEmail(req.getEmail());
+        emp.setPhone(req.getPhone());
+        emp.setDepartment(req.getDepartment());
+        emp.setTitle(req.getTitle());
+        emp.setUserId(req.getUserId());
+        emp.setLocation(req.getLocation());
+        return mapEmployee(employeeRepository.save(emp));
+    }
+
+    @Transactional
+    public void deleteEmployee(UUID id) {
+        Employee emp = findEmployeeOrThrow(id);
+        emp.softDelete();
+        employeeRepository.save(emp);
+    }
+
+    @Transactional(readOnly = true)
     public List<WorkforceDTO.EmployeeResponse> findBySkills(List<String> skills) {
         return employeeRepository.findBySkills(resolveTenantId(), skills).stream().map(this::mapEmployee).collect(Collectors.toList());
     }
@@ -55,6 +81,27 @@ public class WorkforceService {
         return skillRepository.findByTenantIdAndDeletedAtIsNull(resolveTenantId()).stream().map(this::mapSkill).collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
+    public WorkforceDTO.SkillResponse getSkill(UUID id) {
+        return mapSkill(findSkillOrThrow(id));
+    }
+
+    @Transactional
+    public WorkforceDTO.SkillResponse updateSkill(UUID id, WorkforceDTO.SkillRequest req) {
+        Skill skill = findSkillOrThrow(id);
+        skill.setName(req.getName());
+        skill.setCategory(req.getCategory());
+        skill.setDescription(req.getDescription());
+        return mapSkill(skillRepository.save(skill));
+    }
+
+    @Transactional
+    public void deleteSkill(UUID id) {
+        Skill skill = findSkillOrThrow(id);
+        skill.softDelete();
+        skillRepository.save(skill);
+    }
+
     @Transactional
     public WorkforceDTO.CapacityPlanResponse createCapacityPlan(WorkforceDTO.CapacityPlanRequest req) {
         CapacityPlan plan = CapacityPlan.builder()
@@ -63,6 +110,31 @@ public class WorkforceService {
                 .totalCapacity(req.getTotalCapacity()).allocatedCapacity(req.getAllocatedCapacity())
                 .department(req.getDepartment()).tenantId(resolveTenantId()).build();
         return mapCapacityPlan(capacityPlanRepository.save(plan));
+    }
+
+    @Transactional(readOnly = true)
+    public WorkforceDTO.CapacityPlanResponse getCapacityPlan(UUID id) {
+        return mapCapacityPlan(findCapacityPlanOrThrow(id));
+    }
+
+    @Transactional
+    public WorkforceDTO.CapacityPlanResponse updateCapacityPlan(UUID id, WorkforceDTO.CapacityPlanRequest req) {
+        CapacityPlan plan = findCapacityPlanOrThrow(id);
+        plan.setName(req.getName());
+        plan.setDescription(req.getDescription());
+        plan.setPeriodStart(req.getPeriodStart());
+        plan.setPeriodEnd(req.getPeriodEnd());
+        plan.setTotalCapacity(req.getTotalCapacity());
+        plan.setAllocatedCapacity(req.getAllocatedCapacity());
+        plan.setDepartment(req.getDepartment());
+        return mapCapacityPlan(capacityPlanRepository.save(plan));
+    }
+
+    @Transactional
+    public void deleteCapacityPlan(UUID id) {
+        CapacityPlan plan = findCapacityPlanOrThrow(id);
+        plan.softDelete();
+        capacityPlanRepository.save(plan);
     }
 
     @Transactional(readOnly = true)
@@ -82,6 +154,21 @@ public class WorkforceService {
     }
 
     private UUID resolveTenantId() { return UUID.fromString("00000000-0000-0000-0000-000000000001"); }
+
+    private Employee findEmployeeOrThrow(UUID id) {
+        return employeeRepository.findById(id).filter(e -> !e.isDeleted())
+                .orElseThrow(() -> new ResourceNotFoundException("Employee", id));
+    }
+
+    private Skill findSkillOrThrow(UUID id) {
+        return skillRepository.findById(id).filter(s -> !s.isDeleted())
+                .orElseThrow(() -> new ResourceNotFoundException("Skill", id));
+    }
+
+    private CapacityPlan findCapacityPlanOrThrow(UUID id) {
+        return capacityPlanRepository.findById(id).filter(p -> !p.isDeleted())
+                .orElseThrow(() -> new ResourceNotFoundException("CapacityPlan", id));
+    }
 
     private WorkforceDTO.EmployeeResponse mapEmployee(Employee e) {
         return WorkforceDTO.EmployeeResponse.builder().id(e.getId()).firstName(e.getFirstName())

@@ -7,7 +7,8 @@
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "build": "echo 'Use EAS Build'"
+    "build": "echo 'Use EAS Build'",
+    "test": "jest --ci"
   },
   "dependencies": {
     "expo": "~52.0.0",

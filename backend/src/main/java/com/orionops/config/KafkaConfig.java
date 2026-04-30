@@ -11,8 +11,11 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.*;
 import org.springframework.kafka.listener.ContainerProperties;
+import org.springframework.kafka.listener.DeadLetterPublishingRecoverer;
+import org.springframework.kafka.listener.DefaultErrorHandler;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.kafka.support.serializer.JsonSerializer;
+import org.springframework.util.backoff.FixedBackOff;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -58,6 +61,23 @@ public class KafkaConfig {
         return new KafkaTemplate<>(producerFactory());
     }
 
+    /**
+     * String-valued KafkaTemplate for EventPublisher which serializes
+     * events to JSON strings before sending.
+     */
+    @Bean
+    public KafkaTemplate<String, String> stringKafkaTemplate() {
+        Map<String, Object> props = new HashMap<>();
+        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        props.put(ProducerConfig.ACKS_CONFIG, "all");
+        props.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, true);
+        props.put(ProducerConfig.RETRIES_CONFIG, 3);
+        ProducerFactory<String, String> pf = new DefaultKafkaProducerFactory<>(props);
+        return new KafkaTemplate<>(pf);
+    }
+
     // ---- Consumer ----
 
     @Bean
@@ -82,11 +102,22 @@ public class KafkaConfig {
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, Object> kafkaListenerContainerFactory() {
+    public ConcurrentKafkaListenerContainerFactory<String, Object> kafkaListenerContainerFactory(
+            KafkaTemplate<String, Object> kafkaTemplate) {
         ConcurrentKafkaListenerContainerFactory<String, Object> factory =
             new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory());
-        factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE);
+        factory.setConcurrency(3);
+        factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.BATCH);
+
+        DeadLetterPublishingRecoverer recoverer = new DeadLetterPublishingRecoverer(kafkaTemplate);
+        DefaultErrorHandler errorHandler = new DefaultErrorHandler(recoverer,
+                new FixedBackOff(1000L, 3));
+        errorHandler.addNotRetryableExceptions(
+                com.fasterxml.jackson.databind.JsonMappingException.class,
+                com.fasterxml.jackson.core.JsonParseException.class);
+        factory.setCommonErrorHandler(errorHandler);
+
         return factory;
     }
 }

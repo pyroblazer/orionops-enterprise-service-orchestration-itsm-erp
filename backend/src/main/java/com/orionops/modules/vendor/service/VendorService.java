@@ -65,6 +65,19 @@ public class VendorService {
     }
 
     @Transactional
+    public VendorDTO.VendorResponse updateVendor(UUID id, VendorDTO.VendorRequest req) {
+        Vendor v = findVendorOrThrow(id);
+        v.setName(req.getName());
+        v.setDescription(req.getDescription());
+        v.setContactEmail(req.getContactEmail());
+        v.setContactPhone(req.getContactPhone());
+        v.setAddress(req.getAddress());
+        v.setWebsite(req.getWebsite());
+        v.setCategory(req.getCategory());
+        return mapVendor(vendorRepository.save(v));
+    }
+
+    @Transactional
     public void deleteVendor(UUID id) {
         Vendor v = findVendorOrThrow(id);
         v.softDelete();

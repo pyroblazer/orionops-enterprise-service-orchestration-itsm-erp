@@ -89,7 +89,7 @@ public class EmailConfig {
      *
      * @return configured IMAP Store
      */
-    @Bean
+    @Bean(destroyMethod = "close")
     public Store imapStore() {
         Properties props = new Properties();
         props.put("mail.store.protocol", imapProtocol);

@@ -54,6 +54,32 @@ public class TenantService {
     }
 
     @Transactional(readOnly = true)
+    public java.util.List<TenantDTO.TenantResponse> listTenants() {
+        return tenantRepository.findAll().stream()
+                .filter(t -> !t.isDeleted())
+                .map(this::mapTenant).collect(java.util.stream.Collectors.toList());
+    }
+
+    @Transactional
+    public TenantDTO.TenantResponse updateTenant(UUID id, TenantDTO.CreateTenantRequest req) {
+        Tenant tenant = findTenantOrThrow(id);
+        tenant.setName(req.getName());
+        tenant.setSlug(req.getSlug());
+        tenant.setDescription(req.getDescription());
+        tenant.setDomain(req.getDomain());
+        tenant.setLogoUrl(req.getLogoUrl());
+        tenant.setPrimaryContactEmail(req.getPrimaryContactEmail());
+        return mapTenant(tenantRepository.save(tenant));
+    }
+
+    @Transactional
+    public void deleteTenant(UUID id) {
+        Tenant tenant = findTenantOrThrow(id);
+        tenant.softDelete();
+        tenantRepository.save(tenant);
+    }
+
+    @Transactional(readOnly = true)
     public TenantDTO.SubscriptionResponse getSubscription(UUID tenantId) {
         Subscription sub = subscriptionRepository.findByTenantEntityIdAndDeletedAtIsNull(tenantId)
                 .orElseThrow(() -> new ResourceNotFoundException("Subscription", tenantId));

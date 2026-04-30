@@ -42,6 +42,29 @@ public class ProcurementService {
         return prRepository.findByTenantIdAndDeletedAtIsNull(resolveTenantId()).stream().map(this::mapPR).collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
+    public ProcurementResponse.PRResponse getPR(UUID id) {
+        return mapPR(findPROrThrow(id));
+    }
+
+    @Transactional
+    public ProcurementResponse.PRResponse updatePR(UUID id, ProcurementRequest.PRRequest req) {
+        PurchaseRequest pr = findPROrThrow(id);
+        pr.setTitle(req.getTitle());
+        pr.setDescription(req.getDescription());
+        pr.setEstimatedCost(req.getEstimatedCost());
+        pr.setRequestedBy(req.getRequestedBy());
+        pr.setVendorId(req.getVendorId());
+        return mapPR(prRepository.save(pr));
+    }
+
+    @Transactional
+    public void deletePR(UUID id) {
+        PurchaseRequest pr = findPROrThrow(id);
+        pr.softDelete();
+        prRepository.save(pr);
+    }
+
     @Transactional
     public ProcurementResponse.PRResponse submitPR(UUID id) {
         PurchaseRequest pr = findPROrThrow(id);
@@ -73,6 +96,29 @@ public class ProcurementService {
         return poRepository.findByTenantIdAndDeletedAtIsNull(resolveTenantId()).stream().map(this::mapPO).collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
+    public ProcurementResponse.POResponse getPO(UUID id) {
+        return mapPO(findPOOrThrow(id));
+    }
+
+    @Transactional
+    public ProcurementResponse.POResponse updatePO(UUID id, ProcurementRequest.PORequest req) {
+        PurchaseOrder po = findPOOrThrow(id);
+        po.setPoNumber(req.getPoNumber());
+        po.setVendorId(req.getVendorId());
+        po.setTotalAmount(req.getTotalAmount());
+        po.setDeliveryDate(req.getDeliveryDate());
+        po.setTerms(req.getTerms());
+        return mapPO(poRepository.save(po));
+    }
+
+    @Transactional
+    public void deletePO(UUID id) {
+        PurchaseOrder po = findPOOrThrow(id);
+        po.softDelete();
+        poRepository.save(po);
+    }
+
     // Vendors
     @Transactional
     public ProcurementResponse.VendorResponse createVendor(ProcurementRequest.VendorRequest req) {
@@ -87,6 +133,30 @@ public class ProcurementService {
     @Transactional(readOnly = true)
     public List<ProcurementResponse.VendorResponse> listVendors() {
         return vendorRepository.findByTenantIdAndDeletedAtIsNull(resolveTenantId()).stream().map(this::mapVendor).collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public ProcurementResponse.VendorResponse getVendor(UUID id) {
+        return mapVendor(findProcurementVendorOrThrow(id));
+    }
+
+    @Transactional
+    public ProcurementResponse.VendorResponse updateVendor(UUID id, ProcurementRequest.VendorRequest req) {
+        Vendor v = findProcurementVendorOrThrow(id);
+        v.setName(req.getName());
+        v.setDescription(req.getDescription());
+        v.setContactEmail(req.getContactEmail());
+        v.setContactPhone(req.getContactPhone());
+        v.setAddress(req.getAddress());
+        v.setWebsite(req.getWebsite());
+        return mapVendor(vendorRepository.save(v));
+    }
+
+    @Transactional
+    public void deleteVendor(UUID id) {
+        Vendor v = findProcurementVendorOrThrow(id);
+        v.softDelete();
+        vendorRepository.save(v);
     }
 
     // Contracts
@@ -105,9 +175,49 @@ public class ProcurementService {
         return contractRepository.findByTenantIdAndDeletedAtIsNull(resolveTenantId()).stream().map(this::mapContract).collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
+    public ProcurementResponse.ContractResponse getContract(UUID id) {
+        return mapContract(findContractOrThrow(id));
+    }
+
+    @Transactional
+    public ProcurementResponse.ContractResponse updateContract(UUID id, ProcurementRequest.ContractRequest req) {
+        Contract c = findContractOrThrow(id);
+        c.setTitle(req.getTitle());
+        c.setDescription(req.getDescription());
+        c.setVendorId(req.getVendorId());
+        c.setValue(req.getValue());
+        c.setStartDate(req.getStartDate());
+        c.setEndDate(req.getEndDate());
+        c.setTerms(req.getTerms());
+        return mapContract(contractRepository.save(c));
+    }
+
+    @Transactional
+    public void deleteContract(UUID id) {
+        Contract c = findContractOrThrow(id);
+        c.softDelete();
+        contractRepository.save(c);
+    }
+
     private PurchaseRequest findPROrThrow(UUID id) {
         return prRepository.findById(id).filter(p -> !p.isDeleted())
                 .orElseThrow(() -> new ResourceNotFoundException("PurchaseRequest", id));
+    }
+
+    private PurchaseOrder findPOOrThrow(UUID id) {
+        return poRepository.findById(id).filter(p -> !p.isDeleted())
+                .orElseThrow(() -> new ResourceNotFoundException("PurchaseOrder", id));
+    }
+
+    private Vendor findProcurementVendorOrThrow(UUID id) {
+        return vendorRepository.findById(id).filter(v -> !v.isDeleted())
+                .orElseThrow(() -> new ResourceNotFoundException("ProcurementVendor", id));
+    }
+
+    private Contract findContractOrThrow(UUID id) {
+        return contractRepository.findById(id).filter(c -> !c.isDeleted())
+                .orElseThrow(() -> new ResourceNotFoundException("Contract", id));
     }
 
     private UUID resolveTenantId() { return UUID.fromString("00000000-0000-0000-0000-000000000001"); }
