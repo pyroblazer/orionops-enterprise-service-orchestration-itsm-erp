@@ -36,6 +36,10 @@
         <httpclient.version>4.5.14</httpclient.version>
         <commons-csv.version>1.11.0</commons-csv.version>
         <thymeleaf.version>3.1.3.RELEASE</thymeleaf.version>
+
+        <!-- Surefire tag filtering (override via -Dtest.excludedGroups=docker) -->
+        <test.includedGroups></test.includedGroups>
+        <test.excludedGroups></test.excludedGroups>
     </properties>
 
     <dependencyManagement>
@@ -304,6 +308,14 @@
                             <version>${lombok.version}</version>
                         </path>
                     </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <groups>${test.includedGroups}</groups>
+                    <excludedGroups>${test.excludedGroups}</excludedGroups>
                 </configuration>
             </plugin>
         </plugins>

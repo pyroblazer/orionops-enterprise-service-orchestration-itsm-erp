@@ -8,6 +8,7 @@ import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.task.api.Task;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +40,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 })
 @Testcontainers
 @ActiveProfiles("test")
+@Tag("docker")
 @DisplayName("Incident Escalation Workflow")
 class IncidentEscalationWorkflowTest {
 

@@ -3,6 +3,7 @@ package com.orionops.integration;
 import com.orionops.modules.audit.dto.AuditResponse;
 import com.orionops.modules.audit.repository.AuditEventRepository;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +30,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @DataJpaTest
 @Testcontainers
 @ActiveProfiles("test")
+@Tag("docker")
 @DisplayName("AuditEventRepository IT")
 class AuditEventRepositoryIT {
 

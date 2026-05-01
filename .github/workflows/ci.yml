@@ -63,7 +63,7 @@ jobs:
           cache: maven
 
       - name: Run unit tests
-        run: mvn test -B -Dtest="!*IT,!*.workflow.*" -Dspring.profiles.active=test
+        run: mvn test -B -Dtest.excludedGroups=docker -Dspring.profiles.active=test
 
       - name: Upload unit test results
         if: always()
@@ -152,7 +152,7 @@ jobs:
           SPRING_DATA_REDIS_HOST: localhost
           SPRING_DATA_REDIS_PORT: "6379"
           SPRING_KAFKA_BOOTSTRAP_SERVERS: localhost:9092
-        run: mvn verify -B -Dtest="*IT" -Dspring.profiles.active=test
+        run: mvn verify -B -Dtest.includedGroups=docker -Dtest="*IT" -Dspring.profiles.active=test
 
       - name: Upload integration test results
         if: always()
@@ -184,7 +184,7 @@ jobs:
           cache: maven
 
       - name: Run workflow simulation tests
-        run: mvn test -B -Dtest="*.workflow.*" -Dspring.profiles.active=test
+        run: mvn test -B -Dtest.includedGroups=docker -Dtest="com.orionops.workflow.*" -Dspring.profiles.active=test
 
       - name: Upload workflow test results
         if: always()

@@ -5,6 +5,7 @@ import com.orionops.modules.change.dto.ChangeRequestDTO;
 import com.orionops.modules.change.entity.ChangeRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +41,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @Testcontainers
 @ActiveProfiles("test")
+@Tag("docker")
 @DisplayName("ChangeController Contract Tests")
 class ChangeControllerContractTest {
 

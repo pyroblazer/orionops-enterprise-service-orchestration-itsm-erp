@@ -4,6 +4,7 @@ import com.orionops.modules.incident.entity.Incident;
 import com.orionops.modules.incident.repository.IncidentRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +33,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @DataJpaTest
 @Testcontainers
 @ActiveProfiles("test")
+@Tag("docker")
 @DisplayName("IncidentRepository IT")
 class IncidentRepositoryIT {
 

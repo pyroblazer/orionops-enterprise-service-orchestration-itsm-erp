@@ -8,6 +8,7 @@ import com.orionops.modules.incident.dto.IncidentResponse;
 import com.orionops.modules.incident.entity.Incident;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +47,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @Testcontainers
 @ActiveProfiles("test")
+@Tag("docker")
 @DisplayName("IncidentController Contract Tests")
 class IncidentControllerContractTest {
 
