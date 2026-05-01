@@ -10,7 +10,7 @@ RUN pnpm install --no-frozen-lockfile --filter @orionops/web...
 FROM base AS builder
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/apps/web/node_modules ./apps/web/node_modules
-COPY package.json pnpm-workspace.yaml ./
+COPY package.json pnpm-workspace.yaml tsconfig.base.json ./
 COPY apps/web ./apps/web
 WORKDIR /app/apps/web
 RUN pnpm build
