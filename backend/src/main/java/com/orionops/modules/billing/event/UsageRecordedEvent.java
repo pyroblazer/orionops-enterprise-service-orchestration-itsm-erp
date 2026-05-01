@@ -15,9 +15,7 @@ import java.util.UUID;
 @NoArgsConstructor
 public class UsageRecordedEvent extends BaseEvent {
 
-    @Builder.Default
     private final String eventType = "USAGE_RECORDED";
-    @Builder.Default
     private final String aggregateType = "service_usage";
 
     private UUID usageId;

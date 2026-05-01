@@ -56,7 +56,7 @@ describe('Incidents List Page', () => {
         total: 2,
         page: 1,
         pageSize: 20,
-        totalPages: 1,
+        totalPages: 3,
       },
       isLoading: false,
       isError: false,

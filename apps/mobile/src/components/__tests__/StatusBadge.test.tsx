@@ -1,9 +1,6 @@
-import React from 'react';
 import { render } from '@testing-library/react-native';
 import { StatusBadge } from '../StatusBadge';
-import { ThemeProvider } from '../../theme/ThemeProvider';
 
-// Mock the theme
 jest.mock('../../theme/ThemeProvider', () => {
   const { createContext, useContext } = require('react');
   const mockColors = {
@@ -38,9 +35,6 @@ jest.mock('../../theme/ThemeProvider', () => {
   };
 });
 
-// Need to reimport after mock
-const { useTheme } = require('../../theme/ThemeProvider');
-
 function renderWithTheme(ui: React.ReactElement) {
   return render(ui);
 }
@@ -48,37 +42,37 @@ function renderWithTheme(ui: React.ReactElement) {
 describe('StatusBadge', () => {
   it('renders "new" status', () => {
     const { getByText } = renderWithTheme(<StatusBadge status="new" />);
-    expect(getByText('NEW')).toBeTruthy();
+    expect(getByText('New')).toBeTruthy();
   });
 
   it('renders "open" status', () => {
     const { getByText } = renderWithTheme(<StatusBadge status="open" />);
-    expect(getByText('OPEN')).toBeTruthy();
+    expect(getByText('Open')).toBeTruthy();
   });
 
   it('renders "in_progress" status', () => {
     const { getByText } = renderWithTheme(<StatusBadge status="in_progress" />);
-    expect(getByText('IN PROGRESS')).toBeTruthy();
+    expect(getByText('In Progress')).toBeTruthy();
   });
 
   it('renders "resolved" status', () => {
     const { getByText } = renderWithTheme(<StatusBadge status="resolved" />);
-    expect(getByText('RESOLVED')).toBeTruthy();
+    expect(getByText('Resolved')).toBeTruthy();
   });
 
   it('renders "closed" status', () => {
     const { getByText } = renderWithTheme(<StatusBadge status="closed" />);
-    expect(getByText('CLOSED')).toBeTruthy();
+    expect(getByText('Closed')).toBeTruthy();
   });
 
   it('renders "pending" status', () => {
     const { getByText } = renderWithTheme(<StatusBadge status="pending" />);
-    expect(getByText('PENDING')).toBeTruthy();
+    expect(getByText('Pending')).toBeTruthy();
   });
 
   it('renders "cancelled" status', () => {
     const { getByText } = renderWithTheme(<StatusBadge status="cancelled" />);
-    expect(getByText('CANCELLED')).toBeTruthy();
+    expect(getByText('Cancelled')).toBeTruthy();
   });
 
   it('has accessible label', () => {
@@ -88,18 +82,18 @@ describe('StatusBadge', () => {
 
   it('renders unknown status with formatted label', () => {
     const { getByText } = renderWithTheme(<StatusBadge status="custom_status" />);
-    expect(getByText('CUSTOM STATUS')).toBeTruthy();
+    expect(getByText('Custom Status')).toBeTruthy();
   });
 
   it('applies small size styles', () => {
     const { getByText } = renderWithTheme(<StatusBadge status="new" size="small" />);
-    const badge = getByText('NEW');
+    const badge = getByText('New');
     expect(badge).toBeTruthy();
   });
 
   it('applies large size styles', () => {
     const { getByText } = renderWithTheme(<StatusBadge status="new" size="large" />);
-    const badge = getByText('NEW');
+    const badge = getByText('New');
     expect(badge).toBeTruthy();
   });
 });

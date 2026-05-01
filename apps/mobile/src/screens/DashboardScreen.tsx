@@ -162,8 +162,6 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) 
       <View style={styles.summarySection}>
         <Text
           style={[styles.greeting, { color: colors.text }]}
-          accessibilityRole="header"
-          accessibilityLevel={1}
         >
           Dashboard
         </Text>
@@ -225,8 +223,6 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) 
       >
         <Text
           style={[styles.perfTitle, { color: colors.text }]}
-          accessibilityRole="header"
-          accessibilityLevel={2}
         >
           Performance Summary
         </Text>

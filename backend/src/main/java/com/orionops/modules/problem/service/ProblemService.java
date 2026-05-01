@@ -40,8 +40,8 @@ public class ProblemService {
                 .serviceId(request.getServiceId())
                 .relatedIncidentId(request.getRelatedIncidentId())
                 .workaround(request.getWorkaround())
-                .tenantId(resolveTenantId())
                 .build();
+        problem.setTenantId(resolveTenantId());
 
         return mapToResponse(problemRepository.save(problem));
     }

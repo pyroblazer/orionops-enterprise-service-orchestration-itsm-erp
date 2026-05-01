@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useIncident, useUpdateIncident } from '@/lib/hooks';
+import type { Incident } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -19,14 +20,11 @@ import {
   MessageSquare,
   Paperclip,
   Send,
-  User,
   CheckCircle,
-  XCircle,
   ArrowUpRight,
   FileText,
 } from 'lucide-react';
 import {
-  formatDate,
   formatDateTime,
   formatRelativeTime,
   getStatusColor,
@@ -385,6 +383,3 @@ export default function IncidentDetailPage() {
     </div>
   );
 }
-
-// Re-import IncidentStatus for the handleStatusUpdate
-import type { IncidentStatus } from '@/lib/api';

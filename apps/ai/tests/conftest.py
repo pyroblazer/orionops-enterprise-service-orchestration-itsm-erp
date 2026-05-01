@@ -2,16 +2,13 @@
 
 from __future__ import annotations
 
+import os
+import sys
 from datetime import datetime, timezone
 from typing import Generator
 
 import pytest
 from fastapi.testclient import TestClient
-
-# Import the FastAPI app -- because tests/ sits one level inside apps/ai/,
-# we need a sys.path tweak so ``import main`` resolves to apps/ai/main.py.
-import sys
-import os
 
 # Ensure the AI service root (apps/ai/) is on sys.path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))

@@ -13,8 +13,7 @@ import { useQuery } from '@tanstack/react-query';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '../theme/ThemeProvider';
 import { apiClient } from '../services/api';
-import { EmptyState } from '../components/EmptyState';
-import { TicketCard } from '../components/TicketCard';
+import EmptyState from '../components/EmptyState';
 
 const RECENT_SEARCHES_KEY = 'orionops_recent_searches';
 const MAX_RECENT = 10;
@@ -305,7 +304,7 @@ export const SearchScreen: React.FC<SearchScreenProps> = ({ navigation }) => {
           </View>
           <FlatList
             data={recentSearches}
-            keyExtractor={(item, index) => `recent-${index}`}
+            keyExtractor={(_item, index) => `recent-${index}`}
             renderItem={renderRecentSearch}
             keyboardShouldPersistTaps="handled"
             accessibilityLabel="Recent searches"

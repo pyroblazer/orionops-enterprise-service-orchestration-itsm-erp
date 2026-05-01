@@ -60,8 +60,8 @@ class ProblemServiceTest {
                 .priority(Problem.ProblemPriority.HIGH)
                 .status(Problem.ProblemStatus.OPEN)
                 .category("Authentication")
-                .tenantId(tenantId)
                 .build();
+        problem.setTenantId(tenantId);
         problem.setId(UUID.randomUUID());
         problem.setCreatedAt(LocalDateTime.now());
         problem.setUpdatedAt(LocalDateTime.now());

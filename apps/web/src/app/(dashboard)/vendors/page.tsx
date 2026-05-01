@@ -29,9 +29,7 @@ import {
   TrendingUp,
   Shield,
   Clock,
-  Phone,
   Mail,
-  Globe,
 } from 'lucide-react';
 import { formatCurrency, cn } from '@/lib/utils';
 

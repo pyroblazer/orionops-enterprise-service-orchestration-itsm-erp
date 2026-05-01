@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm --filter @orionops/web lint *)",
+      "Bash(pnpm --filter @orionops/web lint)",
+      "Bash(pnpm --filter @orionops/mobile exec tsc --noEmit)",
+      "Bash(pnpm --filter @orionops/web exec tsc --noEmit)",
+      "Bash(where.exe *)",
+      "Bash(mvn compile *)",
+      "Bash(mvn compile)"
+    ]
+  }
+}

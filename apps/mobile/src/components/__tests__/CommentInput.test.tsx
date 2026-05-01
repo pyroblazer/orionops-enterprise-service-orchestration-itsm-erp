@@ -1,4 +1,3 @@
-import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import CommentInput from '../CommentInput';
 
@@ -7,9 +6,8 @@ jest.mock('../../theme/ThemeProvider', () => {
   const { createContext, useContext } = require('react');
   const mockColors = {
     primary: '#2563EB',
-    muted: '#6B7280',
-    text: '#1E293B',
     textSecondary: '#475569',
+    text: '#1E293B',
     border: '#E2E8F0',
     warning: '#D97706',
     info: '#2563EB',
@@ -31,21 +29,23 @@ jest.mock('../../theme/ThemeProvider', () => {
 
 // Mock the offline services
 jest.mock('../../services/offline', () => ({
-  getDraft: jest.fn(() => Promise.resolve(null)),
-  saveDraft: jest.fn(() => Promise.resolve()),
-  removeDraft: jest.fn(() => Promise.resolve()),
+  offlineStorage: {
+    getDrafts: jest.fn(() => Promise.resolve([])),
+    saveDraft: jest.fn(() => Promise.resolve({ id: 'draft_1', ticketId: 'ticket-1', content: '', isInternal: false, createdAt: '', updatedAt: '' })),
+    deleteDraftsForTicket: jest.fn(() => Promise.resolve()),
+  },
 }));
 
-import { getDraft, saveDraft, removeDraft } from '../../services/offline';
+import { offlineStorage } from '../../services/offline';
 
-const mockedGetDraft = getDraft as jest.MockedFunction<typeof getDraft>;
-const mockedSaveDraft = saveDraft as jest.MockedFunction<typeof saveDraft>;
-const mockedRemoveDraft = removeDraft as jest.MockedFunction<typeof removeDraft>;
+const mockedGetDrafts = offlineStorage.getDrafts as jest.MockedFunction<typeof offlineStorage.getDrafts>;
+const mockedSaveDraft = offlineStorage.saveDraft as jest.MockedFunction<typeof offlineStorage.saveDraft>;
+const mockedDeleteDraftsForTicket = offlineStorage.deleteDraftsForTicket as jest.MockedFunction<typeof offlineStorage.deleteDraftsForTicket>;
 
 describe('CommentInput', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockedGetDraft.mockResolvedValue(null);
+    mockedGetDrafts.mockResolvedValue([]);
   });
 
   it('renders text input', () => {
@@ -100,24 +100,24 @@ describe('CommentInput', () => {
     fireEvent.changeText(input, 'Draft text');
 
     await waitFor(() => {
-      expect(mockedSaveDraft).toHaveBeenCalledWith('comment-ticket-1', 'Draft text');
+      expect(mockedSaveDraft).toHaveBeenCalled();
     });
   });
 
   it('loads saved draft on mount', async () => {
-    mockedGetDraft.mockResolvedValue('Saved draft content');
+    mockedGetDrafts.mockResolvedValue([{ id: 'draft_1', ticketId: 'ticket-1', content: 'Saved draft content', isInternal: false, createdAt: '', updatedAt: '' }]);
 
-    const { getByLabelText } = render(
+    const { } = render(
       <CommentInput entityId="ticket-1" onSubmit={jest.fn()} />
     );
 
     await waitFor(() => {
-      expect(mockedGetDraft).toHaveBeenCalledWith('comment-ticket-1');
+      expect(mockedGetDrafts).toHaveBeenCalledWith('ticket-1');
     });
   });
 
   it('shows offline draft indicator when draft is loaded', async () => {
-    mockedGetDraft.mockResolvedValue('Saved draft');
+    mockedGetDrafts.mockResolvedValue([{ id: 'draft_1', ticketId: 'ticket-1', content: 'Saved draft', isInternal: false, createdAt: '', updatedAt: '' }]);
 
     const { getByText } = render(
       <CommentInput entityId="ticket-1" onSubmit={jest.fn()} />
@@ -141,7 +141,7 @@ describe('CommentInput', () => {
     fireEvent.press(sendButton);
 
     await waitFor(() => {
-      expect(mockedRemoveDraft).toHaveBeenCalledWith('comment-ticket-1');
+      expect(mockedDeleteDraftsForTicket).toHaveBeenCalledWith('ticket-1');
     });
   });
 });

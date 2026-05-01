@@ -1,8 +1,7 @@
-import React from 'react';
-import { render, fireEvent, waitFor } from '@testing-library/react-native';
+import { render } from '@testing-library/react-native';
 
 // Mock the theme hook
-jest.mock('../theme/ThemeProvider', () => {
+jest.mock('../../theme/ThemeProvider', () => {
   const { createContext, useContext } = require('react');
   const mockColors = {
     background: '#F8FAFC',
@@ -49,19 +48,21 @@ jest.mock('../theme/ThemeProvider', () => {
 });
 
 // Mock StatusBadge component
-jest.mock('../components/StatusBadge', () => {
+jest.mock('../../components/StatusBadge', () => {
   const { Text } = require('react-native');
-  return ({ status }: { status: string }) => <Text>{status}</Text>;
+  return {
+    StatusBadge: ({ status }: { status: string }) => <Text>{status}</Text>,
+  };
 });
 
 // Mock SLATimer component
-jest.mock('../components/SLATimer', () => {
+jest.mock('../../components/SLATimer', () => {
   const { Text } = require('react-native');
   return () => <Text>SLA Timer</Text>;
 });
 
 // Mock EmptyState component
-jest.mock('../components/EmptyState', () => {
+jest.mock('../../components/EmptyState', () => {
   const { Text, TouchableOpacity } = require('react-native');
   return ({ title, subtitle, message, actionLabel, onAction }: any) => (
     <>
@@ -77,7 +78,7 @@ jest.mock('../components/EmptyState', () => {
 });
 
 // Mock API client
-jest.mock('../services/api', () => ({
+jest.mock('../../services/api', () => ({
   apiClient: {
     getMyWork: jest.fn(),
     updateTicketStatus: jest.fn(),
@@ -86,7 +87,6 @@ jest.mock('../services/api', () => ({
 
 // Mock React Query
 jest.mock('@tanstack/react-query', () => {
-  const { useState, useCallback } = require('react');
   return {
     useQuery: jest.fn(),
     useMutation: jest.fn(() => ({
@@ -99,13 +99,11 @@ jest.mock('@tanstack/react-query', () => {
 });
 
 import { MyWorkScreen } from '../MyWorkScreen';
-import { apiClient } from '../services/api';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 const mockedUseQuery = useQuery as jest.MockedFunction<typeof useQuery>;
 const mockedUseMutation = useMutation as jest.MockedFunction<typeof useMutation>;
 const mockedUseQueryClient = useQueryClient as jest.MockedFunction<typeof useQueryClient>;
-const mockedGetMyWork = apiClient.getMyWork as jest.MockedFunction<typeof apiClient.getMyWork>;
 
 const mockTickets = [
   {
@@ -324,7 +322,7 @@ describe('MyWorkScreen', () => {
       <MyWorkScreen navigation={mockNavigation} />
     );
 
-    expect(getByLabelText('Pull to refresh your work queue')).toBeTruthy();
+    expect(getByLabelText('Your assigned work items')).toBeTruthy();
   });
 
   it('has accessible list label', () => {

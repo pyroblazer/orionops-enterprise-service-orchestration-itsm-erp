@@ -347,7 +347,7 @@ public class EntraIdSyncService {
             username = displayName;
         }
 
-        return User.builder()
+        User user = User.builder()
                 .keycloakId(entraId)
                 .username(username != null ? username : "unknown-" + entraId)
                 .email(mail != null ? mail : "")
@@ -358,8 +358,9 @@ public class EntraIdSyncService {
                 .active(accountEnabled)
                 .roles(new HashSet<>())
                 .groups(new HashSet<>())
-                .tenantId(UUID.fromString("00000000-0000-0000-0000-000000000000"))
                 .build();
+        user.setTenantId(UUID.fromString("00000000-0000-0000-0000-000000000000"));
+        return user;
     }
 
     // ---- Private helpers ----

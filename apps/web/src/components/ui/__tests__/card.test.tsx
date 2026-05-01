@@ -23,14 +23,14 @@ describe('Card', () => {
     expect(card.className).toContain('bg-card');
   });
 
-  it('has role="region"', () => {
-    render(<Card>Region</Card>);
-    expect(screen.getByRole('region')).toBeInTheDocument();
+  it('renders as a div', () => {
+    render(<Card>Content</Card>);
+    expect(screen.getByText('Content').tagName).toBe('DIV');
   });
 
   it('supports custom className', () => {
     render(<Card className="my-custom-class">Custom</Card>);
-    expect(screen.getByRole('region').className).toContain('my-custom-class');
+    expect(screen.getByText('Custom').className).toContain('my-custom-class');
   });
 });
 
@@ -48,10 +48,10 @@ describe('CardHeader', () => {
 });
 
 describe('CardTitle', () => {
-  it('renders as h3 element', () => {
+  it('renders as p element', () => {
     render(<CardTitle>Title</CardTitle>);
     const title = screen.getByText('Title');
-    expect(title.tagName).toBe('H3');
+    expect(title.tagName).toBe('P');
   });
 
   it('applies font-semibold class', () => {

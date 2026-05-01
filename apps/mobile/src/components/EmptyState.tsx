@@ -1,10 +1,10 @@
-import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useTheme } from '../theme/ThemeProvider';
 
 interface EmptyStateProps {
   title: string;
-  message: string;
+  message?: string;
+  subtitle?: string;
   actionLabel?: string;
   onAction?: () => void;
 }
@@ -12,10 +12,13 @@ interface EmptyStateProps {
 export default function EmptyState({
   title,
   message,
+  subtitle,
   actionLabel,
   onAction,
 }: EmptyStateProps) {
   const { colors } = useTheme();
+
+  const descriptionText = message || subtitle || '';
 
   return (
     <View style={styles.container} accessibilityRole="summary">
@@ -23,9 +26,11 @@ export default function EmptyState({
         &#128203;
       </Text>
       <Text style={[styles.title, { color: colors.text }]}>{title}</Text>
-      <Text style={[styles.message, { color: colors.textSecondary }]}>
-        {message}
-      </Text>
+      {descriptionText ? (
+        <Text style={[styles.message, { color: colors.textSecondary }]}>
+          {descriptionText}
+        </Text>
+      ) : null}
       {actionLabel && onAction && (
         <TouchableOpacity
           style={[styles.button, { backgroundColor: colors.primary }]}

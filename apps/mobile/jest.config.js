@@ -1,11 +1,14 @@
 /** @type {import('jest').Config} */
 module.exports = {
   preset: 'react-native',
+  transform: {
+    '^.+\\.(js|jsx|ts|tsx)$': ['babel-jest', { configFile: './babel.config.js' }],
+  },
   testEnvironment: 'node',
   roots: ['<rootDir>/src'],
   testPathIgnorePatterns: ['/node_modules/', '/e2e/'],
   transformIgnorePatterns: [
-    'node_modules/(?!(@react-native|react-native|@react-navigation|@tanstack|expo|axios|date-fns)/)',
+    'node_modules/(?!(.pnpm/)?(@react-native|react-native|@react-navigation|@tanstack|expo|axios|date-fns))',
   ],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',

@@ -15,9 +15,7 @@ import java.util.UUID;
 @NoArgsConstructor
 public class InvoiceGeneratedEvent extends BaseEvent {
 
-    @Builder.Default
     private final String eventType = "INVOICE_GENERATED";
-    @Builder.Default
     private final String aggregateType = "billing_record";
 
     private UUID billingRecordId;

@@ -19,9 +19,7 @@ import java.util.UUID;
 @NoArgsConstructor
 public class IncidentCreatedEvent extends BaseEvent {
 
-    @Builder.Default
     private final String eventType = "INCIDENT_CREATED";
-    @Builder.Default
     private final String aggregateType = "incident";
 
     private UUID incidentId;

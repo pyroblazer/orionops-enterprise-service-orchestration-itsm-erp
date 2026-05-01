@@ -73,8 +73,8 @@ class WorkflowServiceTest {
                 .processDefinitionKey("incident-triage")
                 .version(1)
                 .active(true)
-                .tenantId(tenantId)
                 .build();
+        testDefinition.setTenantId(tenantId);
         testDefinition.setId(UUID.randomUUID());
         testDefinition.setCreatedAt(LocalDateTime.now());
         testDefinition.setUpdatedAt(LocalDateTime.now());
@@ -83,8 +83,8 @@ class WorkflowServiceTest {
                 .workflowDefinitionId(testDefinition.getId())
                 .processInstanceId("proc-123")
                 .status(WorkflowInstance.InstanceStatus.RUNNING)
-                .tenantId(tenantId)
                 .build();
+        testInstance.setTenantId(tenantId);
         testInstance.setId(UUID.randomUUID());
         testInstance.setCreatedAt(LocalDateTime.now());
         testInstance.setUpdatedAt(LocalDateTime.now());
@@ -179,16 +179,6 @@ class WorkflowServiceTest {
         @DisplayName("should complete task without variables")
         void shouldCompleteTask_whenValid_givenTaskId() {
             Task task = mock(Task.class);
-            when(task.getId()).thenReturn("task-001");
-            when(taskService.createTaskQuery().taskId("task-001")).thenReturn(
-                    new org.flowable.engine.impl.TaskQueryImpl(mock(org.flowable.common.engine.impl.persistence.StrongUuidGenerator.class)) {
-                        @Override
-                        public Task singleResult() { return task; }
-                    }
-            );
-
-            // Use a simpler approach
-            org.flowable.TaskService ts = taskService;
             var taskQuery = mock(org.flowable.task.api.TaskQuery.class);
             when(taskService.createTaskQuery()).thenReturn(taskQuery);
             when(taskQuery.taskId("task-001")).thenReturn(taskQuery);

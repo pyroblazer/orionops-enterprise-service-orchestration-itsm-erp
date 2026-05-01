@@ -14,9 +14,7 @@ import java.util.UUID;
 @NoArgsConstructor
 public class SLACreatedEvent extends BaseEvent {
 
-    @Builder.Default
     private final String eventType = "SLA_CREATED";
-    @Builder.Default
     private final String aggregateType = "sla_instance";
 
     private UUID slaInstanceId;

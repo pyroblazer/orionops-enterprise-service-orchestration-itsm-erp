@@ -1,9 +1,7 @@
 import React, { useCallback } from 'react';
 import {
   View,
-  Text,
   FlatList,
-  TouchableOpacity,
   RefreshControl,
   StyleSheet,
   ActivityIndicator,
@@ -12,7 +10,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTheme } from '../theme/ThemeProvider';
 import { apiClient } from '../services/api';
 import { TicketCard } from '../components/TicketCard';
-import { EmptyState } from '../components/EmptyState';
+import EmptyState from '../components/EmptyState';
 
 interface Ticket {
   id: string;
@@ -31,7 +29,7 @@ interface MyWorkScreenProps {
 }
 
 export const MyWorkScreen: React.FC<MyWorkScreenProps> = ({ navigation }) => {
-  const { colors, isHighContrast } = useTheme();
+  const { colors } = useTheme();
   const queryClient = useQueryClient();
 
   const {

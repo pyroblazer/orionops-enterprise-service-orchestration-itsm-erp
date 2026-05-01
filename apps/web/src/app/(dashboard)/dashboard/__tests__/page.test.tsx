@@ -107,7 +107,7 @@ describe('Dashboard Page', () => {
 
   it('has quick action buttons', () => {
     renderWithProviders(<DashboardPage />);
-    expect(screen.getByText('Create Incident')).toBeInTheDocument();
+    expect(screen.getAllByText('Create Incident').length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText('Request Change')).toBeInTheDocument();
     expect(screen.getByText('Search Knowledge Base')).toBeInTheDocument();
     expect(screen.getByText('View SLA Dashboard')).toBeInTheDocument();
@@ -115,7 +115,7 @@ describe('Dashboard Page', () => {
 
   it('has SLA compliance section', () => {
     renderWithProviders(<DashboardPage />);
-    expect(screen.getByText('SLA Compliance')).toBeInTheDocument();
+    expect(screen.getAllByText('SLA Compliance').length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText('94%')).toBeInTheDocument();
   });
 

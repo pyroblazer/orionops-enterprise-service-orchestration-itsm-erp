@@ -38,7 +38,8 @@ public class FinanceService {
                 .name(request.getName()).description(request.getDescription())
                 .totalAmount(request.getTotalAmount()).startDate(request.getStartDate())
                 .endDate(request.getEndDate()).fiscalYear(request.getFiscalYear())
-                .costCenterId(request.getCostCenterId()).tenantId(resolveTenantId()).build();
+                .costCenterId(request.getCostCenterId()).build();
+        budget.setTenantId(resolveTenantId());
         return mapBudgetToResponse(budgetRepository.save(budget));
     }
 
@@ -91,7 +92,8 @@ public class FinanceService {
         CostCenter cc = CostCenter.builder()
                 .name(request.getName()).code(request.getCode())
                 .description(request.getDescription()).owner(request.getOwner())
-                .tenantId(resolveTenantId()).build();
+                .build();
+        cc.setTenantId(resolveTenantId());
         return mapCostCenterToResponse(costCenterRepository.save(cc));
     }
 
@@ -130,7 +132,8 @@ public class FinanceService {
                 .description(request.getDescription()).amount(request.getAmount())
                 .budgetId(request.getBudgetId()).costCenterId(request.getCostCenterId())
                 .category(request.getCategory()).expenseDate(request.getExpenseDate())
-                .submittedBy(request.getSubmittedBy()).tenantId(resolveTenantId()).build();
+                .submittedBy(request.getSubmittedBy()).build();
+        expense.setTenantId(resolveTenantId());
         return mapExpenseToResponse(expenseRepository.save(expense));
     }
 
@@ -172,7 +175,8 @@ public class FinanceService {
                 .invoiceNumber(request.getInvoiceNumber()).vendorId(request.getVendorId())
                 .amount(request.getAmount()).taxAmount(request.getTaxAmount())
                 .invoiceDate(request.getInvoiceDate()).dueDate(request.getDueDate())
-                .description(request.getDescription()).tenantId(resolveTenantId()).build();
+                .description(request.getDescription()).build();
+        invoice.setTenantId(resolveTenantId());
         return mapInvoiceToResponse(invoiceRepository.save(invoice));
     }
 
@@ -214,7 +218,8 @@ public class FinanceService {
                 .invoiceId(request.getInvoiceId()).amount(request.getAmount())
                 .paymentDate(request.getPaymentDate()).method(request.getMethod())
                 .reference(request.getReference()).notes(request.getNotes())
-                .tenantId(resolveTenantId()).build();
+                .build();
+        payment.setTenantId(resolveTenantId());
         return mapPaymentToResponse(paymentRecordRepository.save(payment));
     }
 

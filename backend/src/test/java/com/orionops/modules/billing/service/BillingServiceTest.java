@@ -135,12 +135,14 @@ class BillingServiceTest {
 
             ServiceUsage usage1 = ServiceUsage.builder()
                     .serviceId(serviceId).totalCost(new BigDecimal("100.00"))
-                    .tenantId(tenantId).usageDate(periodStart.plusDays(5)).build();
+                    .usageDate(periodStart.plusDays(5)).build();
+            usage1.setTenantId(tenantId);
             usage1.setId(UUID.randomUUID());
 
             ServiceUsage usage2 = ServiceUsage.builder()
                     .serviceId(serviceId).totalCost(new BigDecimal("200.00"))
-                    .tenantId(tenantId).usageDate(periodStart.plusDays(15)).build();
+                    .usageDate(periodStart.plusDays(15)).build();
+            usage2.setTenantId(tenantId);
             usage2.setId(UUID.randomUUID());
 
             when(usageRepository.findByPeriod(any(UUID.class), any(LocalDateTime.class), any(LocalDateTime.class)))
@@ -210,8 +212,9 @@ class BillingServiceTest {
         void shouldReturnUsages_whenListing_givenExistingRecords() {
             ServiceUsage usage = ServiceUsage.builder()
                     .serviceId(serviceId).usageType("API").quantity(BigDecimal.TEN)
-                    .totalCost(BigDecimal.valueOf(50)).tenantId(tenantId)
+                    .totalCost(BigDecimal.valueOf(50))
                     .usageDate(LocalDateTime.now()).build();
+            usage.setTenantId(tenantId);
             usage.setId(UUID.randomUUID());
             usage.setCreatedAt(LocalDateTime.now());
 

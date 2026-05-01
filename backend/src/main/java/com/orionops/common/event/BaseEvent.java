@@ -43,13 +43,10 @@ import java.util.UUID;
 })
 public abstract class BaseEvent {
 
-    @Builder.Default
     private UUID eventId = UUID.randomUUID();
     private String eventType;
     private String aggregateType;
     private UUID aggregateId;
-    @Builder.Default
     private LocalDateTime timestamp = LocalDateTime.now();
-    @Builder.Default
     private Map<String, Object> metadata = new HashMap<>();
 }

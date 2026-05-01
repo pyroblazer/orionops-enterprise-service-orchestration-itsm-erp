@@ -168,7 +168,7 @@ public class RestConnector {
     public static class AuthConfig {
         public enum AuthType { OAUTH2, API_KEY, BASIC, NONE }
 
-        @lombok.Default
+        @lombok.Builder.Default
         private AuthType type = AuthType.NONE;
         private String token;
         private String apiKeyHeader;

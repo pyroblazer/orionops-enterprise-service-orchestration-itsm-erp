@@ -16,6 +16,7 @@ import org.springframework.web.client.RestTemplate;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.HashMap;
@@ -111,10 +112,10 @@ public class WebhookService {
         WebhookDeliveryLog deliveryLog = WebhookDeliveryLog.builder()
                 .webhookId(webhookId)
                 .eventType(eventType)
-                .tenantId(resolveTenantId())
                 .status(DeliveryStatus.PENDING)
                 .retryCount(0)
                 .build();
+        deliveryLog.setTenantId(resolveTenantId());
 
         try {
             String jsonPayload = objectMapper.writeValueAsString(payload);

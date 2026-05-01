@@ -72,10 +72,10 @@ class IncidentRepositoryIT {
                 .priority(priority)
                 .assigneeId(assigneeId)
                 .escalationLevel(0)
-                .tenantId(tenantId)
-                .createdBy("test-user")
-                .updatedBy("test-user")
                 .build();
+        incident.setTenantId(tenantId);
+        incident.setCreatedBy("test-user");
+        incident.setUpdatedBy("test-user");
         entityManager.persistAndFlush(incident);
         return incident;
     }

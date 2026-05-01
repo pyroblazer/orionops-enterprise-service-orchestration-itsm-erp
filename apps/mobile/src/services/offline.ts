@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { NetInfo } from '@react-native-community/netinfo';
-import axios, { AxiosInstance } from 'axios';
+import NetInfo from '@react-native-community/netinfo';
+import { AxiosInstance } from 'axios';
 
 const DRAFTS_KEY = 'orionops_drafts';
 const QUEUE_KEY = 'orionops_offline_queue';

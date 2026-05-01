@@ -31,7 +31,8 @@ public class VendorService {
                 .name(req.getName()).description(req.getDescription())
                 .contactEmail(req.getContactEmail()).contactPhone(req.getContactPhone())
                 .address(req.getAddress()).website(req.getWebsite()).category(req.getCategory())
-                .tenantId(resolveTenantId()).build();
+                .build();
+        v.setTenantId(resolveTenantId());
         return mapVendor(vendorRepository.save(v));
     }
 
@@ -60,7 +61,8 @@ public class VendorService {
                 .deliveryScore(req.getDeliveryScore()).responsivenessScore(req.getResponsivenessScore())
                 .overallScore(overall).evaluationDate(LocalDateTime.now())
                 .evaluator(req.getEvaluator()).comments(req.getComments())
-                .tenantId(resolveTenantId()).build();
+                .build();
+        perf.setTenantId(resolveTenantId());
         return mapPerformance(performanceRepository.save(perf));
     }
 

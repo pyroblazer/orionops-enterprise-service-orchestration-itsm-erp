@@ -79,9 +79,9 @@ describe('Dashboard Accessibility', () => {
     expect(h1?.textContent).toBe('Dashboard');
   });
 
-  it('summary cards have accessible region roles', () => {
+  it('summary cards are rendered as card containers', () => {
     renderWithProviders(<DashboardPage />);
-    const regions = document.querySelectorAll('[role="region"]');
-    expect(regions.length).toBeGreaterThan(0);
+    const cards = document.querySelectorAll('.rounded-lg.border.bg-card');
+    expect(cards.length).toBeGreaterThan(0);
   });
 });

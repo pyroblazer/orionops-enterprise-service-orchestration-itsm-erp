@@ -34,8 +34,8 @@ public class ServiceRequestService {
                 .assigneeId(request.getAssigneeId())
                 .serviceId(request.getServiceId())
                 .status(ServiceRequest.RequestStatus.DRAFT)
-                .tenantId(resolveTenantId())
                 .build();
+        sr.setTenantId(resolveTenantId());
         return mapToResponse(serviceRequestRepository.save(sr));
     }
 

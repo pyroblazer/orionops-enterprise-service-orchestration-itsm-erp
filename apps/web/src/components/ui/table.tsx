@@ -63,7 +63,7 @@ const TableRow = React.forwardRef<
   React.HTMLAttributes<HTMLTableRowElement> & {
     selected?: boolean;
   }
->(({ className, selected, ...props }, ref) => (
+>(({ className, selected = false, ...props }, ref) => (
   <tr
     ref={ref}
     className={cn(

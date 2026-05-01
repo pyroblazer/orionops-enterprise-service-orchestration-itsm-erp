@@ -29,7 +29,8 @@ public class WorkforceService {
         Employee emp = Employee.builder()
                 .firstName(req.getFirstName()).lastName(req.getLastName()).email(req.getEmail())
                 .phone(req.getPhone()).department(req.getDepartment()).title(req.getTitle())
-                .userId(req.getUserId()).location(req.getLocation()).tenantId(resolveTenantId()).build();
+                .userId(req.getUserId()).location(req.getLocation()).build();
+        emp.setTenantId(resolveTenantId());
         return mapEmployee(employeeRepository.save(emp));
     }
 
@@ -72,7 +73,8 @@ public class WorkforceService {
     @Transactional
     public WorkforceDTO.SkillResponse createSkill(WorkforceDTO.SkillRequest req) {
         Skill skill = Skill.builder().name(req.getName()).category(req.getCategory())
-                .description(req.getDescription()).tenantId(resolveTenantId()).build();
+                .description(req.getDescription()).build();
+        skill.setTenantId(resolveTenantId());
         return mapSkill(skillRepository.save(skill));
     }
 
@@ -108,7 +110,8 @@ public class WorkforceService {
                 .name(req.getName()).description(req.getDescription())
                 .periodStart(req.getPeriodStart()).periodEnd(req.getPeriodEnd())
                 .totalCapacity(req.getTotalCapacity()).allocatedCapacity(req.getAllocatedCapacity())
-                .department(req.getDepartment()).tenantId(resolveTenantId()).build();
+                .department(req.getDepartment()).build();
+        plan.setTenantId(resolveTenantId());
         return mapCapacityPlan(capacityPlanRepository.save(plan));
     }
 

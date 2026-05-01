@@ -14,9 +14,7 @@ import java.util.UUID;
 @NoArgsConstructor
 public class SLABreachEvent extends BaseEvent {
 
-    @Builder.Default
     private final String eventType = "SLA_BREACHED";
-    @Builder.Default
     private final String aggregateType = "sla_instance";
 
     private UUID slaInstanceId;

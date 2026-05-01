@@ -41,8 +41,8 @@ public class WorkflowService {
                 .bpmnXml(request.getBpmnXml())
                 .processDefinitionKey(request.getProcessDefinitionKey())
                 .version(1)
-                .tenantId(resolveTenantId())
                 .build();
+        def.setTenantId(resolveTenantId());
         return mapDefinitionToResponse(definitionRepository.save(def));
     }
 
@@ -85,8 +85,8 @@ public class WorkflowService {
                 .processInstanceId(processInstance.getId())
                 .businessKey(processInstance.getBusinessKey())
                 .status(WorkflowInstance.InstanceStatus.RUNNING)
-                .tenantId(resolveTenantId())
                 .build();
+        instance.setTenantId(resolveTenantId());
 
         WorkflowInstance saved = instanceRepository.save(instance);
         log.info("Workflow started: definitionId={}, processInstanceId={}", definitionId, processInstance.getId());

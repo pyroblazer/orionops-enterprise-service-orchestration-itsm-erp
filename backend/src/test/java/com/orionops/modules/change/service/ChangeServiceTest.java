@@ -77,8 +77,8 @@ class ChangeServiceTest {
                 .testPlan("Run integration test suite")
                 .plannedStart(LocalDateTime.now().plusDays(7))
                 .plannedEnd(LocalDateTime.now().plusDays(7).plusHours(4))
-                .tenantId(tenantId)
                 .build();
+        cr.setTenantId(tenantId);
         cr.setId(UUID.randomUUID());
         cr.setCreatedAt(LocalDateTime.now());
         cr.setUpdatedAt(LocalDateTime.now());

@@ -46,8 +46,8 @@ public class SLAService {
                 .priority(request.getPriority())
                 .serviceId(request.getServiceId())
                 .slaType(request.getSlaType() != null ? request.getSlaType() : SLADefinition.SLAType.SLA)
-                .tenantId(resolveTenantId())
                 .build();
+        def.setTenantId(resolveTenantId());
         return mapDefinitionToResponse(definitionRepository.save(def));
     }
 
@@ -74,8 +74,8 @@ public class SLAService {
                 .status(SLAInstance.SLAStatus.ACTIVE)
                 .responseTarget(now.plusHours(def.getResponseTimeHours()))
                 .resolutionTarget(now.plusHours(def.getResolutionTimeHours()))
-                .tenantId(resolveTenantId())
                 .build();
+        instance.setTenantId(resolveTenantId());
 
         SLAInstance saved = instanceRepository.save(instance);
 

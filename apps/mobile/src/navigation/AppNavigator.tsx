@@ -42,7 +42,6 @@ export const AppNavigator: React.FC = () => {
           },
           headerTintColor: colors.text,
           headerShadowVisible: false,
-          headerBackTitleVisible: false,
           contentStyle: {
             backgroundColor: colors.background,
           },

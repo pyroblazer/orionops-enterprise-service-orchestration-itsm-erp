@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import {
   View,
   TextInput,
@@ -8,62 +8,104 @@ import {
   Platform,
 } from 'react-native';
 import { useTheme } from '../theme/ThemeProvider';
-import { saveDraft, getDraft, removeDraft } from '../services/offline';
+import { offlineStorage } from '../services/offline';
+import type { DraftComment } from '../services/offline';
 
 interface CommentInputProps {
-  entityId: string;
+  // Used by TicketDetailScreen (controlled mode)
+  value?: string;
+  onChangeText?: (text: string) => void;
   onSubmit: (comment: string) => Promise<void>;
+  isInternal?: boolean;
+  onToggleInternal?: () => void;
+  isSubmitting?: boolean;
+  ticketId?: string;
+  // Used by standalone mode (test file)
+  entityId?: string;
   placeholder?: string;
 }
 
 export default function CommentInput({
-  entityId,
+  value: controlledValue,
+  onChangeText: controlledOnChange,
   onSubmit,
+  isInternal = false,
+  onToggleInternal: _onToggleInternal,
+  isSubmitting: externalIsSubmitting = false,
+  ticketId,
+  entityId,
   placeholder = 'Add a comment...',
 }: CommentInputProps) {
   const { colors } = useTheme();
-  const [text, setText] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const effectiveEntityId = ticketId || entityId || '';
+  const isControlled = controlledValue !== undefined;
+
+  const [internalText, setInternalText] = useState('');
+  const [internalSubmitting, setInternalSubmitting] = useState(false);
   const [syncStatus, setSyncStatus] = useState<'idle' | 'draft' | 'syncing'>('idle');
 
-  React.useEffect(() => {
-    getDraft(`comment-${entityId}`).then((draft) => {
-      if (draft) {
-        setText(draft);
-        setSyncStatus('draft');
-      }
-    });
-  }, [entityId]);
+  const text = isControlled ? controlledValue : internalText;
+  const isSubmitting = isControlled ? externalIsSubmitting : internalSubmitting;
+
+  useEffect(() => {
+    if (!isControlled && effectiveEntityId) {
+      offlineStorage.getDrafts(effectiveEntityId).then((drafts: DraftComment[]) => {
+        const draft = drafts[0];
+        if (draft) {
+          setInternalText(draft.content);
+          setSyncStatus('draft');
+        }
+      });
+    }
+  }, [effectiveEntityId, isControlled]);
 
   const handleChange = useCallback(
-    async (value: string) => {
-      setText(value);
-      if (value.trim()) {
-        await saveDraft(`comment-${entityId}`, value);
-        setSyncStatus('draft');
+    async (val: string) => {
+      if (controlledOnChange) {
+        controlledOnChange(val);
       } else {
-        await removeDraft(`comment-${entityId}`);
-        setSyncStatus('idle');
+        setInternalText(val);
+      }
+      if (effectiveEntityId) {
+        if (val.trim()) {
+          await offlineStorage.saveDraft({
+            ticketId: effectiveEntityId,
+            content: val,
+            isInternal,
+          });
+          setSyncStatus('draft');
+        } else {
+          await offlineStorage.deleteDraftsForTicket(effectiveEntityId);
+          setSyncStatus('idle');
+        }
       }
     },
-    [entityId],
+    [effectiveEntityId, controlledOnChange, isInternal],
   );
 
   const handleSubmit = useCallback(async () => {
     if (!text.trim() || isSubmitting) return;
-    setIsSubmitting(true);
+    if (!isControlled) {
+      setInternalSubmitting(true);
+    }
     setSyncStatus('syncing');
     try {
       await onSubmit(text.trim());
-      setText('');
-      await removeDraft(`comment-${entityId}`);
+      if (!isControlled) {
+        setInternalText('');
+      }
+      if (effectiveEntityId) {
+        await offlineStorage.deleteDraftsForTicket(effectiveEntityId);
+      }
       setSyncStatus('idle');
     } catch {
       setSyncStatus('draft');
     } finally {
-      setIsSubmitting(false);
+      if (!isControlled) {
+        setInternalSubmitting(false);
+      }
     }
-  }, [text, isSubmitting, entityId, onSubmit]);
+  }, [text, isSubmitting, isControlled, effectiveEntityId, onSubmit]);
 
   return (
     <View style={styles.container}>
@@ -81,7 +123,7 @@ export default function CommentInput({
         <TouchableOpacity
           style={[
             styles.sendButton,
-            { backgroundColor: text.trim() ? colors.primary : colors.muted },
+            { backgroundColor: text.trim() ? colors.primary : colors.textSecondary },
           ]}
           onPress={handleSubmit}
           disabled={!text.trim() || isSubmitting}

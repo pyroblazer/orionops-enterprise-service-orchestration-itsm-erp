@@ -140,7 +140,7 @@ public class MonitoringIntegrationService {
             if (annotations != null) {
                 alert.setDescription(annotations.getOrDefault("description",
                         annotations.getOrDefault("summary", "No description available")));
-                alert.setRunbookUrl(annotations.getOrDefault("runbook_url"));
+                alert.setRunbookUrl(annotations.getOrDefault("runbook_url", null));
             }
 
             alert.setGeneratorUrl((String) firstAlert.get("generatorURL"));
@@ -361,7 +361,6 @@ public class MonitoringIntegrationService {
         private String startsAt;
         private String generatorUrl;
         private String runbookUrl;
-        @lombok.Default
         private Map<String, String> labels = new HashMap<>();
     }
 }

@@ -67,8 +67,8 @@ class FinanceServiceTest {
                 .spentAmount(BigDecimal.ZERO)
                 .committedAmount(BigDecimal.ZERO)
                 .fiscalYear("2026")
-                .tenantId(tenantId)
                 .build();
+        testBudget.setTenantId(tenantId);
         testBudget.setId(UUID.randomUUID());
         testBudget.setCreatedAt(LocalDateTime.now());
         testBudget.setUpdatedAt(LocalDateTime.now());
@@ -144,8 +144,8 @@ class FinanceServiceTest {
                     .amount(new BigDecimal("20000.00"))
                     .status(Expense.ExpenseStatus.APPROVED)
                     .budgetId(testBudget.getId())
-                    .tenantId(tenantId)
                     .build();
+            approved1.setTenantId(tenantId);
             approved1.setId(UUID.randomUUID());
 
             Expense paid = Expense.builder()
@@ -153,8 +153,8 @@ class FinanceServiceTest {
                     .amount(new BigDecimal("15000.00"))
                     .status(Expense.ExpenseStatus.PAID)
                     .budgetId(testBudget.getId())
-                    .tenantId(tenantId)
                     .build();
+            paid.setTenantId(tenantId);
             paid.setId(UUID.randomUUID());
 
             Expense rejected = Expense.builder()
@@ -162,8 +162,8 @@ class FinanceServiceTest {
                     .amount(new BigDecimal("5000.00"))
                     .status(Expense.ExpenseStatus.REJECTED)
                     .budgetId(testBudget.getId())
-                    .tenantId(tenantId)
                     .build();
+            rejected.setTenantId(tenantId);
             rejected.setId(UUID.randomUUID());
 
             when(budgetRepository.findById(testBudget.getId())).thenReturn(Optional.of(testBudget));

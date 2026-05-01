@@ -156,8 +156,6 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
         </View>
         <Text
           style={[styles.userName, { color: colors.text }]}
-          accessibilityRole="header"
-          accessibilityLevel={2}
         >
           {user.name}
         </Text>
@@ -184,8 +182,6 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
       <View style={styles.section}>
         <Text
           style={[styles.sectionTitle, { color: colors.text }]}
-          accessibilityRole="header"
-          accessibilityLevel={3}
         >
           Appearance
         </Text>
@@ -257,8 +253,6 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
       <View style={styles.section}>
         <Text
           style={[styles.sectionTitle, { color: colors.text }]}
-          accessibilityRole="header"
-          accessibilityLevel={3}
         >
           Notification Preferences
         </Text>

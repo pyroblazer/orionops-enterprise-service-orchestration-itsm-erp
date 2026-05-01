@@ -31,8 +31,8 @@ public class TenantService {
                 .domain(req.getDomain()).logoUrl(req.getLogoUrl())
                 .primaryContactEmail(req.getPrimaryContactEmail())
                 .status(Tenant.TenantStatus.TRIAL)
-                .tenantId(UUID.fromString("00000000-0000-0000-0000-000000000000")) // System-level
                 .build();
+        tenant.setTenantId(UUID.fromString("00000000-0000-0000-0000-000000000000")); // System-level
         Tenant saved = tenantRepository.save(tenant);
 
         if (req.getPlanId() != null) {
@@ -41,8 +41,8 @@ public class TenantService {
                     .status(Subscription.SubscriptionStatus.TRIAL)
                     .startDate(LocalDateTime.now())
                     .trialEnd(LocalDateTime.now().plusDays(14))
-                    .tenantId(saved.getId())
                     .build();
+            sub.setTenantId(saved.getId());
             subscriptionRepository.save(sub);
         }
         return mapTenant(saved);

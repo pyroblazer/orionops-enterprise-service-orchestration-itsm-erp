@@ -16,11 +16,10 @@ from models.schemas import (
     RootCauseRequest,
     RootCauseResponse,
     RootCauseSuggestion,
-    SimilarTicket,
     SimilarityRequest,
     SimilarityResponse,
+    SimilarTicket,
 )
-
 
 # ---------------------------------------------------------------------------
 # Root-cause pattern catalogue

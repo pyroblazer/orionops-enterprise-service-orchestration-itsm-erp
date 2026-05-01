@@ -1,4 +1,3 @@
-import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 import { TicketCard } from '../TicketCard';
 
@@ -51,13 +50,15 @@ jest.mock('../../theme/ThemeProvider', () => {
 // Mock SLATimer since TicketCard imports it
 jest.mock('../SLATimer', () => {
   const { Text } = require('react-native');
-  return ({ deadline }: { deadline: string }) => <Text>SLA: {deadline}</Text>;
+  return ({ targetDate }: { targetDate: string }) => <Text>SLA: {targetDate}</Text>;
 });
 
 // Mock StatusBadge since TicketCard imports it
 jest.mock('../StatusBadge', () => {
   const { Text } = require('react-native');
-  return ({ status }: { status: string }) => <Text>{status}</Text>;
+  return {
+    StatusBadge: ({ status }: { status: string }) => <Text>{status}</Text>,
+  };
 });
 
 const mockTicket = {

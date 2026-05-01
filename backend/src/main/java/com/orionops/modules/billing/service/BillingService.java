@@ -40,7 +40,8 @@ public class BillingService {
                 .usageType(req.getUsageType()).quantity(req.getQuantity())
                 .unitCost(req.getUnitCost()).totalCost(totalCost)
                 .usageDate(LocalDateTime.now()).description(req.getDescription())
-                .tenantId(resolveTenantId()).build();
+                .build();
+        usage.setTenantId(resolveTenantId());
         ServiceUsage saved = usageRepository.save(usage);
 
         eventPublisher.publish(UsageRecordedEvent.builder()
@@ -61,7 +62,8 @@ public class BillingService {
         BillingRecord record = BillingRecord.builder()
                 .invoiceNumber(invoiceNumber).amount(total).taxAmount(tax)
                 .periodStart(req.getPeriodStart()).periodEnd(req.getPeriodEnd())
-                .generatedAt(LocalDateTime.now()).tenantId(resolveTenantId()).build();
+                .generatedAt(LocalDateTime.now()).build();
+        record.setTenantId(resolveTenantId());
         BillingRecord saved = billingRepository.save(record);
 
         eventPublisher.publish(InvoiceGeneratedEvent.builder()
@@ -126,7 +128,8 @@ public class BillingService {
                 .name(req.getName()).description(req.getDescription()).serviceId(req.getServiceId())
                 .pricingType(req.getPricingType() != null ? CostModel.PricingType.valueOf(req.getPricingType()) : CostModel.PricingType.FIXED)
                 .fixedPrice(req.getFixedPrice()).unitPrice(req.getUnitPrice())
-                .tenantId(resolveTenantId()).build();
+                .build();
+        cm.setTenantId(resolveTenantId());
         return mapCostModel(costModelRepository.save(cm));
     }
 

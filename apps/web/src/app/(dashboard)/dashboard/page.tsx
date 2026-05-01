@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import Link from 'next/link';
 import { useIncidents } from '@/lib/hooks';
 import { Button } from '@/components/ui/button';
@@ -23,10 +22,9 @@ import {
   Plus,
   ShieldAlert,
   TrendingUp,
-  Zap,
   GitBranch,
 } from 'lucide-react';
-import { formatDate, formatRelativeTime, getStatusColor, getPriorityColor, cn } from '@/lib/utils';
+import { formatRelativeTime, getStatusColor, getPriorityColor, cn } from '@/lib/utils';
 
 interface SummaryCardProps {
   title: string;

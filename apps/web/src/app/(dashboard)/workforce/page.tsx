@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { api } from '@/lib/api';
+import apiClient from '@/lib/api';
 
 export default function WorkforcePage() {
   const [tab, setTab] = useState<'employees' | 'skills' | 'capacity'>('employees');
@@ -16,7 +16,7 @@ export default function WorkforcePage() {
     queryKey: ['employees', search],
     queryFn: async () => {
       const params = search ? `?search=${search}` : '';
-      const res = await api.get(`/api/v1/workforce/employees${params}`);
+      const res = await apiClient.get(`/api/v1/workforce/employees${params}`);
       return res.data.data;
     },
     enabled: tab === 'employees',
@@ -25,7 +25,7 @@ export default function WorkforcePage() {
   const { data: skills } = useQuery({
     queryKey: ['skills'],
     queryFn: async () => {
-      const res = await api.get('/api/v1/workforce/skills');
+      const res = await apiClient.get('/api/v1/workforce/skills');
       return res.data.data;
     },
     enabled: tab === 'skills',
@@ -34,7 +34,7 @@ export default function WorkforcePage() {
   const { data: capacity } = useQuery({
     queryKey: ['capacity'],
     queryFn: async () => {
-      const res = await api.get('/api/v1/workforce/capacity');
+      const res = await apiClient.get('/api/v1/workforce/capacity');
       return res.data.data;
     },
     enabled: tab === 'capacity',

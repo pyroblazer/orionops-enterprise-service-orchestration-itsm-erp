@@ -35,8 +35,8 @@ public class KnowledgeService {
                 .status(KnowledgeArticle.ArticleStatus.DRAFT)
                 .views(0)
                 .helpfulVotes(0)
-                .tenantId(resolveTenantId())
                 .build();
+        article.setTenantId(resolveTenantId());
         return mapToResponse(articleRepository.save(article));
     }
 

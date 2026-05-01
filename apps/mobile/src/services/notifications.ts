@@ -81,7 +81,6 @@ export async function initializeNotifications(): Promise<string | null> {
           allowAlert: true,
           allowBadge: true,
           allowSound: true,
-          allowAnnouncements: true,
         },
       });
       finalStatus = status;
@@ -204,7 +203,7 @@ export async function scheduleLocalNotification(
       data: data || {},
       sound: true,
     },
-    trigger: { seconds: secondsFromNow },
+    trigger: { type: 'timeInterval', seconds: secondsFromNow } as Notifications.NotificationTriggerInput,
   });
 }
 

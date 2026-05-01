@@ -63,8 +63,8 @@ class CMDBServiceTest {
                 .environment("production")
                 .ownerId("team-infra")
                 .location("DC-East")
-                .tenantId(tenantId)
                 .build();
+        testCI.setTenantId(tenantId);
         testCI.setId(UUID.randomUUID());
         testCI.setCreatedAt(LocalDateTime.now());
         testCI.setUpdatedAt(LocalDateTime.now());
@@ -181,8 +181,8 @@ class CMDBServiceTest {
                     .name("prod-lb-01")
                     .type(ConfigurationItem.CIType.NETWORK_DEVICE)
                     .status(ConfigurationItem.CIStatus.ACTIVE)
-                    .tenantId(tenantId)
                     .build();
+            targetCI.setTenantId(tenantId);
             targetCI.setId(UUID.randomUUID());
             targetCI.setCreatedAt(LocalDateTime.now());
             targetCI.setCreatedBy("admin");
@@ -215,7 +215,8 @@ class CMDBServiceTest {
         void shouldReturnRelationships_whenFound_givenCIId() {
             ConfigurationItem relatedCI = ConfigurationItem.builder()
                     .name("related-server").type(ConfigurationItem.CIType.SERVER)
-                    .status(ConfigurationItem.CIStatus.ACTIVE).tenantId(tenantId).build();
+                    .status(ConfigurationItem.CIStatus.ACTIVE).build();
+            relatedCI.setTenantId(tenantId);
             relatedCI.setId(UUID.randomUUID());
             relatedCI.setCreatedBy("admin");
 
@@ -224,8 +225,8 @@ class CMDBServiceTest {
                     .targetCiId(relatedCI.getId())
                     .relationshipType("DEPENDS_ON")
                     .description("Depends on")
-                    .tenantId(tenantId)
                     .build();
+            rel.setTenantId(tenantId);
             rel.setId(UUID.randomUUID());
 
             when(ciRepository.findById(testCI.getId())).thenReturn(Optional.of(testCI));
@@ -249,25 +250,29 @@ class CMDBServiceTest {
         void shouldReturnImpactedCIs_whenAnalysing_givenRelationshipGraph() {
             ConfigurationItem ci2 = ConfigurationItem.builder()
                     .name("app-server").type(ConfigurationItem.CIType.APPLICATION)
-                    .status(ConfigurationItem.CIStatus.ACTIVE).tenantId(tenantId).build();
+                    .status(ConfigurationItem.CIStatus.ACTIVE).build();
+            ci2.setTenantId(tenantId);
             ci2.setId(UUID.randomUUID());
             ci2.setCreatedBy("admin");
 
             ConfigurationItem ci3 = ConfigurationItem.builder()
                     .name("db-server").type(ConfigurationItem.CIType.DATABASE)
-                    .status(ConfigurationItem.CIStatus.ACTIVE).tenantId(tenantId).build();
+                    .status(ConfigurationItem.CIStatus.ACTIVE).build();
+            ci3.setTenantId(tenantId);
             ci3.setId(UUID.randomUUID());
             ci3.setCreatedBy("admin");
 
             // testCI -> ci2 -> ci3 (transitive dependency chain)
             CIRelationship rel1 = CIRelationship.builder()
                     .sourceCiId(testCI.getId()).targetCiId(ci2.getId())
-                    .relationshipType("DEPENDS_ON").tenantId(tenantId).build();
+                    .relationshipType("DEPENDS_ON").build();
+            rel1.setTenantId(tenantId);
             rel1.setId(UUID.randomUUID());
 
             CIRelationship rel2 = CIRelationship.builder()
                     .sourceCiId(ci2.getId()).targetCiId(ci3.getId())
-                    .relationshipType("DEPENDS_ON").tenantId(tenantId).build();
+                    .relationshipType("DEPENDS_ON").build();
+            rel2.setTenantId(tenantId);
             rel2.setId(UUID.randomUUID());
 
             when(ciRepository.findById(testCI.getId())).thenReturn(Optional.of(testCI));

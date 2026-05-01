@@ -61,18 +61,19 @@ public class ConnectorConfig {
      */
     @Bean
     public RestTemplate connectorRestTemplate() {
-        org.apache.http.impl.conn.PoolingHttpClientConnectionManager connManager =
-                new org.apache.http.impl.conn.PoolingHttpClientConnectionManager();
+        org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager connManager =
+                new org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager();
         connManager.setMaxTotal(50);
         connManager.setDefaultMaxPerRoute(10);
 
-        org.apache.http.client.config.RequestConfig requestConfig = org.apache.http.client.config.RequestConfig.custom()
-                .setConnectTimeout(connectTimeout)
-                .setSocketTimeout(readTimeout)
-                .setConnectionRequestTimeout(5000)
+        org.apache.hc.client5.http.config.RequestConfig requestConfig =
+                org.apache.hc.client5.http.config.RequestConfig.custom()
+                .setConnectionRequestTimeout(connectTimeout, java.util.concurrent.TimeUnit.MILLISECONDS)
+                .setResponseTimeout(readTimeout, java.util.concurrent.TimeUnit.MILLISECONDS)
                 .build();
 
-        org.apache.http.impl.client.CloseableHttpClient httpClient = org.apache.http.impl.client.HttpClients.custom()
+        org.apache.hc.client5.http.impl.classic.CloseableHttpClient httpClient =
+                org.apache.hc.client5.http.impl.classic.HttpClients.custom()
                 .setConnectionManager(connManager)
                 .setDefaultRequestConfig(requestConfig)
                 .build();
@@ -89,7 +90,6 @@ public class ConnectorConfig {
     public Jaxb2Marshaller soapMarshaller() {
         Jaxb2Marshaller marshaller = new Jaxb2Marshaller();
         marshaller.setPackagesToScan("com.orionops.modules.integration.connector.soap");
-        marshaller.setMarshallingAnnotationsAware(true);
         return marshaller;
     }
 

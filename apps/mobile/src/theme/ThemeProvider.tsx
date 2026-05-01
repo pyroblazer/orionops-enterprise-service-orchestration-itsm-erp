@@ -3,6 +3,8 @@ import { useColorScheme } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import { themes, ThemeMode, ThemeColors } from './colors';
 
+export type { ThemeMode };
+
 const THEME_KEY = 'orionops_theme_preference';
 
 interface ThemeContextValue {

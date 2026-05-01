@@ -4,13 +4,11 @@ import {
   Text,
   ScrollView,
   TouchableOpacity,
-  TextInput,
   StyleSheet,
   ActivityIndicator,
   Alert,
   KeyboardAvoidingView,
   Platform,
-  Keyboard,
 } from 'react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import * as ImagePicker from 'expo-image-picker';
@@ -18,23 +16,10 @@ import { useTheme } from '../theme/ThemeProvider';
 import { apiClient } from '../services/api';
 import { offlineStorage } from '../services/offline';
 import { StatusBadge } from '../components/StatusBadge';
-import { SLATimer } from '../components/SLATimer';
-import { CommentInput } from '../components/CommentInput';
-
-interface Ticket {
-  id: string;
-  title: string;
-  description: string;
-  status: string;
-  priority: string;
-  ticketType: string;
-  assignee: { id: string; name: string; avatar?: string } | null;
-  reporter: { id: string; name: string };
-  slaDeadline: string | null;
-  createdAt: string;
-  updatedAt: string;
-  comments: Comment[];
-}
+import SLATimer from '../components/SLATimer';
+import CommentInput from '../components/CommentInput';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import type { RootStackParamList } from '../navigation/AppNavigator';
 
 interface Comment {
   id: string;
@@ -44,14 +29,11 @@ interface Comment {
   createdAt: string;
 }
 
-interface TicketDetailScreenProps {
-  route: { params: { ticketId: string } };
-  navigation: any;
-}
+type TicketDetailScreenProps = NativeStackScreenProps<RootStackParamList, 'TicketDetail'>;
 
 export const TicketDetailScreen: React.FC<TicketDetailScreenProps> = ({
   route,
-  navigation,
+  navigation: _navigation,
 }) => {
   const { ticketId } = route.params;
   const { colors, isHighContrast } = useTheme();
@@ -250,8 +232,6 @@ export const TicketDetailScreen: React.FC<TicketDetailScreenProps> = ({
           </View>
           <Text
             style={[styles.ticketTitle, { color: colors.text }]}
-            accessibilityRole="header"
-            accessibilityLevel={2}
           >
             {ticket.title}
           </Text>
@@ -291,7 +271,7 @@ export const TicketDetailScreen: React.FC<TicketDetailScreenProps> = ({
           {ticket.slaDeadline && (
             <View style={styles.slaRow}>
               <Text style={[styles.metaLabel, { color: colors.textTertiary }]}>SLA:</Text>
-              <SLATimer deadline={ticket.slaDeadline} />
+              <SLATimer targetDate={ticket.slaDeadline} status="active" label="SLA" />
             </View>
           )}
         </View>
@@ -309,8 +289,6 @@ export const TicketDetailScreen: React.FC<TicketDetailScreenProps> = ({
         >
           <Text
             style={[styles.sectionTitle, { color: colors.text }]}
-            accessibilityRole="header"
-            accessibilityLevel={3}
           >
             Description
           </Text>
@@ -335,8 +313,6 @@ export const TicketDetailScreen: React.FC<TicketDetailScreenProps> = ({
         >
           <Text
             style={[styles.sectionTitle, { color: colors.text }]}
-            accessibilityRole="header"
-            accessibilityLevel={3}
           >
             Activity ({ticket.comments?.length || 0})
           </Text>

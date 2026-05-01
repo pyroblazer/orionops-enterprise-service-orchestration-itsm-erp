@@ -80,8 +80,8 @@ class IncidentServiceTest {
                 .priority(Incident.IncidentPriority.MEDIUM)
                 .status(Incident.IncidentStatus.OPEN)
                 .escalationLevel(0)
-                .tenantId(tenantId)
                 .build();
+        incident.setTenantId(tenantId);
         incident.setId(UUID.randomUUID());
         incident.setCreatedAt(LocalDateTime.now());
         incident.setUpdatedAt(LocalDateTime.now());
@@ -404,7 +404,7 @@ class IncidentServiceTest {
             when(incidentRepository.searchIncidents(
                     eq(tenantId), eq(Incident.IncidentStatus.OPEN),
                     eq(Incident.IncidentPriority.HIGH), any(), any(),
-                    eq(""), any(Pageable.class)))
+                    any(), eq(""), any(Pageable.class)))
                     .thenReturn(page);
 
             Page<IncidentResponse> result = incidentService.searchIncidents(

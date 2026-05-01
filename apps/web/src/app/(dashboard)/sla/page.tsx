@@ -12,7 +12,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Progress } from '@/components/ui/progress-placeholder';
 import { Zap, AlertTriangle, Clock, CheckCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 

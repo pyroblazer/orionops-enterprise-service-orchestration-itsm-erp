@@ -30,7 +30,8 @@ public class InventoryService {
                 .name(req.getName()).description(req.getDescription()).sku(req.getSku())
                 .category(req.getCategory()).quantity(req.getQuantity()).minimumQuantity(req.getMinimumQuantity())
                 .unitPrice(req.getUnitPrice()).warehouseId(req.getWarehouseId()).location(req.getLocation())
-                .tenantId(resolveTenantId()).build();
+                .build();
+        item.setTenantId(resolveTenantId());
         return mapItem(itemRepository.save(item));
     }
 
@@ -89,7 +90,8 @@ public class InventoryService {
         StockMovement movement = StockMovement.builder()
                 .itemId(req.getItemId()).quantity(req.getQuantity()).type(req.getType())
                 .fromWarehouseId(req.getFromWarehouseId()).toWarehouseId(req.getToWarehouseId())
-                .reason(req.getReason()).tenantId(resolveTenantId()).build();
+                .reason(req.getReason()).build();
+        movement.setTenantId(resolveTenantId());
         return mapMovement(movementRepository.save(movement));
     }
 
@@ -99,7 +101,8 @@ public class InventoryService {
                 .name(req.getName()).description(req.getDescription()).assetTag(req.getAssetTag())
                 .type(req.getType()).purchasePrice(req.getPurchasePrice())
                 .purchaseDate(req.getPurchaseDate()).warrantyExpiry(req.getWarrantyExpiry())
-                .assignedTo(req.getAssignedTo()).ciId(req.getCiId()).tenantId(resolveTenantId()).build();
+                .assignedTo(req.getAssignedTo()).ciId(req.getCiId()).build();
+        asset.setTenantId(resolveTenantId());
         return mapAsset(assetRepository.save(asset));
     }
 
@@ -139,7 +142,8 @@ public class InventoryService {
     public InventoryResponse.WarehouseResponse createWarehouse(InventoryRequest.WarehouseRequest req) {
         Warehouse wh = Warehouse.builder()
                 .name(req.getName()).location(req.getLocation()).manager(req.getManager())
-                .tenantId(resolveTenantId()).build();
+                .build();
+        wh.setTenantId(resolveTenantId());
         return mapWarehouse(warehouseRepository.save(wh));
     }
 

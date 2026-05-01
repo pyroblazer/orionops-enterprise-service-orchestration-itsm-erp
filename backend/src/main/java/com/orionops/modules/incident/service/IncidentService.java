@@ -64,8 +64,8 @@ public class IncidentService {
                 .reporterId(request.getReporterId() != null ? request.getReporterId() : resolveCurrentUserId())
                 .parentIncidentId(request.getParentIncidentId())
                 .escalationLevel(0)
-                .tenantId(resolveTenantId())
                 .build();
+        incident.setTenantId(resolveTenantId());
 
         calculateSlaTargets(incident);
 

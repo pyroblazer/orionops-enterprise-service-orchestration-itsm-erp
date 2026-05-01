@@ -1,4 +1,3 @@
-import React from 'react';
 import { render } from '@testing-library/react-native';
 import SLATimer from '../SLATimer';
 
@@ -6,10 +5,10 @@ import SLATimer from '../SLATimer';
 jest.mock('../../theme/ThemeProvider', () => {
   const { createContext, useContext } = require('react');
   const mockColors = {
-    danger: '#DC2626',
-    warning: '#D97706',
-    muted: '#6B7280',
-    success: '#16A34A',
+    slaBreached: '#DC2626',
+    slaWarning: '#D97706',
+    slaSafe: '#16A34A',
+    textTertiary: '#6B7280',
     textSecondary: '#475569',
     text: '#1E293B',
   };

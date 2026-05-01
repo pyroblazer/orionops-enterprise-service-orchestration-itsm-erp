@@ -12,7 +12,7 @@ import {
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTheme } from '../theme/ThemeProvider';
 import { apiClient } from '../services/api';
-import { EmptyState } from '../components/EmptyState';
+import EmptyState from '../components/EmptyState';
 
 interface ApprovalItem {
   id: string;
@@ -29,7 +29,7 @@ interface ApprovalsScreenProps {
   navigation: any;
 }
 
-export const ApprovalsScreen: React.FC<ApprovalsScreenProps> = ({ navigation }) => {
+export const ApprovalsScreen: React.FC<ApprovalsScreenProps> = ({ navigation: _navigation }) => {
   const { colors, isHighContrast } = useTheme();
   const queryClient = useQueryClient();
   const listRef = useRef<FlatList>(null);

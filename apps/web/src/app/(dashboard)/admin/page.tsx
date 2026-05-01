@@ -15,8 +15,7 @@ export default function AdminPage() {
   const { data: users, isLoading } = useQuery({
     queryKey: ['admin-users', search],
     queryFn: async () => {
-      const params = search ? `?search=${search}` : '';
-      const res = await api.get(`/api/v1/auth/users${params}`);
+      const res = await api.getUsers(search ? { search } : undefined);
       return res.data.data;
     },
     enabled: tab === 'users',
@@ -78,7 +77,7 @@ export default function AdminPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {users?.content?.map((user: any) => (
+                  {users?.map((user: any) => (
                     <tr key={user.id} className="border-b hover:bg-muted/30">
                       <td className="px-4 py-3 font-medium">{user.displayName}</td>
                       <td className="px-4 py-3">{user.email}</td>

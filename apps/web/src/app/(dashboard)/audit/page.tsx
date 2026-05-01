@@ -10,7 +10,7 @@ import { api } from '@/lib/api';
 
 export default function AuditPage() {
   const [entityType, setEntityType] = useState('');
-  const [userId, setUserId] = useState('');
+  const [userId, _setUserId] = useState('');
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
   const [page, setPage] = useState(0);
@@ -23,7 +23,7 @@ export default function AuditPage() {
       if (userId) params.set('userId', userId);
       if (fromDate) params.set('fromDate', fromDate);
       if (toDate) params.set('toDate', toDate);
-      const res = await api.get(`/api/v1/audit?${params}`);
+      const res = await api.getAuditLogs(Object.fromEntries(params));
       return res.data.data;
     },
   });
@@ -101,7 +101,7 @@ export default function AuditPage() {
               </tr>
             </thead>
             <tbody>
-              {data?.content?.map((event: any) => (
+              {data?.map((event: any) => (
                 <tr key={event.id} className="border-b hover:bg-muted/30">
                   <td className="px-4 py-3 text-sm whitespace-nowrap">
                     {new Date(event.timestamp).toLocaleString()}
@@ -131,17 +131,16 @@ export default function AuditPage() {
         </div>
       )}
 
-      {data && data.totalPages > 1 && (
+      {data && data.length > 0 && (
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
-            Showing {data.number * data.size + 1}–{Math.min((data.number + 1) * data.size, data.totalElements)} of{' '}
-            {data.totalElements} events
+            Showing {data.length} events
           </p>
           <div className="flex gap-2">
             <Button
               variant="outline"
               size="sm"
-              disabled={data.first}
+              disabled={page === 0}
               onClick={() => setPage((p) => p - 1)}
             >
               Previous
@@ -149,7 +148,6 @@ export default function AuditPage() {
             <Button
               variant="outline"
               size="sm"
-              disabled={data.last}
               onClick={() => setPage((p) => p + 1)}
             >
               Next

@@ -33,7 +33,8 @@ public class ProcurementService {
                 .title(req.getTitle()).description(req.getDescription())
                 .estimatedCost(req.getEstimatedCost()).requestedBy(req.getRequestedBy())
                 .vendorId(req.getVendorId()).status(PurchaseRequest.PRStatus.DRAFT)
-                .tenantId(resolveTenantId()).build();
+                .build();
+        pr.setTenantId(resolveTenantId());
         return mapPR(prRepository.save(pr));
     }
 
@@ -84,7 +85,8 @@ public class ProcurementService {
                 .totalAmount(poReq.getTotalAmount()).deliveryDate(poReq.getDeliveryDate())
                 .terms(poReq.getTerms()).orderDate(LocalDateTime.now())
                 .status(PurchaseOrder.POStatus.ISSUED)
-                .tenantId(resolveTenantId()).build();
+                .build();
+        po.setTenantId(resolveTenantId());
         pr.setStatus(PurchaseRequest.PRStatus.ORDERED);
         prRepository.save(pr);
         return mapPO(poRepository.save(po));
@@ -126,7 +128,8 @@ public class ProcurementService {
                 .name(req.getName()).description(req.getDescription())
                 .contactEmail(req.getContactEmail()).contactPhone(req.getContactPhone())
                 .address(req.getAddress()).website(req.getWebsite())
-                .tenantId(resolveTenantId()).build();
+                .build();
+        v.setTenantId(resolveTenantId());
         return mapVendor(vendorRepository.save(v));
     }
 
@@ -166,7 +169,8 @@ public class ProcurementService {
                 .title(req.getTitle()).description(req.getDescription())
                 .vendorId(req.getVendorId()).value(req.getValue())
                 .startDate(req.getStartDate()).endDate(req.getEndDate())
-                .terms(req.getTerms()).tenantId(resolveTenantId()).build();
+                .terms(req.getTerms()).build();
+        c.setTenantId(resolveTenantId());
         return mapContract(contractRepository.save(c));
     }
 

@@ -6,13 +6,6 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
   Table,
   TableBody,
   TableCell,
@@ -24,7 +17,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   DollarSign,
-  TrendingUp,
   TrendingDown,
   Receipt,
   CreditCard,
@@ -118,7 +110,6 @@ export default function FinancePage() {
   // Summary metrics
   const totalAllocated = mockBudgets.reduce((sum, b) => sum + b.allocated, 0);
   const totalSpent = mockBudgets.reduce((sum, b) => sum + b.spent, 0);
-  const totalExpenses = mockExpenses.reduce((sum, e) => sum + e.amount, 0);
   const overdueInvoices = mockInvoices.filter((i) => i.status === 'overdue');
   const pendingExpenses = mockExpenses.filter((e) => e.status === 'pending');
 

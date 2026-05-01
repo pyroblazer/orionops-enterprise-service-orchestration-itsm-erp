@@ -69,7 +69,7 @@ public class OpenApiConfig {
                         .authorizationCode(new OAuthFlow()
                             .authorizationUrl(authUrl)
                             .tokenUrl(tokenUrl)
-                            .scopes(io.swagger.v3.oas.models.security.Scopes.DEFAULT))
+                            .scopes(new io.swagger.v3.oas.models.security.Scopes()))
                     )
                     .in(SecurityScheme.In.HEADER)
                 )

@@ -11,7 +11,7 @@ import {
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTheme } from '../theme/ThemeProvider';
 import { apiClient } from '../services/api';
-import { EmptyState } from '../components/EmptyState';
+import EmptyState from '../components/EmptyState';
 
 interface Notification {
   id: string;
@@ -221,7 +221,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({ naviga
     ...group.notifications.map((n) => ({ type: 'notification' as const, notification: n })),
   ]);
 
-  const keyExtractor = (item: any, index: number) => {
+  const keyExtractor = (item: any, _index: number) => {
     if (item.type === 'header') return `header-${item.label}`;
     return item.notification.id;
   };

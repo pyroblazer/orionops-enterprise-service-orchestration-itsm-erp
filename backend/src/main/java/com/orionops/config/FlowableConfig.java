@@ -22,7 +22,7 @@ public class FlowableConfig implements EngineConfigurationConfigurer<SpringProce
     public void configure(SpringProcessEngineConfiguration engineConfig) {
         engineConfig.setDatabaseSchemaUpdate(ProcessEngineConfiguration.DB_SCHEMA_UPDATE_FALSE);
         engineConfig.setAsyncExecutorActivate(true);
-        engineConfig.setHistoryLevel(org.flowable.engine.impl.history.HistoryLevel.FULL);
+        engineConfig.setHistoryLevel(org.flowable.common.engine.impl.history.HistoryLevel.FULL);
 
         // Use the same DataSource as JPA (managed by Spring Boot)
         engineConfig.setUseLockForDatabaseSchemaUpdate(false);

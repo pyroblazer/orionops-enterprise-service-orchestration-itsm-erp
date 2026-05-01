@@ -29,7 +29,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -77,15 +77,15 @@ class IncidentControllerContractTest {
         tenantId = UUID.fromString("00000000-0000-0000-0000-000000000001");
     }
 
-    private jwt() {
-        return jwt().jwt(jwt -> jwt
+    private SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor jwtProcessor() {
+        return SecurityMockMvcRequestPostProcessors.jwt().jwt(j -> j
                 .claim("sub", "test-user-123")
                 .claim("tenant_id", tenantId.toString()))
                 .authorities(new SimpleGrantedAuthority("ROLE_AGENT"));
     }
 
-    private jwtWithRole(String role) {
-        return jwt().jwt(jwt -> jwt
+    private SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor jwtWithRole(String role) {
+        return SecurityMockMvcRequestPostProcessors.jwt().jwt(j -> j
                 .claim("sub", "test-user-123")
                 .claim("tenant_id", tenantId.toString()))
                 .authorities(new SimpleGrantedAuthority("ROLE_" + role));

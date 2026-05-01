@@ -129,8 +129,8 @@ class AuthServiceTest {
                     .email("old.email@orionops.com")
                     .firstName("John")
                     .lastName("Doe")
-                    .tenantId(tenantId)
                     .build();
+            existingUser.setTenantId(tenantId);
             existingUser.setId(UUID.randomUUID());
             existingUser.setCreatedAt(LocalDateTime.now());
             existingUser.setUpdatedAt(LocalDateTime.now());
@@ -175,8 +175,8 @@ class AuthServiceTest {
                     .email("john.doe@orionops.com")
                     .firstName("John")
                     .lastName("Doe")
-                    .tenantId(tenantId)
                     .build();
+            user.setTenantId(tenantId);
             user.setId(UUID.randomUUID());
             user.setCreatedAt(LocalDateTime.now());
 

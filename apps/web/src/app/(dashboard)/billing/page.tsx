@@ -5,7 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { api } from '@/lib/api';
+import apiClient from '@/lib/api';
 
 export default function BillingPage() {
   const [tab, setTab] = useState<'usage' | 'records' | 'models'>('usage');
@@ -13,7 +13,7 @@ export default function BillingPage() {
   const { data: usage } = useQuery({
     queryKey: ['billing-usage'],
     queryFn: async () => {
-      const res = await api.get('/api/v1/billing/usage');
+      const res = await apiClient.get('/api/v1/billing/usage');
       return res.data.data;
     },
     enabled: tab === 'usage',
@@ -22,7 +22,7 @@ export default function BillingPage() {
   const { data: records } = useQuery({
     queryKey: ['billing-records'],
     queryFn: async () => {
-      const res = await api.get('/api/v1/billing/records');
+      const res = await apiClient.get('/api/v1/billing/records');
       return res.data.data;
     },
     enabled: tab === 'records',
@@ -31,7 +31,7 @@ export default function BillingPage() {
   const { data: models } = useQuery({
     queryKey: ['cost-models'],
     queryFn: async () => {
-      const res = await api.get('/api/v1/billing/cost-models');
+      const res = await apiClient.get('/api/v1/billing/cost-models');
       return res.data.data;
     },
     enabled: tab === 'models',

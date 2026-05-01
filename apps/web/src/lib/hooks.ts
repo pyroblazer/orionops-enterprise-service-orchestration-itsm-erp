@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { api, type FilterParams, type Incident, type Problem, type Change, type ServiceRequest, type KnowledgeArticle, type Notification, type AuditLog, type SearchResults } from './api';
+import { api, type FilterParams, type Incident, type Problem, type Change, type ServiceRequest, type SearchResults } from './api';
 
 // --- Query Key Factory ---
 

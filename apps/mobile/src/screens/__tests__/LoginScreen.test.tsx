@@ -1,8 +1,7 @@
-import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
 
 // Mock the theme hook
-jest.mock('../theme/ThemeProvider', () => {
+jest.mock('../../theme/ThemeProvider', () => {
   const { createContext, useContext } = require('react');
   const mockColors = {
     background: '#F8FAFC',
@@ -33,14 +32,14 @@ jest.mock('../theme/ThemeProvider', () => {
 });
 
 // Mock the api service
-jest.mock('../services/api', () => ({
+jest.mock('../../services/api', () => ({
   apiClient: {
     loginWithKeycloak: jest.fn(() => Promise.resolve({ id: 'user-1', name: 'Test User' })),
   },
 }));
 
 import { LoginScreen } from '../LoginScreen';
-import { apiClient } from '../services/api';
+import { apiClient } from '../../services/api';
 
 const mockedLogin = apiClient.loginWithKeycloak as jest.MockedFunction<typeof apiClient.loginWithKeycloak>;
 
@@ -90,7 +89,7 @@ describe('LoginScreen', () => {
     // Make login hang to see loading state
     mockedLogin.mockImplementation(() => new Promise(() => {}));
 
-    const { getByLabelText, getByDisplayValue } = render(
+    const { getByLabelText } = render(
       <LoginScreen navigation={mockNavigation} />
     );
 

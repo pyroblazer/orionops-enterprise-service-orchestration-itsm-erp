@@ -13,11 +13,6 @@ import {
 import { useTheme } from '../theme/ThemeProvider';
 import { apiClient } from '../services/api';
 
-const KEYCLOAK_AUTH_URL = __DEV__
-  ? 'http://10.0.2.2:8080/realms/orionops/protocol/openid-connect/auth'
-  : 'https://auth.orionops.example.com/realms/orionops/protocol/openid-connect/auth';
-
-const CLIENT_ID = 'orionops-mobile';
 const REDIRECT_URI = 'orionops://auth/callback';
 
 interface LoginScreenProps {
@@ -105,8 +100,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
           </View>
           <Text
             style={[styles.appName, { color: colors.text }]}
-            accessibilityRole="header"
-            accessibilityLevel={1}
           >
             OrionOps
           </Text>
@@ -128,8 +121,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
         >
           <Text
             style={[styles.formTitle, { color: colors.text }]}
-            accessibilityRole="header"
-            accessibilityLevel={2}
           >
             Sign in to your account
           </Text>

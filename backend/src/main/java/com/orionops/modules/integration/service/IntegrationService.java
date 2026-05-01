@@ -33,7 +33,8 @@ public class IntegrationService {
                 .headers(req.getHeaders()).authConfig(req.getAuthConfig())
                 .payloadTemplate(req.getPayloadTemplate()).verifySsl(req.isVerifySsl())
                 .timeoutSeconds(req.getTimeoutSeconds() != null ? req.getTimeoutSeconds() : 30)
-                .tenantId(resolveTenantId()).build();
+                .build();
+        endpoint.setTenantId(resolveTenantId());
         return mapToResponse(endpointRepository.save(endpoint));
     }
 

@@ -14,7 +14,6 @@ import com.orionops.modules.cmdb.repository.ConfigurationItemRepository;
 import com.orionops.modules.cmdb.repository.ServiceRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
@@ -23,7 +22,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Slf4j
-@Service
+@org.springframework.stereotype.Service
 @RequiredArgsConstructor
 public class CMDBService {
 
@@ -46,8 +45,8 @@ public class CMDBService {
                 .version(request.getVersion())
                 .parentId(request.getParentId())
                 .attributes(request.getAttributes())
-                .tenantId(resolveTenantId())
                 .build();
+        ci.setTenantId(resolveTenantId());
         return mapToCIResponse(ciRepository.save(ci));
     }
 
@@ -102,8 +101,8 @@ public class CMDBService {
                 .targetCiId(targetCiId)
                 .relationshipType(type)
                 .description(description)
-                .tenantId(resolveTenantId())
                 .build();
+        rel.setTenantId(resolveTenantId());
         return mapToRelationshipResponse(relationshipRepository.save(rel), sourceCiId);
     }
 
@@ -148,8 +147,8 @@ public class CMDBService {
                 .owner(request.getOwner())
                 .supportGroup(request.getSupportGroup())
                 .category(request.getCategory())
-                .tenantId(resolveTenantId())
                 .build();
+        service.setTenantId(resolveTenantId());
         return mapToServiceResponse(serviceRepository.save(service));
     }
 

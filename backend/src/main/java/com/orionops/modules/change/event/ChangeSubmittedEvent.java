@@ -14,9 +14,7 @@ import java.util.UUID;
 @NoArgsConstructor
 public class ChangeSubmittedEvent extends BaseEvent {
 
-    @Builder.Default
     private final String eventType = "CHANGE_SUBMITTED";
-    @Builder.Default
     private final String aggregateType = "change_request";
 
     private UUID changeId;

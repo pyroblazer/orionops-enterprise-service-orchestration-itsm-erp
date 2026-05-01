@@ -49,6 +49,7 @@ export default function NewIncidentPage() {
     try {
       const result = await createIncident.mutateAsync({
         ...formData,
+        priority: formData.priority as import('@/lib/api').Priority,
         tags: formData.tags.split(',').map((t) => t.trim()).filter(Boolean),
       });
       router.push(`/incidents/${result.id}`);

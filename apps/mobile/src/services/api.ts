@@ -1,6 +1,7 @@
 import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios';
 import * as SecureStore from 'expo-secure-store';
-import { OfflineQueue, offlineQueue } from './offline';
+import { offlineQueue } from './offline';
+import type { OfflineQueueClass } from './offline';
 
 const API_BASE_URL = __DEV__
   ? 'http://10.0.2.2:3000/api/v1'
@@ -28,7 +29,7 @@ const processFailedQueue = (error: unknown, token: string | null = null) => {
 
 class ApiClient {
   private client: AxiosInstance;
-  private offlineQueue: OfflineQueue;
+  private offlineQueue: Pick<OfflineQueueClass, 'enqueue' | 'sync'>;
 
   constructor() {
     this.client = axios.create({

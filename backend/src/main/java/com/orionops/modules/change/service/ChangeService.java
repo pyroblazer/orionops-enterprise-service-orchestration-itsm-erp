@@ -48,8 +48,8 @@ public class ChangeService {
                 .testPlan(request.getTestPlan())
                 .plannedStart(request.getPlannedStart())
                 .plannedEnd(request.getPlannedEnd())
-                .tenantId(resolveTenantId())
                 .build();
+        change.setTenantId(resolveTenantId());
         return mapToResponse(changeRequestRepository.save(change));
     }
 

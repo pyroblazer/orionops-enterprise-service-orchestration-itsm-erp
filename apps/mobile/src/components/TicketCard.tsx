@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useTheme } from '../theme/ThemeProvider';
 import { StatusBadge } from './StatusBadge';
-import { SLATimer } from './SLATimer';
+import SLATimer from './SLATimer';
 
 interface Ticket {
   id: string;
@@ -155,7 +155,7 @@ export const TicketCard: React.FC<TicketCardProps> = ({
       {/* SLA Timer */}
       {ticket.slaDeadline && (
         <View style={styles.slaRow}>
-          <SLATimer deadline={ticket.slaDeadline} />
+          <SLATimer targetDate={ticket.slaDeadline} status="active" label="SLA" />
         </View>
       )}
 

@@ -71,8 +71,8 @@ class SLAServiceTest {
                 .entityType("incident")
                 .priority("CRITICAL")
                 .slaType(SLADefinition.SLAType.SLA)
-                .tenantId(tenantId)
                 .build();
+        testDefinition.setTenantId(tenantId);
         testDefinition.setId(UUID.randomUUID());
         testDefinition.setCreatedAt(LocalDateTime.now());
         testDefinition.setUpdatedAt(LocalDateTime.now());
@@ -84,8 +84,8 @@ class SLAServiceTest {
                 .status(SLAInstance.SLAStatus.ACTIVE)
                 .responseTarget(LocalDateTime.now().plusHours(1))
                 .resolutionTarget(LocalDateTime.now().plusHours(4))
-                .tenantId(tenantId)
                 .build();
+        testInstance.setTenantId(tenantId);
         testInstance.setId(UUID.randomUUID());
         testInstance.setCreatedAt(LocalDateTime.now());
         testInstance.setUpdatedAt(LocalDateTime.now());

@@ -57,8 +57,8 @@ class VendorServiceTest {
                 .contactPhone("+1-555-0100")
                 .category("Hardware")
                 .active(true)
-                .tenantId(tenantId)
                 .build();
+        testVendor.setTenantId(tenantId);
         testVendor.setId(UUID.randomUUID());
         testVendor.setCreatedAt(LocalDateTime.now());
         testVendor.setUpdatedAt(LocalDateTime.now());
@@ -214,8 +214,8 @@ class VendorServiceTest {
                     .overallScore(new BigDecimal("4.25"))
                     .evaluationDate(LocalDateTime.now())
                     .evaluator("manager")
-                    .tenantId(tenantId)
                     .build();
+            perf.setTenantId(tenantId);
             perf.setId(UUID.randomUUID());
             perf.setCreatedAt(LocalDateTime.now());
 

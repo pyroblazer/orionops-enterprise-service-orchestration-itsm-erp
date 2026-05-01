@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useTheme } from '../theme/ThemeProvider';
 
@@ -42,12 +42,12 @@ export default function SLATimer({ targetDate, status, label }: SLATimerProps) {
 
   const statusColor =
     status === 'breached'
-      ? colors.danger
+      ? colors.slaBreached
       : status === 'at_risk'
-        ? colors.warning
+        ? colors.slaWarning
         : status === 'paused'
-          ? colors.muted
-          : colors.success;
+          ? colors.textTertiary
+          : colors.slaSafe;
 
   return (
     <View

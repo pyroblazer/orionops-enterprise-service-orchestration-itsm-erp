@@ -1,7 +1,5 @@
-import type { NextConfig } from 'next';
-
-const nextConfig: NextConfig = {
-  output: 'standalone',
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   transpilePackages: [
     '@radix-ui/react-alert-dialog',
     '@radix-ui/react-avatar',

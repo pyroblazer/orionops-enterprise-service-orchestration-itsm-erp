@@ -67,8 +67,8 @@ class InventoryServiceTest {
                 .quantity(50)
                 .minimumQuantity(10)
                 .unitPrice(new BigDecimal("349.99"))
-                .tenantId(tenantId)
                 .build();
+        testItem.setTenantId(tenantId);
         testItem.setId(UUID.randomUUID());
         testItem.setCreatedAt(LocalDateTime.now());
         testItem.setUpdatedAt(LocalDateTime.now());
@@ -221,8 +221,8 @@ class InventoryServiceTest {
                     .name("USB Cable")
                     .quantity(5)
                     .minimumQuantity(10)
-                    .tenantId(tenantId)
                     .build();
+            lowItem.setTenantId(tenantId);
             lowItem.setId(UUID.randomUUID());
             lowItem.setCreatedAt(LocalDateTime.now());
 
