@@ -38,7 +38,7 @@ import static org.assertj.core.api.Assertions.assertThat;
     "spring.kafka.enabled=false",
     "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration,org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration"
 })
-@Testcontainers
+@Testcontainers(disabledWithoutDocker = true)
 @ActiveProfiles("test")
 @Tag("docker")
 @DisplayName("Incident Escalation Workflow")

@@ -302,7 +302,7 @@ jobs:
         run: pnpm install --no-frozen-lockfile
 
       - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium firefox
+        run: pnpm --filter @orionops/web exec playwright install --with-deps chromium firefox
 
       - name: Run E2E tests
         run: pnpm --filter @orionops/web test:e2e

@@ -28,7 +28,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Verifies audit event persistence, querying by entity type, user, and date range.
  */
 @DataJpaTest
-@Testcontainers
+@Testcontainers(disabledWithoutDocker = true)
 @ActiveProfiles("test")
 @Tag("docker")
 @DisplayName("AuditEventRepository IT")

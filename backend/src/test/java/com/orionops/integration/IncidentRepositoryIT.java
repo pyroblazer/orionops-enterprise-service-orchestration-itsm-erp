@@ -31,7 +31,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Verifies JPA queries, pagination, and soft-delete filtering against a real database.
  */
 @DataJpaTest
-@Testcontainers
+@Testcontainers(disabledWithoutDocker = true)
 @ActiveProfiles("test")
 @Tag("docker")
 @DisplayName("IncidentRepository IT")
