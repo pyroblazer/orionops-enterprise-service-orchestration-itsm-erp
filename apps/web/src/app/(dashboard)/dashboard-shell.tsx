@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Sidebar } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { Avatar } from '@/components/ui/avatar';
@@ -32,16 +31,6 @@ import { auth } from '@/lib/api';
 import { useNotifications, useMarkAllNotificationsRead } from '@/lib/hooks';
 import { useTheme, type Theme } from '@/lib/hooks';
 import { cn } from '@/lib/utils';
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 30_000,
-      retry: 2,
-      refetchOnWindowFocus: false,
-    },
-  },
-});
 
 export function DashboardShell({
   children,
@@ -105,8 +94,7 @@ export function DashboardShell({
   }, [handleToggleSidebar]);
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background">
         <Sidebar collapsed={sidebarCollapsed} onToggle={handleToggleSidebar} />
 
         <div
@@ -316,6 +304,5 @@ export function DashboardShell({
           </div>
         )}
       </div>
-    </QueryClientProvider>
   );
 }

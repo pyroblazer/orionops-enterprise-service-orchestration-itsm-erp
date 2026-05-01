@@ -23,9 +23,8 @@ test.describe('Authentication Flow', () => {
     await page.waitForLoadState('networkidle');
 
     // Verify login page has the expected structure
-    // This depends on the actual login page implementation
-    const pageTitle = await page.textContent('h1, h2');
-    expect(pageTitle).toBeTruthy();
+    await expect(page.locator('text=OrionOps')).toBeVisible();
+    await expect(page.locator('text=Sign In')).toBeVisible();
   });
 
   test('dashboard loads after successful authentication', async ({ page }) => {

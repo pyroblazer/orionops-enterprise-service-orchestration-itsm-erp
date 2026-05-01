@@ -18,7 +18,7 @@ test.describe('Accessibility', () => {
     await page.keyboard.press('Tab');
 
     // Verify focus is visible on some element
-    const focusedElement = page.locator(':focus');
+    const focusedElement = page.locator(':focus').first();
     await expect(focusedElement).toBeVisible();
   });
 
