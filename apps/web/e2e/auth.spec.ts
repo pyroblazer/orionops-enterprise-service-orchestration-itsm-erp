@@ -24,7 +24,7 @@ test.describe('Authentication Flow', () => {
 
     // Verify login page has the expected structure
     await expect(page.locator('text=OrionOps')).toBeVisible();
-    await expect(page.locator('text=Sign In')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Sign In', exact: true })).toBeVisible();
   });
 
   test('dashboard loads after successful authentication', async ({ page }) => {
@@ -42,7 +42,7 @@ test.describe('Authentication Flow', () => {
     await page.waitForLoadState('networkidle');
 
     // Verify dashboard content is present
-    await expect(page.locator('text=Dashboard')).toBeVisible({ timeout: 10000 });
+    await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible({ timeout: 10000 });
 
     // Verify summary cards are rendered
     await expect(page.locator('text=Open Incidents')).toBeVisible();

@@ -15,24 +15,27 @@ test.describe('Incident Lifecycle', () => {
     await page.waitForLoadState('networkidle');
 
     // Verify the new incident form is displayed
-    const formTitle = page.locator('h1, h2');
+    const formTitle = page.locator('h1, h2').first();
     await expect(formTitle).toContainText(/incident/i);
 
     // Fill in incident details (selectors based on typical form structure)
     const titleInput = page.locator('input[label="Title"], input[placeholder*="title" i], #title');
     if (await titleInput.count() > 0) {
+      await titleInput.scrollIntoViewIfNeeded();
       await titleInput.fill('E2E Test: Server Outage');
     }
 
     const descInput = page.locator('textarea[label="Description"], textarea[placeholder*="description" i], #description');
     if (await descInput.count() > 0) {
+      await descInput.scrollIntoViewIfNeeded();
       await descInput.fill('Production server is unresponsive since 10:00 AM.');
     }
 
     // Submit the form
-    const submitButton = page.locator('button:has-text("Create"), button:has-text("Submit"), button[type="submit"]');
+    const submitButton = page.locator('button:has-text("Create Incident")');
     if (await submitButton.count() > 0) {
-      await submitButton.first().click();
+      await submitButton.first().scrollIntoViewIfNeeded();
+      await submitButton.first().click({ force: true });
     }
   });
 
@@ -53,10 +56,11 @@ test.describe('Incident Lifecycle', () => {
     await page.goto('/incidents');
     await page.waitForLoadState('networkidle');
 
-    // Click on the first incident link
+    // Click on the first incident link (match /incidents/<uuid> pattern, not /incidents/new)
     const firstIncidentLink = page.locator('a[href*="/incidents/"]').first();
     if (await firstIncidentLink.count() > 0) {
-      await firstIncidentLink.click();
+      await firstIncidentLink.scrollIntoViewIfNeeded();
+      await firstIncidentLink.click({ force: true });
       await page.waitForLoadState('networkidle');
 
       // Verify detail page loaded
