@@ -90,6 +90,7 @@ public class EmailConfig {
      * @return configured IMAP Store
      */
     @Bean(destroyMethod = "close")
+    @org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(name = "orionops.mail.imap.username")
     public Store imapStore() {
         Properties props = new Properties();
         props.put("mail.store.protocol", imapProtocol);

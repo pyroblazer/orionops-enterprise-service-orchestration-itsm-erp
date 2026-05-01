@@ -2,11 +2,14 @@ package com.orionops;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.util.concurrent.Executor;
+import org.springframework.context.annotation.Bean;
 
 /**
  * Main entry point for the OrionOps Enterprise Service Orchestration Platform.
@@ -17,6 +20,8 @@ import java.util.concurrent.Executor;
  * Spring Data JPA CRUD elsewhere.</p>
  */
 @SpringBootApplication
+@EnableJpaAuditing
+@EnableJpaRepositories(considerNestedRepositories = true)
 @EnableAsync
 @EnableScheduling
 public class OrionOpsApplication {
@@ -29,8 +34,8 @@ public class OrionOpsApplication {
      * Bounded thread pool for @Async methods. Prevents unbounded thread creation
      * from Spring's default SimpleAsyncTaskExecutor.
      */
-    @org.springframework.context.annotation.Bean
-    public Executor taskExecutor() {
+    @Bean("asyncTaskExecutor")
+    public Executor asyncTaskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(4);
         executor.setMaxPoolSize(8);

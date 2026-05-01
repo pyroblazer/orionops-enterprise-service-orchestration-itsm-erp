@@ -15,6 +15,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import jakarta.mail.Store;
+import org.flowable.engine.delegate.JavaDelegate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -34,7 +36,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @SpringBootTest(properties = {
     "spring.kafka.enabled=false",
-    "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration,org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration"
+    "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration,org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration",
+    "flowable.database-schema-update=true"
 })
 @Testcontainers(disabledWithoutDocker = true)
 @ActiveProfiles("test")
@@ -55,6 +58,7 @@ class ChangeApprovalWorkflowTest {
         registry.add("spring.datasource.password", postgres::getPassword);
         registry.add("spring.jpa.hibernate.ddl-auto", () -> "create-drop");
         registry.add("spring.flyway.enabled", () -> "false");
+        registry.add("flowable.database-schema-update", () -> "true");
     }
 
     @Autowired
@@ -73,6 +77,26 @@ class ChangeApprovalWorkflowTest {
     @MockBean
     @SuppressWarnings("unused")
     private RedisTemplate<String, Object> redisTemplate;
+
+    @MockBean
+    @SuppressWarnings("unused")
+    private Store imapStore;
+
+    @MockBean(name = "riskAssessmentDelegate")
+    @SuppressWarnings("unused")
+    private JavaDelegate riskAssessmentDelegate;
+
+    @MockBean(name = "completionNotificationDelegate")
+    @SuppressWarnings("unused")
+    private JavaDelegate completionNotificationDelegate;
+
+    @MockBean(name = "rejectionNotificationDelegate")
+    @SuppressWarnings("unused")
+    private JavaDelegate rejectionNotificationDelegate;
+
+    @MockBean(name = "emergencyAutoApprovalDelegate")
+    @SuppressWarnings("unused")
+    private JavaDelegate emergencyAutoApprovalDelegate;
 
     @BeforeEach
     void cleanUp() {
@@ -98,11 +122,12 @@ class ChangeApprovalWorkflowTest {
         void shouldRequireManagerApproval_whenHighRisk_givenRiskAssessment() {
             Map<String, Object> variables = new HashMap<>();
             variables.put("changeId", "chg-001");
+            variables.put("changeType", "normal");
             variables.put("riskLevel", "high");
             variables.put("riskScore", 85);
 
             ProcessInstance instance = runtimeService.createProcessInstanceBuilder()
-                    .processDefinitionKey("changeApproval")
+                    .processDefinitionKey("changeApprovalProcess")
                     .variables(variables)
                     .start();
 
@@ -114,19 +139,20 @@ class ChangeApprovalWorkflowTest {
                     .list();
 
             assertThat(tasks).isNotEmpty();
-            assertThat(tasks.get(0).getName()).isEqualTo("Manager Approval");
+            assertThat(tasks.get(0).getName()).isEqualTo("CAB Approval");
         }
 
         @Test
-        @DisplayName("should complete process after approval of high risk change")
+        @DisplayName("should advance to implementation after approval of high risk change")
         void shouldCompleteProcess_whenApproved_givenHighRiskTask() {
             Map<String, Object> variables = new HashMap<>();
             variables.put("changeId", "chg-002");
+            variables.put("changeType", "normal");
             variables.put("riskLevel", "high");
             variables.put("riskScore", 90);
 
             ProcessInstance instance = runtimeService.createProcessInstanceBuilder()
-                    .processDefinitionKey("changeApproval")
+                    .processDefinitionKey("changeApprovalProcess")
                     .variables(variables)
                     .start();
 
@@ -135,17 +161,18 @@ class ChangeApprovalWorkflowTest {
                     .singleResult();
 
             assertThat(approvalTask).isNotNull();
-            assertThat(approvalTask.getName()).isEqualTo("Manager Approval");
+            assertThat(approvalTask.getName()).isEqualTo("CAB Approval");
 
             Map<String, Object> approvalVars = new HashMap<>();
             approvalVars.put("approved", true);
             taskService.complete(approvalTask.getId(), approvalVars);
 
-            // Process should have completed
-            Task remainingTask = taskService.createTaskQuery()
+            // After CAB approval, process advances to implementation task
+            Task implementTask = taskService.createTaskQuery()
                     .processInstanceId(instance.getProcessInstanceId())
                     .singleResult();
-            assertThat(remainingTask).isNull();
+            assertThat(implementTask).isNotNull();
+            assertThat(implementTask.getName()).isEqualTo("Implement Change");
         }
     }
 
@@ -162,26 +189,26 @@ class ChangeApprovalWorkflowTest {
         }
 
         @Test
-        @DisplayName("should auto-approve low risk changes")
+        @DisplayName("should require manager approval for low risk normal changes")
         void shouldAutoApprove_whenLowRisk_givenRiskAssessment() {
             Map<String, Object> variables = new HashMap<>();
             variables.put("changeId", "chg-003");
+            variables.put("changeType", "normal");
             variables.put("riskLevel", "low");
             variables.put("riskScore", 15);
 
             ProcessInstance instance = runtimeService.createProcessInstanceBuilder()
-                    .processDefinitionKey("changeApproval")
+                    .processDefinitionKey("changeApprovalProcess")
                     .variables(variables)
                     .start();
 
-            // Low risk should go through auto-approval (no manager approval task)
+            // Low risk normal changes still require manager approval
             List<Task> tasks = taskService.createTaskQuery()
                     .processInstanceId(instance.getProcessInstanceId())
                     .list();
 
-            // Low risk path should not have "Manager Approval" task
-            assertThat(tasks.stream().noneMatch(t -> "Manager Approval".equals(t.getName())))
-                    .isTrue();
+            assertThat(tasks).isNotEmpty();
+            assertThat(tasks.get(0).getName()).isEqualTo("Manager Approval");
         }
     }
 
@@ -202,11 +229,12 @@ class ChangeApprovalWorkflowTest {
         void shouldHandleRejection_whenManagerRejects_givenHighRiskChange() {
             Map<String, Object> variables = new HashMap<>();
             variables.put("changeId", "chg-004");
+            variables.put("changeType", "normal");
             variables.put("riskLevel", "high");
             variables.put("riskScore", 80);
 
             ProcessInstance instance = runtimeService.createProcessInstanceBuilder()
-                    .processDefinitionKey("changeApproval")
+                    .processDefinitionKey("changeApprovalProcess")
                     .variables(variables)
                     .start();
 

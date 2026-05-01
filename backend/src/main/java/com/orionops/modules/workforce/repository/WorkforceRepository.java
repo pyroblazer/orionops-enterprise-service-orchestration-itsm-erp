@@ -17,8 +17,9 @@ public class WorkforceRepository {
     public interface EmployeeRepository extends JpaRepository<Employee, UUID> {
         List<Employee> findByTenantIdAndDeletedAtIsNull(UUID tenantId);
         List<Employee> findByTenantIdAndEmploymentStatusAndDeletedAtIsNull(UUID tenantId, Employee.EmploymentStatus status);
-        @Query("SELECT e FROM Employee e JOIN EmployeeSkill es ON e.id = es.employeeId JOIN Skill s ON es.skillId = s.id " +
-                "WHERE s.name IN :skills AND e.tenantId = :tenantId AND e.deletedAt IS NULL")
+        @Query(value = "SELECT e.* FROM employees e JOIN employee_skills es ON e.id = es.employee_id " +
+                "JOIN skills s ON es.skill_id = s.id WHERE s.name IN (:skills) AND e.tenant_id = :tenantId " +
+                "AND e.deleted_at IS NULL", nativeQuery = true)
         List<Employee> findBySkills(@Param("tenantId") UUID tenantId, @Param("skills") List<String> skills);
     }
 

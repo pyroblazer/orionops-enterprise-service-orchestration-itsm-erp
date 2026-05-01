@@ -16,6 +16,7 @@ import javax.sql.DataSource;
  * and disables automatic schema management (Flyway handles that).</p>
  */
 @Configuration
+@org.springframework.context.annotation.Profile("!test")
 public class FlowableConfig implements EngineConfigurationConfigurer<SpringProcessEngineConfiguration> {
 
     @Override

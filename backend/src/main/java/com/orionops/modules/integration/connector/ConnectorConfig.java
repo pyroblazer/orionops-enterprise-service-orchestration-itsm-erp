@@ -126,7 +126,7 @@ public class ConnectorConfig {
                 .build();
 
         CircuitBreakerRegistry registry = CircuitBreakerRegistry.ofDefaults();
-        registry.addConfiguration("default", config);
+        registry.addConfiguration("connectorDefault", config);
 
         // Pre-register circuit breakers for known connectors
         registry.circuitBreaker("restConnector", config);

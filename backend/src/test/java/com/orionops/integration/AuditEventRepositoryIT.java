@@ -1,6 +1,6 @@
 package com.orionops.integration;
 
-import com.orionops.modules.audit.dto.AuditResponse;
+import com.orionops.modules.audit.entity.AuditEvent;
 import com.orionops.modules.audit.repository.AuditEventRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
@@ -18,15 +18,11 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * Integration tests for {@link AuditEventRepository} using Testcontainers PostgreSQL.
- * Verifies audit event persistence, querying by entity type, user, and date range.
- */
 @DataJpaTest
 @Testcontainers(disabledWithoutDocker = true)
 @ActiveProfiles("test")
@@ -57,12 +53,9 @@ class AuditEventRepositoryIT {
     class QueryByEntityTypeTests {
 
         @Test
-        @DisplayName("should query audit events by entity type and entity ID")
+        @DisplayName("should query audit events by resource type and resource ID")
         void shouldQueryByEntityType_whenSearching_givenEntityType() {
-            // This tests the repository interface contract.
-            // In a real implementation, audit events would be populated via event store.
-            // The repository query interface validates the JPQL compiles correctly.
-            Page<AuditResponse> result = auditEventRepository.findByEntityTypeAndEntityIdAndTenantId(
+            Page<AuditEvent> result = auditEventRepository.findByResourceTypeAndResourceIdAndTenantId(
                     "incident", UUID.randomUUID(),
                     UUID.fromString("00000000-0000-0000-0000-000000000001"),
                     PageRequest.of(0, 20, Sort.by(Sort.Direction.DESC, "timestamp")));
@@ -79,10 +72,10 @@ class AuditEventRepositoryIT {
         @Test
         @DisplayName("should query audit events with date range filters")
         void shouldQueryWithDateRange_whenSearching_givenDateRange() {
-            LocalDateTime start = LocalDateTime.now().minusDays(30);
-            LocalDateTime end = LocalDateTime.now();
+            OffsetDateTime start = OffsetDateTime.now().minusDays(30);
+            OffsetDateTime end = OffsetDateTime.now();
 
-            Page<AuditResponse> result = auditEventRepository.searchAuditLogs(
+            Page<AuditEvent> result = auditEventRepository.searchAuditLogs(
                     UUID.fromString("00000000-0000-0000-0000-000000000001"),
                     null, null, start, end,
                     PageRequest.of(0, 20, Sort.by(Sort.Direction.DESC, "timestamp")));
@@ -97,11 +90,11 @@ class AuditEventRepositoryIT {
     class QueryByUserTests {
 
         @Test
-        @DisplayName("should query audit events by performedBy user")
+        @DisplayName("should query audit events by userId")
         void shouldQueryByUser_whenSearching_givenUsername() {
-            Page<AuditResponse> result = auditEventRepository.searchAuditLogs(
+            Page<AuditEvent> result = auditEventRepository.searchAuditLogs(
                     UUID.fromString("00000000-0000-0000-0000-000000000001"),
-                    null, "admin", null, null,
+                    null, UUID.randomUUID(), null, null,
                     PageRequest.of(0, 20, Sort.by(Sort.Direction.DESC, "timestamp")));
 
             assertThat(result).isNotNull();

@@ -16,6 +16,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import jakarta.mail.Store;
+import org.flowable.engine.delegate.JavaDelegate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -36,7 +38,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @SpringBootTest(properties = {
     "spring.kafka.enabled=false",
-    "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration,org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration"
+    "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration,org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration",
+    "flowable.database-schema-update=true"
 })
 @Testcontainers(disabledWithoutDocker = true)
 @ActiveProfiles("test")
@@ -57,6 +60,7 @@ class IncidentEscalationWorkflowTest {
         registry.add("spring.datasource.password", postgres::getPassword);
         registry.add("spring.jpa.hibernate.ddl-auto", () -> "create-drop");
         registry.add("spring.flyway.enabled", () -> "false");
+        registry.add("flowable.database-schema-update", () -> "true");
     }
 
     @Autowired
@@ -75,6 +79,18 @@ class IncidentEscalationWorkflowTest {
     @MockBean
     @SuppressWarnings("unused")
     private RedisTemplate<String, Object> redisTemplate;
+
+    @MockBean
+    @SuppressWarnings("unused")
+    private Store imapStore;
+
+    @MockBean(name = "checkPriorityDelegate")
+    @SuppressWarnings("unused")
+    private JavaDelegate checkPriorityDelegate;
+
+    @MockBean(name = "escalateIncidentDelegate")
+    @SuppressWarnings("unused")
+    private JavaDelegate escalateIncidentDelegate;
 
     @BeforeEach
     void cleanUp() {
@@ -123,11 +139,11 @@ class IncidentEscalationWorkflowTest {
         void shouldStartProcess_whenValidVariables_givenDeployedProcess() {
             Map<String, Object> variables = new HashMap<>();
             variables.put("incidentId", "inc-001");
-            variables.put("priority", "HIGH");
+            variables.put("priority", "high");
             variables.put("category", "Network");
 
             ProcessInstance instance = runtimeService.createProcessInstanceBuilder()
-                    .processDefinitionKey("incidentEscalation")
+                    .processDefinitionKey("incidentEscalationProcess")
                     .variables(variables)
                     .start();
 
@@ -136,7 +152,7 @@ class IncidentEscalationWorkflowTest {
 
             // Verify variables are set
             Object priority = runtimeService.getVariable(instance.getId(), "priority");
-            assertThat(priority).isEqualTo("HIGH");
+            assertThat(priority).isEqualTo("high");
         }
 
         @Test
@@ -144,10 +160,10 @@ class IncidentEscalationWorkflowTest {
         void shouldCreateHumanTask_whenProcessStarts_givenDeployedProcess() {
             Map<String, Object> variables = new HashMap<>();
             variables.put("incidentId", "inc-002");
-            variables.put("priority", "CRITICAL");
+            variables.put("priority", "critical");
 
             ProcessInstance instance = runtimeService.createProcessInstanceBuilder()
-                    .processDefinitionKey("incidentEscalation")
+                    .processDefinitionKey("incidentEscalationProcess")
                     .variables(variables)
                     .start();
 
@@ -156,7 +172,7 @@ class IncidentEscalationWorkflowTest {
                     .list();
 
             assertThat(tasks).isNotEmpty();
-            assertThat(tasks.get(0).getName()).isEqualTo("Triage Incident");
+            assertThat(tasks.get(0).getName()).isEqualTo("Manager Review");
         }
 
         @Test
@@ -164,10 +180,10 @@ class IncidentEscalationWorkflowTest {
         void shouldAdvanceProcess_whenTaskCompleted_givenPendingTask() {
             Map<String, Object> variables = new HashMap<>();
             variables.put("incidentId", "inc-003");
-            variables.put("priority", "MEDIUM");
+            variables.put("priority", "medium");
 
             ProcessInstance instance = runtimeService.createProcessInstanceBuilder()
-                    .processDefinitionKey("incidentEscalation")
+                    .processDefinitionKey("incidentEscalationProcess")
                     .variables(variables)
                     .start();
 
@@ -196,10 +212,10 @@ class IncidentEscalationWorkflowTest {
         void shouldHandleRejection_whenNotApproved_givenTriageTask() {
             Map<String, Object> variables = new HashMap<>();
             variables.put("incidentId", "inc-004");
-            variables.put("priority", "LOW");
+            variables.put("priority", "low");
 
             ProcessInstance instance = runtimeService.createProcessInstanceBuilder()
-                    .processDefinitionKey("incidentEscalation")
+                    .processDefinitionKey("incidentEscalationProcess")
                     .variables(variables)
                     .start();
 

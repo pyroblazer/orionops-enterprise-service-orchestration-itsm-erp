@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "test": "jest",
-    "test:e2e": "playwright test",
+    "test:e2e": "playwright test --config=e2e/playwright.config.ts",
     "test:a11y": "jest --testPathPattern=a11y"
   },
   "dependencies": {

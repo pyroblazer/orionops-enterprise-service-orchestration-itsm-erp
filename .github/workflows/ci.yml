@@ -184,7 +184,7 @@ jobs:
           cache: maven
 
       - name: Run workflow simulation tests
-        run: mvn test -B -Dtest.includedGroups=docker -Dtest="com.orionops.workflow.*" -Dspring.profiles.active=test
+        run: mvn test -B -Dtest.includedGroups=docker -Dtest="*WorkflowTest" -Dspring.profiles.active=test
 
       - name: Upload workflow test results
         if: always()
