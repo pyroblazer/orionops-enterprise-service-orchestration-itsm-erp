@@ -12,6 +12,9 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -30,7 +33,10 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Tests process deployment, start, human task creation, task completion,
  * and timer boundary events for escalation.
  */
-@SpringBootTest
+@SpringBootTest(properties = {
+    "spring.kafka.enabled=false",
+    "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration,org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration"
+})
 @Testcontainers
 @ActiveProfiles("test")
 @DisplayName("Incident Escalation Workflow")
@@ -59,6 +65,14 @@ class IncidentEscalationWorkflowTest {
 
     @Autowired
     private TaskService taskService;
+
+    @MockBean
+    @SuppressWarnings("unused")
+    private RedisConnectionFactory redisConnectionFactory;
+
+    @MockBean
+    @SuppressWarnings("unused")
+    private RedisTemplate<String, Object> redisTemplate;
 
     @BeforeEach
     void cleanUp() {

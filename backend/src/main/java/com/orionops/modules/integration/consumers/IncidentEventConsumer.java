@@ -9,7 +9,9 @@ import com.orionops.modules.integration.chat.SlackIntegrationService;
 import com.orionops.modules.integration.email.EmailService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
@@ -27,6 +29,7 @@ import java.util.Map;
  */
 @Slf4j
 @Component
+@ConditionalOnBean(KafkaTemplate.class)
 @RequiredArgsConstructor
 public class IncidentEventConsumer {
 

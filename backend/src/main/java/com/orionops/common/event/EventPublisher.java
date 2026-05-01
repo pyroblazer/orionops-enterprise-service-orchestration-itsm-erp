@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
@@ -15,10 +16,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  *
  * <p>Events are serialized to JSON and sent to topic names derived from the aggregate type.
  * When called within an active transaction, Kafka sends are deferred until after the
- * transaction commits successfully. This prevents phantom events from being published
- * if the database transaction rolls back after the Kafka send succeeds.</p>
- *
- * <p>When called outside a transaction, events are published immediately.</p>
+ * transaction commits successfully. When Kafka is not available, events are logged only.</p>
  */
 @Slf4j
 @Component
@@ -30,18 +28,18 @@ public class EventPublisher {
     private final KafkaTemplate<String, String> kafkaTemplate;
     private final ObjectMapper objectMapper;
 
-    public EventPublisher(@Qualifier("stringKafkaTemplate") KafkaTemplate<String, String> kafkaTemplate, ObjectMapper springObjectMapper) {
+    public EventPublisher(
+            @Qualifier("stringKafkaTemplate") @Autowired(required = false) KafkaTemplate<String, String> kafkaTemplate,
+            ObjectMapper springObjectMapper) {
         this.kafkaTemplate = kafkaTemplate;
         this.objectMapper = springObjectMapper.copy().registerModule(new JavaTimeModule());
     }
 
-    /**
-     * Publishes a domain event to the appropriate Kafka topic.
-     * If called within an active transaction, the send is deferred until after commit.
-     *
-     * @param event the domain event to publish
-     */
     public void publish(BaseEvent event) {
+        if (kafkaTemplate == null) {
+            log.debug("Kafka not available, skipping event publication: {}", event.getEventId());
+            return;
+        }
         try {
             String topic = TOPIC_PREFIX + event.getAggregateType() + TOPIC_SUFFIX;
             String payload = objectMapper.writeValueAsString(event);
