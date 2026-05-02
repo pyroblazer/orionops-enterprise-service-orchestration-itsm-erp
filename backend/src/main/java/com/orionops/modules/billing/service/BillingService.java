@@ -19,13 +19,15 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class BillingService {
+
+    private static final AtomicLong INVOICE_SEQ = new AtomicLong(0);
 
     private final BillingRepository.ServiceUsageRepository usageRepository;
     private final BillingRepository.BillingRecordRepository billingRepository;
@@ -57,7 +59,7 @@ public class BillingService {
         BigDecimal total = usages.stream().map(ServiceUsage::getTotalCost).reduce(BigDecimal.ZERO, BigDecimal::add);
         BigDecimal tax = total.multiply(BigDecimal.valueOf(0.1)); // 10% tax
         String invoiceNumber = "INV-" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"))
-                + "-" + ThreadLocalRandom.current().nextInt(1000, 9999);
+                + "-" + INVOICE_SEQ.incrementAndGet();
 
         BillingRecord record = BillingRecord.builder()
                 .invoiceNumber(invoiceNumber).amount(total).taxAmount(tax)

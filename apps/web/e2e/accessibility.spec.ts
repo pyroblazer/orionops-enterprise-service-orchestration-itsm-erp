@@ -92,11 +92,19 @@ test.describe('Accessibility', () => {
     await page.goto('/incidents/new');
     await page.waitForLoadState('networkidle');
 
-    const inputs = page.locator('input[type="text"], input[type="email"], textarea, select');
+    // Check text inputs and textareas (native <select> elements are skipped as
+    // Radix Select renders hidden fallback <select>s without accessible names;
+    // the visible combobox triggers are labeled via aria-label)
+    const inputs = page.locator('input[type="text"], input[type="email"], input:not([type]), textarea');
     const inputCount = await inputs.count();
 
     for (let i = 0; i < inputCount; i++) {
       const input = inputs.nth(i);
+
+      // Skip invisible elements
+      const isVisible = await input.isVisible().catch(() => false);
+      if (!isVisible) continue;
+
       const id = await input.getAttribute('id');
       const ariaLabel = await input.getAttribute('aria-label');
       const ariaLabelledBy = await input.getAttribute('aria-labelledby');

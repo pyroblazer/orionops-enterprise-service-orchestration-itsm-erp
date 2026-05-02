@@ -161,6 +161,7 @@ class ConcurrencyTest {
         ExecutorService executor = Executors.newFixedThreadPool(threadCount);
         java.util.Set<String> invoiceNumbers = java.util.Collections.synchronizedSet(new java.util.HashSet<>());
         AtomicInteger duplicates = new AtomicInteger(0);
+        java.util.concurrent.atomic.AtomicLong invoiceSeq = new java.util.concurrent.atomic.AtomicLong(0);
 
         for (int i = 0; i < threadCount; i++) {
             executor.submit(() -> {
@@ -168,7 +169,7 @@ class ConcurrencyTest {
                     startLatch.await();
                     String invoiceNumber = "INV-" + java.time.LocalDateTime.now()
                             .format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMddHHmmss"))
-                            + "-" + java.util.concurrent.ThreadLocalRandom.current().nextInt(1000, 9999);
+                            + "-" + invoiceSeq.incrementAndGet();
                     if (!invoiceNumbers.add(invoiceNumber)) {
                         duplicates.incrementAndGet();
                     }
