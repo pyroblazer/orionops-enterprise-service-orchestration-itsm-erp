@@ -417,11 +417,12 @@ jobs:
     if: always()
     steps:
       - name: Check all jobs passed
+        env:
+          RESULTS: ${{ toJson(needs) }}
         run: |
-          results="${{ toJson(needs) }}"
           echo "Job results:"
-          echo "$results" | jq -r 'to_entries[] | "\(.key): \(.value.result)"'
-          failed=$(echo "$results" | jq -r '[.[] | select(.result == "failure")] | length')
+          echo "$RESULTS" | jq -r 'to_entries[] | "\(.key): \(.value.result)"'
+          failed=$(echo "$RESULTS" | jq -r '[.[] | select(.result == "failure")] | length')
           if [ "$failed" -ne "0" ]; then
             echo "::error::$failed job(s) failed"
             exit 1
