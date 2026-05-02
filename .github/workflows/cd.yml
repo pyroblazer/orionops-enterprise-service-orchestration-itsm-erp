@@ -141,6 +141,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build-backend, build-web, build-ai]
     environment: production
+    if: ${{ secrets.KUBE_CONFIG != '' }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
