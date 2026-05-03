@@ -959,11 +959,11 @@ All configuration via environment variables (see `.env.example`). Sensitive valu
 
 ### Quick Start (Docker)
 
-Windows: double-click `start.bat` or run `start.bat`
+```bash
+docker compose up --build
+```
 
-Linux/macOS: `make up`
-
-Open http://localhost:3000 — no configuration needed. Each start does a clean `docker compose down -v` first.
+Open http://localhost:3000 — no configuration needed.
 
 Test users (password = username): `admin`, `agent`, `engineer`, `changemgr`
 
@@ -971,11 +971,9 @@ Keycloak admin: http://localhost:8081 (admin/admin)
 
 ### Hybrid Mode (Infrastructure Docker + Apps Native)
 
-Windows: `start-infra.bat` then run apps natively.
-
 ```bash
-# 1. Start infrastructure (or start-infra.bat on Windows)
-make infra
+# 1. Start infrastructure
+cd backend && docker compose up -d
 
 # 2. Start backend
 cd backend && mvn spring-boot:run

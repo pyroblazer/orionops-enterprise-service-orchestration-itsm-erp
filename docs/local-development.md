@@ -8,32 +8,11 @@
 
 ## Quick Start (All Docker)
 
-### Windows
-
-Double-click `start.bat` or run in a terminal:
-
-```
-start.bat
-```
-
-This automatically tears down any previous run (`docker compose down -v`), then builds and starts every service fresh.
-
-### Linux / macOS
-
 ```bash
-make up
-```
-
-Or directly:
-
-```bash
-docker compose down -v 2>/dev/null || true
 docker compose up --build
 ```
 
-### Wait for healthy
-
-Wait 2-3 minutes for all containers to become healthy:
+That's it. Builds and starts every service. Wait 2-3 minutes for all containers to become healthy:
 
 ```bash
 docker compose ps
@@ -51,18 +30,13 @@ All services healthy? Open these URLs:
 | MinIO Console | http://localhost:9001 | minioadmin / minioadmin |
 | OpenSearch | http://localhost:9200 | admin / admin |
 
+Run `docker compose up --build` again at any time — all init steps are idempotent (Kafka topics use `--if-not-exists`, MinIO bucket uses `--ignore-existing`, Flyway tracks applied migrations).
+
 ### Stopping
-
-| Platform | Stop (keep data) | Full reset (wipe data) |
-|----------|------------------|------------------------|
-| Windows | `stop.bat` | `start.bat` (auto-resets) |
-| Linux/macOS | `make down` | `make reset` |
-
-Or directly:
 
 ```bash
 docker compose down      # Stop, keep data
-docker compose down -v   # Stop and wipe data
+docker compose down -v   # Stop and wipe all data (fresh start)
 ```
 
 ## Hybrid Mode (Infrastructure in Docker, Apps Native)
@@ -70,12 +44,6 @@ docker compose down -v   # Stop and wipe data
 Use this when you want hot-reload and debugger support for the backend or frontend.
 
 ### Step 1: Start Infrastructure
-
-Windows: double-click `start-infra.bat` or run `start-infra.bat`
-
-Linux/macOS: `make infra`
-
-Or manually:
 
 ```bash
 cd backend
@@ -109,7 +77,8 @@ cp apps/web/.env.example apps/web/.env.local
 ```bash
 cd apps/ai
 python -m venv .venv
-source .venv/bin/activate    # Windows: .venv\Scripts\activate
+.venv\Scripts\activate          # Windows
+source .venv/bin/activate       # Linux/macOS
 pip install -r requirements.txt
 uvicorn main:app --reload --port 8000
 ```
@@ -147,9 +116,8 @@ Keycloak is pre-configured with these test users (password matches username):
 ### Port Already in Use
 
 ```bash
-# Find what's using a port (Windows)
+# Windows
 netstat -ano | findstr :5432
-# Kill the process
 taskkill /PID <pid> /F
 
 # macOS / Linux
@@ -169,14 +137,12 @@ Ensure no other Kafka instance is running on port 9092. The Docker Kafka adverti
 
 ### Flyway Migration Errors
 
-If migrations fail due to stale data, reset the database:
+If migrations fail due to stale data, wipe and restart:
 
 ```bash
 docker compose down -v
-docker compose up -d
+docker compose up --build
 ```
-
-Or just re-run `start.bat` / `make up` which does this automatically.
 
 ### Keycloak Realm Not Imported
 
