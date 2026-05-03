@@ -8,11 +8,32 @@
 
 ## Quick Start (All Docker)
 
+### Windows
+
+Double-click `start.bat` or run in a terminal:
+
+```
+start.bat
+```
+
+This automatically tears down any previous run (`docker compose down -v`), then builds and starts every service fresh.
+
+### Linux / macOS
+
 ```bash
 make up
 ```
 
-This runs `docker compose down -v` first (clean slate), then builds and starts every service. Wait 2-3 minutes for all containers to become healthy:
+Or directly:
+
+```bash
+docker compose down -v 2>/dev/null || true
+docker compose up --build
+```
+
+### Wait for healthy
+
+Wait 2-3 minutes for all containers to become healthy:
 
 ```bash
 docker compose ps
@@ -32,10 +53,10 @@ All services healthy? Open these URLs:
 
 ### Stopping
 
-```bash
-make down        # Stop containers, keep data
-make reset       # Stop containers and delete all data volumes
-```
+| Platform | Stop (keep data) | Full reset (wipe data) |
+|----------|------------------|------------------------|
+| Windows | `stop.bat` | `start.bat` (auto-resets) |
+| Linux/macOS | `make down` | `make reset` |
 
 Or directly:
 
@@ -50,9 +71,9 @@ Use this when you want hot-reload and debugger support for the backend or fronte
 
 ### Step 1: Start Infrastructure
 
-```bash
-make infra
-```
+Windows: double-click `start-infra.bat` or run `start-infra.bat`
+
+Linux/macOS: `make infra`
 
 Or manually:
 
@@ -154,6 +175,8 @@ If migrations fail due to stale data, reset the database:
 docker compose down -v
 docker compose up -d
 ```
+
+Or just re-run `start.bat` / `make up` which does this automatically.
 
 ### Keycloak Realm Not Imported
 
