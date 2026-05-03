@@ -1,0 +1,14 @@
+node_modules
+.git
+.github
+.env
+.env.*
+!.env.example
+*.md
+!apps/web/
+apps/ai/
+apps/mobile/
+backend/target/
+infra/
+docs/
+.claude/

@@ -5,8 +5,6 @@
 # Teardown: docker compose down -v
 # ---------------------------------------------------------------------------
 
-version: "3.9"
-
 services:
   # --- PostgreSQL 16 --------------------------------------------------------
   postgres:
@@ -58,7 +56,7 @@ services:
       - zookeeper_data:/var/lib/zookeeper/data
       - zookeeper_logs:/var/lib/zookeeper/log
     healthcheck:
-      test: ["CMD-SHELL", "echo ruok | nc localhost 2181 | grep imok"]
+      test: ["CMD-SHELL", "echo srvr | nc -w 2 localhost 2181 || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -171,35 +169,63 @@ services:
       postgres:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "curl -sf http://localhost:8081/health/ready || exit 1"]
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/localhost/8081 && echo -e 'GET /health/ready HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3 && timeout 2 cat <&3 | grep -q '\"status\": \"UP\"'"]
       interval: 15s
-      timeout: 5s
+      timeout: 10s
       retries: 10
-      start_period: 30s
+      start_period: 45s
     networks:
       - orionops-net
 
   # --- OPA (Open Policy Agent) ----------------------------------------------
   opa:
-    image: openpolicyagent/opa:latest
+    image: openpolicyagent/opa:0.68.0
     container_name: orionops-opa
     command: run --server --addr=0.0.0.0:8181 /policies
     ports:
       - "8181:8181"
     volumes:
-      - ./src/main/resources/opa:/policies
-    healthcheck:
-      test: ["CMD-SHELL", "curl -sf http://localhost:8181/health || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
+      - ../infra/opa/policies:/policies
     networks:
       - orionops-net
 
-# ---------------------------------------------------------------------------
-# Volumes
-# ---------------------------------------------------------------------------
+  # --- Kafka Topic Init -----------------------------------------------------
+  kafka-init:
+    image: confluentinc/cp-kafka:7.7.1
+    container_name: orionops-kafka-init
+    depends_on:
+      kafka:
+        condition: service_healthy
+    entrypoint:
+      - /bin/bash
+      - -c
+      - |
+        echo "Creating Kafka topics..."
+        kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic orionops.incident.events --partitions 3 --replication-factor 1
+        kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic orionops.change_request.events --partitions 3 --replication-factor 1
+        kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic orionops.sla_instance.events --partitions 3 --replication-factor 1
+        kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic orionops.billing_record.events --partitions 3 --replication-factor 1
+        kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic orionops.service_usage.events --partitions 3 --replication-factor 1
+        echo "Kafka topics created."
+    networks:
+      - orionops-net
+
+  # --- MinIO Bucket Init ----------------------------------------------------
+  minio-init:
+    image: minio/mc
+    container_name: orionops-minio-init
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        mc alias set orionops http://minio:9000 minioadmin minioadmin
+        mc mb --ignore-existing orionops/orionops
+        echo "MinIO bucket created."
+    networks:
+      - orionops-net
 volumes:
   postgres_data:
     driver: local

@@ -955,73 +955,40 @@ All configuration via environment variables (see `.env.example`). Sensitive valu
 
 ## 17. How to Run Locally
 
-### Prerequisites
+> **Full guide**: [docs/local-development.md](docs/local-development.md)
 
-- Java 21+ (JDK)
-- Node.js 20+
-- pnpm 9+
-- Docker & Docker Compose
-- Maven 3.9+
-
-### Step 1: Start Infrastructure
+### Quick Start (Docker)
 
 ```bash
-cd backend
-docker compose up -d
+make up
 ```
 
-Wait for all services to be healthy (~30s):
-```bash
-docker compose ps
-```
+Open http://localhost:3000 — no configuration needed.
 
-### Step 2: Start Backend
+Test users (password = username): `admin`, `agent`, `engineer`, `changemgr`
 
-```bash
-cd backend
-cp ../.env.example ../.env
-# Edit .env with your local values
-mvn spring-boot:run
-```
+Keycloak admin: http://localhost:8081 (admin/admin)
 
-Backend starts at http://localhost:8080
-
-Swagger UI: http://localhost:8080/swagger-ui.html
-
-### Step 3: Start Web Frontend
+### Hybrid Mode (Infrastructure Docker + Apps Native)
 
 ```bash
-cd ..
-pnpm install
-pnpm dev:web
+# 1. Start infrastructure
+make infra
+
+# 2. Start backend
+cd backend && mvn spring-boot:run
+
+# 3. Start web
+pnpm install && pnpm dev:web
 ```
 
-Web app at http://localhost:3000
+### Additional Guides
 
-### Step 4: Start AI Service (Optional)
-
-```bash
-cd apps/ai
-pip install -r requirements.txt
-uvicorn main:app --reload --port 8000
-```
-
-AI service at http://localhost:8000
-
-### Step 5: Start Mobile (Optional)
-
-```bash
-pnpm dev:mobile
-```
-
-Expo dev server starts; scan QR code with Expo Go app.
-
-### Keycloak Setup
-
-1. Access Keycloak at http://localhost:8081 (admin/admin)
-2. Import the `orionops` realm or create manually
-3. Create a client `orionops-web` with redirect URI `http://localhost:3000/*`
-4. Create test users and assign roles
+| Guide | Description |
+|-------|------------|
+| [Local Development](docs/local-development.md) | Full setup, ports, test users, troubleshooting |
+| [IntelliJ Setup](docs/intellij-setup.md) | IDE configuration, run configurations, debugging |
+| [Kubernetes Setup](docs/kubernetes-setup.md) | K8s cluster setup, kubeconfig, CD pipeline |
 
 ---
 

@@ -1,0 +1,7 @@
+target/
+*.class
+*.log
+.git
+.env
+*.md
+.claude/
