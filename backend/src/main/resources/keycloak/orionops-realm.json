@@ -133,6 +133,7 @@
   ],
   "users": [
     {
+      "id": "a1a1a1a1-1111-1111-1111-111111111101",
       "username": "admin",
       "email": "admin@orionops.local",
       "firstName": "System",
@@ -154,6 +155,7 @@
       ]
     },
     {
+      "id": "a1a1a1a1-1111-1111-1111-111111111102",
       "username": "agent",
       "email": "agent@orionops.local",
       "firstName": "Service Desk",
@@ -175,6 +177,7 @@
       ]
     },
     {
+      "id": "a1a1a1a1-1111-1111-1111-111111111103",
       "username": "engineer",
       "email": "engineer@orionops.local",
       "firstName": "Resolver",
@@ -196,6 +199,7 @@
       ]
     },
     {
+      "id": "a1a1a1a1-1111-1111-1111-111111111104",
       "username": "changemgr",
       "email": "changemgr@orionops.local",
       "firstName": "Change",
@@ -214,6 +218,32 @@
       ],
       "groups": [
         "IT Operations"
+      ]
+    },
+    {
+      "id": "a1a1a1a1-1111-1111-1111-111111111105",
+      "username": "sandbox",
+      "email": "sandbox@orionops.local",
+      "firstName": "Demo",
+      "lastName": "User",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "sandbox",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "admin",
+        "service_desk_agent",
+        "resolver_engineer",
+        "change_manager"
+      ],
+      "groups": [
+        "IT Operations",
+        "Management"
       ]
     }
   ],

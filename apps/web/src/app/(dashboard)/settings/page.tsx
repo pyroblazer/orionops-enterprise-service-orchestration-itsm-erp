@@ -118,7 +118,7 @@ export default function SettingsPage() {
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
                   <label htmlFor="timezone" className="text-sm font-medium">Timezone</label>
-                  <Input id="timezone" defaultValue="UTC" />
+                  <Input id="timezone" defaultValue="UTC" placeholder="e.g., UTC, America/New_York, Europe/London" />
                 </div>
                 <div className="space-y-2">
                   <label htmlFor="language" className="text-sm font-medium">Language</label>
@@ -127,8 +127,10 @@ export default function SettingsPage() {
                     className="w-full rounded-md border px-3 py-2"
                     aria-label="Select language"
                   >
+                    <option value="" disabled>Select language</option>
                     <option value="en">English</option>
                   </select>
+                  <p className="text-xs text-muted-foreground">Additional languages coming soon</p>
                 </div>
               </div>
               <Button>Save Preferences</Button>

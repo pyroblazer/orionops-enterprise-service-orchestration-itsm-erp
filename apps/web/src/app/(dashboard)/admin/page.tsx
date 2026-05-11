@@ -191,19 +191,19 @@ export default function AdminPage() {
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
                   <label className="text-sm font-medium" htmlFor="platform-name">Platform Name</label>
-                  <Input id="platform-name" defaultValue="OrionOps" />
+                  <Input id="platform-name" defaultValue="OrionOps" placeholder="e.g., OrionOps Service Desk" />
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-medium" htmlFor="default-timezone">Default Timezone</label>
-                  <Input id="default-timezone" defaultValue="UTC" />
+                  <Input id="default-timezone" defaultValue="UTC" placeholder="e.g., UTC, America/New_York" />
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-medium" htmlFor="date-format">Date Format</label>
-                  <Input id="date-format" defaultValue="YYYY-MM-DD" />
+                  <Input id="date-format" defaultValue="YYYY-MM-DD" placeholder="e.g., YYYY-MM-DD, MM/DD/YYYY" />
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-medium" htmlFor="currency">Default Currency</label>
-                  <Input id="currency" defaultValue="USD" />
+                  <Input id="currency" defaultValue="USD" placeholder="e.g., USD, EUR, GBP" />
                 </div>
               </div>
               <Button>Save Settings</Button>

@@ -93,6 +93,9 @@ Keycloak is pre-configured with these test users (password matches username):
 | agent | agent | Service desk agent |
 | engineer | engineer | Resolver engineer |
 | changemgr | changemgr | Change manager |
+| sandbox | sandbox | Admin + Agent + Engineer + Change Manager |
+
+For a feature walkthrough with pre-loaded demo data, see the [Sandbox Guide](sandbox-guide.md).
 
 ## Service Ports
 

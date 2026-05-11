@@ -66,7 +66,9 @@ export default function AuditPage() {
                 type="date"
                 value={fromDate}
                 onChange={(e) => { setFromDate(e.target.value); setPage(0); }}
+                title="Start of audit date range"
               />
+              <p className="text-xs text-muted-foreground">Start of audit date range</p>
             </div>
             <div className="space-y-1">
               <label htmlFor="to-date" className="text-sm font-medium">To Date</label>
@@ -75,7 +77,9 @@ export default function AuditPage() {
                 type="date"
                 value={toDate}
                 onChange={(e) => { setToDate(e.target.value); setPage(0); }}
+                title="End of audit date range"
               />
+              <p className="text-xs text-muted-foreground">End of audit date range</p>
             </div>
           </div>
         </CardContent>
