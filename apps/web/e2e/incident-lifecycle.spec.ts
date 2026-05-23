@@ -3,10 +3,20 @@ import { test, expect } from '@playwright/test';
 test.describe('Incident Lifecycle', () => {
   // Helper to set up authenticated state
   test.beforeEach(async ({ page }) => {
+    // Navigate to app first to establish origin, then set tokens
+    await page.goto('/login', { waitUntil: 'domcontentloaded' }).catch(() => {
+      // Navigation might fail if redirected, that's ok
+    });
+
+    // Set tokens in localStorage (must happen after navigating to app origin)
     await page.evaluate(() => {
-      localStorage.setItem('orionops_access_token', 'mock-access-token');
-      localStorage.setItem('orionops_refresh_token', 'mock-refresh-token');
-      localStorage.setItem('authenticated', 'true');
+      try {
+        localStorage.setItem('orionops_access_token', 'mock-access-token');
+        localStorage.setItem('orionops_refresh_token', 'mock-refresh-token');
+        localStorage.setItem('authenticated', 'true');
+      } catch {
+        // localStorage might not be available on some pages
+      }
     });
   });
 

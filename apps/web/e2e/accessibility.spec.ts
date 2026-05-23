@@ -2,11 +2,20 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Accessibility', () => {
   test.beforeEach(async ({ page }) => {
+    // Navigate to login to establish origin
+    await page.goto('/login', { waitUntil: 'domcontentloaded' }).catch(() => {
+      // Might redirect, that's ok
+    });
+
     // Set up authenticated state
-    await page.goto('/login');
     await page.evaluate(() => {
-      localStorage.setItem('orionops_access_token', 'mock-access-token');
-      localStorage.setItem('orionops_refresh_token', 'mock-refresh-token');
+      try {
+        localStorage.setItem('orionops_access_token', 'mock-access-token');
+        localStorage.setItem('orionops_refresh_token', 'mock-refresh-token');
+        localStorage.setItem('authenticated', 'true');
+      } catch {
+        // localStorage might not be available
+      }
     });
   });
 

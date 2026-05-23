@@ -28,11 +28,20 @@ test.describe('Authentication Flow', () => {
   });
 
   test('dashboard loads after successful authentication', async ({ page }) => {
-    // Inject mock tokens into localStorage BEFORE navigating
+    // Navigate to login first to establish origin
+    await page.goto('/login', { waitUntil: 'domcontentloaded' }).catch(() => {
+      // Might redirect, that's ok
+    });
+
+    // Now set tokens in localStorage (must be on same origin)
     await page.evaluate(() => {
-      localStorage.setItem('orionops_access_token', 'mock-access-token');
-      localStorage.setItem('orionops_refresh_token', 'mock-refresh-token');
-      localStorage.setItem('authenticated', 'true');
+      try {
+        localStorage.setItem('orionops_access_token', 'mock-access-token');
+        localStorage.setItem('orionops_refresh_token', 'mock-refresh-token');
+        localStorage.setItem('authenticated', 'true');
+      } catch {
+        // localStorage might not be available
+      }
     });
 
     // Navigate to dashboard
