@@ -9,6 +9,7 @@ build/
 out/
 .expo/
 web-build/
+*.tsbuildinfo
 
 # Java
 backend/target/
@@ -73,3 +74,14 @@ kafka-aiven-creds-download/
 *.jks
 *.keystore
 secrets/
+
+# Env summary docs
+FINAL_ENV_SUMMARY.md
+SETUP_ENV_COMPLETE.md
+
+# Supabase temp
+supabase/.temp/
+
+# Playwright test results
+apps/web/test-results/
+apps/web/playwright-report/
