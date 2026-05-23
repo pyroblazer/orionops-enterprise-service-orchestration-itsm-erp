@@ -46,9 +46,11 @@ import java.util.UUID;
 public class EmailService {
 
     private final JavaMailSender javaMailSender;
-    private final Store imapStore;
     private final TemplateEngine emailTemplateEngine;
     private final IncidentService incidentService;
+
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    private Store imapStore;
 
     @Value("${orionops.mail.from-address:noreply@orionops.io}")
     private String fromAddress;
@@ -153,7 +155,7 @@ public class EmailService {
      */
     @Scheduled(fixedDelayString = "${orionops.mail.imap.poll-interval:60000}")
     public void ingestEmails() {
-        if (!emailEnabled) {
+        if (!emailEnabled || imapStore == null) {
             return;
         }
 

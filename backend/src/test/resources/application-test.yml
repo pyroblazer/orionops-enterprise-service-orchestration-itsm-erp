@@ -8,12 +8,12 @@ spring:
       ddl-auto: create-drop
     show-sql: true
   kafka:
-    bootstrap-servers: ${spring.embedded.kafka.brokers:localhost:9092}
+    bootstrap-servers: localhost:9092
     consumer:
       group-id: test-group
       auto-offset-reset: earliest
     producer:
-      bootstrap-servers: ${spring.embedded.kafka.brokers:localhost:9092}
+      bootstrap-servers: localhost:9092
   data:
     redis:
       host: localhost
@@ -28,6 +28,9 @@ spring:
     properties:
       mail.smtp.auth: true
       mail.smtp.starttls.enable: true
+  autoconfigure:
+    exclude:
+      - org.flowable.spring.boot.eventregistry.EventRegistryAutoConfiguration
 
 flowable:
   async-executor-activate: false
