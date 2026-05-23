@@ -46,6 +46,6 @@ test.describe('Authentication Flow', () => {
 
     // Verify summary cards are rendered
     await expect(page.locator('text=Open Incidents')).toBeVisible();
-    await expect(page.locator('text=SLA at Risk')).toBeVisible();
+    await expect(page.locator('text=SLA Breached')).toBeVisible();
   });
 });
