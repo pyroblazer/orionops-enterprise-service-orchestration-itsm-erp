@@ -1,15 +1,48 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { api } from '@/lib/api';
 
 export default function SettingsPage() {
   const [tab, setTab] = useState<'profile' | 'preferences' | 'notifications'>('profile');
   const [theme, setTheme] = useState<'light' | 'dark' | 'high-contrast'>(
     (typeof window !== 'undefined' && document.documentElement.getAttribute('data-theme') as any) || 'light'
   );
+
+  const [profileForm, setProfileForm] = useState({ firstName: '', lastName: '', phone: '', department: '', title: '' });
+  const [saveMsg, setSaveMsg] = useState('');
+
+  const { data: meData } = useQuery({
+    queryKey: ['me'],
+    queryFn: () => api.getCurrentUser().then(r => r.data.data),
+  });
+
+  useEffect(() => {
+    if (meData) {
+      const nameParts = (meData.name ?? '').split(' ');
+      setProfileForm({
+        firstName: nameParts[0] ?? '',
+        lastName: nameParts.slice(1).join(' '),
+        phone: meData.phone ?? '',
+        department: meData.department ?? '',
+        title: meData.title ?? '',
+      });
+    }
+  }, [meData]);
+
+  const saveMutation = useMutation({
+    mutationFn: () => api.updateUser(meData?.id ?? '', {
+      name: `${profileForm.firstName} ${profileForm.lastName}`.trim(),
+      phone: profileForm.phone,
+      department: profileForm.department,
+      title: profileForm.title,
+    }),
+    onSuccess: () => { setSaveMsg('Profile saved successfully.'); setTimeout(() => setSaveMsg(''), 3000); },
+  });
 
   const handleThemeChange = (newTheme: 'light' | 'dark' | 'high-contrast') => {
     setTheme(newTheme);
@@ -44,30 +77,33 @@ export default function SettingsPage() {
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
                 <label htmlFor="first-name" className="text-sm font-medium">First Name</label>
-                <Input id="first-name" placeholder="Enter first name" />
+                <Input id="first-name" placeholder="Enter first name" value={profileForm.firstName} onChange={e => setProfileForm(f => ({ ...f, firstName: e.target.value }))} />
               </div>
               <div className="space-y-2">
                 <label htmlFor="last-name" className="text-sm font-medium">Last Name</label>
-                <Input id="last-name" placeholder="Enter last name" />
+                <Input id="last-name" placeholder="Enter last name" value={profileForm.lastName} onChange={e => setProfileForm(f => ({ ...f, lastName: e.target.value }))} />
               </div>
               <div className="space-y-2">
                 <label htmlFor="email" className="text-sm font-medium">Email</label>
-                <Input id="email" type="email" placeholder="your@email.com" disabled />
+                <Input id="email" type="email" value={meData?.email ?? ''} disabled />
               </div>
               <div className="space-y-2">
                 <label htmlFor="phone" className="text-sm font-medium">Phone</label>
-                <Input id="phone" type="tel" placeholder="+1 (555) 000-0000" />
+                <Input id="phone" type="tel" placeholder="+1 (555) 000-0000" value={profileForm.phone} onChange={e => setProfileForm(f => ({ ...f, phone: e.target.value }))} />
               </div>
               <div className="space-y-2">
                 <label htmlFor="department" className="text-sm font-medium">Department</label>
-                <Input id="department" placeholder="Engineering" />
+                <Input id="department" placeholder="Engineering" value={profileForm.department} onChange={e => setProfileForm(f => ({ ...f, department: e.target.value }))} />
               </div>
               <div className="space-y-2">
                 <label htmlFor="title" className="text-sm font-medium">Job Title</label>
-                <Input id="title" placeholder="Senior Engineer" />
+                <Input id="title" placeholder="Senior Engineer" value={profileForm.title} onChange={e => setProfileForm(f => ({ ...f, title: e.target.value }))} />
               </div>
             </div>
-            <Button>Save Profile</Button>
+            <div className="flex items-center gap-3">
+              <Button disabled={saveMutation.isPending || !meData} onClick={() => saveMutation.mutate()}>Save Profile</Button>
+              {saveMsg && <p className="text-sm text-success">{saveMsg}</p>}
+            </div>
           </CardContent>
         </Card>
       )}

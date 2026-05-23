@@ -1,0 +1,118 @@
+# ---------------------------------------------------------------------------
+# OrionOps - Cloud Profile for Render + Free SaaS
+# Activated via SPRING_PROFILES_ACTIVE=cloud
+#
+# Replaces local infrastructure with free cloud services:
+#   - Supabase PostgreSQL (replaces local PostgreSQL)
+#   - Upstash Redis (replaces local Redis, TLS URL format)
+#   - Disables Kafka (uses in-process ApplicationEventPublisher)
+#   - Disables OpenSearch (uses PostgreSQL full-text)
+#   - Disables MinIO (object storage not needed for MVP)
+#   - Disables Keycloak (uses symmetric HMAC JWT)
+#   - Disables OPA (uses Spring Security RBAC)
+#   - Disables OpenTelemetry export
+# ---------------------------------------------------------------------------
+
+server:
+  port: ${PORT:8080}
+
+spring:
+  # --- DataSource (Supabase PostgreSQL) ---
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    hikari:
+      maximum-pool-size: 5
+      minimum-idle: 2
+      idle-timeout: 300000
+      connection-timeout: 20000
+      max-lifetime: 1200000
+
+  # --- Redis (Upstash, TLS URL format: rediss://default:<pass>@<host>:6380) ---
+  data:
+    redis:
+      url: ${SPRING_DATA_REDIS_URL}
+      timeout: 5000
+      lettuce:
+        pool:
+          max-active: 5
+          max-idle: 2
+          min-idle: 1
+          max-wait: 3000
+
+  # --- Disable Kafka (use in-process ApplicationEventPublisher) ---
+  kafka:
+    bootstrap-servers: ""
+
+  # --- Flyway ---
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    baseline-version: "0"
+    validate-on-migrate: true
+    clean-disabled: true
+
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration
+
+  # --- OAuth2 Resource Server: symmetric HMAC JWT (no Keycloak needed) ---
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # Cloud profile uses symmetric key — SecurityConfig reads JWT_SECRET env var directly
+          # Leave issuer-uri blank; JwtDecoder bean is constructed from JWT_SECRET in SecurityConfig
+          issuer-uri: ""
+
+# --- CORS: allow Vercel frontend ---
+app:
+  cors:
+    allowed-origins:
+      - ${FRONTEND_URL:http://localhost:3000}
+      - http://localhost:3000
+      - http://localhost:3001
+  auth:
+    # Use symmetric HMAC-SHA256 JWT in cloud; set JWT_SECRET env var on Render
+    jwt-secret: ${JWT_SECRET:}
+
+# --- Keycloak stubs (bean reads these but they are unused when mode=cloud) ---
+keycloak:
+  enabled: false
+  auth-server-url: "https://placeholder.keycloak.invalid"
+  realm: "orionops"
+  client-id: "orionops-backend"
+  client-secret: ""
+  resourceserver:
+    jwt:
+      jwk-set-uri: "https://placeholder.keycloak.invalid/realms/orionops/protocol/openid-connect/certs"
+
+# --- Disable OpenSearch ---
+opensearch:
+  enabled: false
+
+# --- Disable MinIO ---
+minio:
+  enabled: false
+
+# --- Disable OPA ---
+opa:
+  enabled: false
+
+# --- Disable OpenTelemetry export ---
+otel:
+  traces:
+    exporter: none
+  metrics:
+    exporter: none
+  logs:
+    exporter: none
+
+# --- Logging (reduce verbosity for cloud) ---
+logging:
+  level:
+    root: WARN
+    com.orionops: INFO
+    org.hibernate.SQL: WARN

@@ -68,6 +68,20 @@ public class SLAController {
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(slaService.applySLA(definitionId, targetEntityId, targetType), "SLA applied"));
     }
 
+    @PatchMapping("/instances/{id}/pause")
+    @Operation(summary = "Pause SLA instance", description = "Pauses an active SLA timer")
+    @PreAuthorize("hasAnyRole('ENGINEER', 'MANAGER', 'ADMIN')")
+    public ResponseEntity<ApiResponse<SLAInstanceResponse>> pauseInstance(@PathVariable UUID id) {
+        return ResponseEntity.ok(ApiResponse.success(slaService.pauseInstance(id), "SLA instance paused"));
+    }
+
+    @PatchMapping("/instances/{id}/resume")
+    @Operation(summary = "Resume SLA instance", description = "Resumes a paused SLA timer")
+    @PreAuthorize("hasAnyRole('ENGINEER', 'MANAGER', 'ADMIN')")
+    public ResponseEntity<ApiResponse<SLAInstanceResponse>> resumeInstance(@PathVariable UUID id) {
+        return ResponseEntity.ok(ApiResponse.success(slaService.resumeInstance(id), "SLA instance resumed"));
+    }
+
     @GetMapping("/instances")
     @PreAuthorize("hasAnyRole('AGENT', 'ENGINEER', 'MANAGER', 'ADMIN')")
     public ResponseEntity<ApiResponse<PagedResponse<SLAInstanceResponse>>> listInstances(

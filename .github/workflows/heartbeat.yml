@@ -1,0 +1,24 @@
+name: Render Heartbeat
+
+# Pings the Render free-tier backend every 14 minutes to prevent the service
+# from sleeping (Render sleeps after 15 minutes of inactivity).
+# Uses ~3 GitHub Actions minutes/day — well within the 2000 min/month free tier.
+
+on:
+  schedule:
+    - cron: '*/14 * * * *'
+  workflow_dispatch:
+
+jobs:
+  ping:
+    name: Keep Render awake
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping backend health endpoint
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 \
+            https://orionops-backend.onrender.com/actuator/health)
+          echo "Health check HTTP status: $STATUS"
+          if [ "$STATUS" != "200" ] && [ "$STATUS" != "000" ]; then
+            echo "::warning::Backend returned unexpected status $STATUS"
+          fi

@@ -104,6 +104,12 @@ public class CMDBController {
         return ResponseEntity.ok(ApiResponse.success(cmdbService.getService(id)));
     }
 
+    @PutMapping("/services/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public ResponseEntity<ApiResponse<ServiceResponse>> updateService(@PathVariable UUID id, @Valid @RequestBody ServiceRequest request) {
+        return ResponseEntity.ok(ApiResponse.success(cmdbService.updateService(id, request), "Service updated"));
+    }
+
     @DeleteMapping("/services/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<Void>> deleteService(@PathVariable UUID id) {

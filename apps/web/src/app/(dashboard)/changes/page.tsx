@@ -37,8 +37,10 @@ import {
   Clock,
 } from 'lucide-react';
 import { formatDateTime, getStatusColor, getPriorityColor, cn } from '@/lib/utils';
+import { useRouter } from 'next/navigation';
 
 export default function ChangesListPage() {
+  const router = useRouter();
   const [filters, setFilters] = useState<FilterParams>({
     page: 1,
     pageSize: 20,
@@ -77,7 +79,7 @@ export default function ChangesListPage() {
           <Button variant="outline" size="sm" onClick={() => refetch()} aria-label="Refresh changes">
             <RefreshCw className="mr-1 h-4 w-4" /> Refresh
           </Button>
-          <Button aria-label="Create new change">
+          <Button aria-label="Create new change" onClick={() => router.push('/changes/new')}>
             <Plus className="mr-1 h-4 w-4" /> Create Change
           </Button>
         </div>

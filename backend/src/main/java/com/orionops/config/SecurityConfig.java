@@ -12,19 +12,15 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.util.StringUtils;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
-/**
- * Spring Security configuration for OrionOps.
- *
- * <p>Uses OAuth2 Resource Server with JWT tokens issued by Keycloak.
- * Stateless session management (no server-side sessions). CORS is configured
- * for development and can be tightened for production deployments.</p>
- */
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
@@ -32,6 +28,14 @@ public class SecurityConfig {
 
     @Value("${keycloak.resourceserver.jwt.jwk-set-uri}")
     private String jwkSetUri;
+
+    /** Symmetric JWT secret used in cloud profile (Render). Empty string means use JWK URI instead. */
+    @Value("${app.auth.jwt-secret:}")
+    private String jwtSecret;
+
+    /** CORS origins — overridden in application-cloud.yml to include Vercel URL. */
+    @Value("${app.cors.allowed-origins:http://localhost:3000,http://localhost:3001,http://localhost:19006}")
+    private List<String> allowedOrigins;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -41,7 +45,6 @@ public class SecurityConfig {
             .sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                // Public endpoints
                 .requestMatchers(
                     "/actuator/health",
                     "/actuator/health/**",
@@ -50,7 +53,6 @@ public class SecurityConfig {
                     "/swagger-ui.html",
                     "/v3/api-docs/**"
                 ).permitAll()
-                // All other requests require authentication
                 .anyRequest().authenticated()
             )
             .oauth2ResourceServer(oauth2 -> oauth2
@@ -62,17 +64,20 @@ public class SecurityConfig {
 
     @Bean
     public JwtDecoder jwtDecoder() {
+        // Cloud profile: use symmetric HMAC-SHA256 key from JWT_SECRET env var
+        if (StringUtils.hasText(jwtSecret)) {
+            SecretKeySpec key = new SecretKeySpec(
+                jwtSecret.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
+            return NimbusJwtDecoder.withSecretKey(key).build();
+        }
+        // Local/k8s profile: use Keycloak JWK endpoint
         return NimbusJwtDecoder.withJwkSetUri(jwkSetUri).build();
     }
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of(
-            "http://localhost:3000",
-            "http://localhost:3001",
-            "http://localhost:19006"
-        ));
+        configuration.setAllowedOrigins(allowedOrigins);
         configuration.setAllowedMethods(List.of(
             "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"
         ));

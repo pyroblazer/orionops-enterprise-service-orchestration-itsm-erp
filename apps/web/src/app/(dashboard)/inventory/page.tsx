@@ -1,429 +1,339 @@
 'use client';
 
 import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Skeleton } from '@/components/ui/skeleton';
-import {
-  Package,
-  Monitor,
-  Warehouse,
-  Plus,
-  Search,
-  AlertTriangle,
-  Tag,
-  MapPin,
-} from 'lucide-react';
+import { Package, Monitor, Warehouse, Plus, Search, AlertTriangle, Check, X, Pencil, Trash2, ArrowUpDown } from 'lucide-react';
 import { formatCurrency, cn } from '@/lib/utils';
+import { api, InventoryItem, Asset } from '@/lib/api';
 
-// --- Types ---
+const ASSET_TYPES = ['laptop', 'desktop', 'server', 'network', 'phone', 'furniture', 'vehicle', 'other'];
+const ASSET_STATUSES = ['in_use', 'available', 'maintenance', 'disposed'];
+const CURRENCIES = ['USD', 'EUR', 'GBP'];
 
-interface InventoryItem {
-  id: string;
-  name: string;
-  sku: string;
-  warehouse: string;
-  quantity: number;
-  minQuantity: number;
-  unitCost: number;
-  category: string;
-}
-
-interface Asset {
-  id: string;
-  assetTag: string;
-  name: string;
-  type: string;
-  status: 'in_use' | 'available' | 'maintenance' | 'disposed' | 'retired';
-  location: string;
-  assignedTo?: string;
-  purchaseDate: string;
-  value: number;
-}
-
-interface WarehouseLocation {
-  id: string;
-  name: string;
-  location: string;
-  capacity: number;
-  utilized: number;
-  manager: string;
-  itemCount: number;
-}
-
-// --- Mock Data ---
-
-const mockItems: InventoryItem[] = [
-  { id: 'item-001', name: 'Dell PowerEdge R750 Server', sku: 'SRV-DELL-R750', warehouse: 'Main Warehouse', quantity: 15, minQuantity: 5, unitCost: 12500, category: 'Servers' },
-  { id: 'item-002', name: 'Cisco Catalyst 9300 Switch', sku: 'NET-CISCO-9300', warehouse: 'Main Warehouse', quantity: 8, minQuantity: 3, unitCost: 8500, category: 'Networking' },
-  { id: 'item-003', name: 'Samsung 27" Monitor', sku: 'MON-SAM-27', warehouse: 'IT Storage', quantity: 45, minQuantity: 10, unitCost: 350, category: 'Monitors' },
-  { id: 'item-004', name: 'Logitech MX Keys Keyboard', sku: 'PER-LOG-MXK', warehouse: 'IT Storage', quantity: 3, minQuantity: 15, unitCost: 120, category: 'Peripherals' },
-  { id: 'item-005', name: 'Cat6 Ethernet Cable (10ft)', sku: 'CAB-CAT6-10', warehouse: 'Main Warehouse', quantity: 200, minQuantity: 50, unitCost: 8, category: 'Cables' },
-  { id: 'item-006', name: 'APC Smart-UPS 3000VA', sku: 'PWR-APC-3K', warehouse: 'Main Warehouse', quantity: 4, minQuantity: 2, unitCost: 2800, category: 'Power' },
-  { id: 'item-007', name: 'Lenovo ThinkPad X1 Carbon', sku: 'LAP-LEN-X1C', warehouse: 'IT Storage', quantity: 2, minQuantity: 5, unitCost: 1800, category: 'Laptops' },
-];
-
-const mockAssets: Asset[] = [
-  { id: 'asset-001', assetTag: 'AST-2024-001', name: 'Production Web Server 01', type: 'Server', status: 'in_use', location: 'Data Center A - Rack 3', assignedTo: 'Infrastructure Team', purchaseDate: '2024-03-15', value: 15000 },
-  { id: 'asset-002', assetTag: 'AST-2024-002', name: 'Core Network Switch', type: 'Network Equipment', status: 'in_use', location: 'Data Center A - Rack 1', assignedTo: 'Network Team', purchaseDate: '2024-01-20', value: 12000 },
-  { id: 'asset-003', assetTag: 'AST-2024-003', name: 'Development Workstation', type: 'Workstation', status: 'available', location: 'IT Storage Room B', purchaseDate: '2024-06-10', value: 3500 },
-  { id: 'asset-004', assetTag: 'AST-2024-004', name: 'Backup Storage Array', type: 'Storage', status: 'maintenance', location: 'Data Center B - Rack 7', assignedTo: 'Storage Team', purchaseDate: '2023-11-05', value: 45000 },
-  { id: 'asset-005', assetTag: 'AST-2023-015', name: 'Legacy Firewall', type: 'Security', status: 'disposed', location: 'Decommissioned', purchaseDate: '2020-08-12', value: 8000 },
-  { id: 'asset-006', assetTag: 'AST-2025-001', name: 'Conference Room Display', type: 'AV Equipment', status: 'in_use', location: 'Building A - Room 301', assignedTo: 'Facilities', purchaseDate: '2025-02-28', value: 5000 },
-];
-
-const mockWarehouses: WarehouseLocation[] = [
-  { id: 'wh-001', name: 'Main Warehouse', location: 'Building C - Ground Floor', capacity: 5000, utilized: 3750, manager: 'Tom Harris', itemCount: 156 },
-  { id: 'wh-002', name: 'IT Storage', location: 'Building A - Basement', capacity: 2000, utilized: 1200, manager: 'Sarah Lee', itemCount: 89 },
-  { id: 'wh-003', name: 'Data Center Staging', location: 'DC Campus - Room S1', capacity: 500, utilized: 320, manager: 'James Park', itemCount: 45 },
-];
-
-function getAssetStatusColor(status: string): string {
-  const colors: Record<string, string> = {
-    in_use: 'bg-success/20 text-success border-success',
-    available: 'bg-info/20 text-info border-info',
-    maintenance: 'bg-warning/20 text-warning border-warning',
-    disposed: 'bg-muted text-muted-foreground border-muted',
-    retired: 'bg-muted text-muted-foreground border-muted',
-  };
-  return colors[status] || 'bg-muted text-muted-foreground';
+function assetStatusColor(s: string) {
+  return s === 'in_use' ? 'bg-success/20 text-success border-success'
+    : s === 'available' ? 'bg-info/20 text-info border-info'
+    : s === 'maintenance' ? 'bg-warning/20 text-warning border-warning'
+    : 'bg-muted text-muted-foreground';
 }
 
 export default function InventoryPage() {
-  const [activeTab, setActiveTab] = useState('items');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [isLoading] = useState(false);
+  const qc = useQueryClient();
 
-  const lowStockItems = mockItems.filter((item) => item.quantity <= item.minQuantity);
+  // Items state
+  const [itemSearch, setItemSearch] = useState('');
+  const [itemWarehouse, setItemWarehouse] = useState('');
+  const [showItemForm, setShowItemForm] = useState(false);
+  const [editItemId, setEditItemId] = useState<string | null>(null);
+  const [itemForm, setItemForm] = useState({ name: '', sku: '', description: '', unit: 'each', warehouseId: '', quantityOnHand: 0, minimumQuantity: 0, maximumQuantity: 0, unitCost: 0, currency: 'USD' });
+  const [deleteItemId, setDeleteItemId] = useState<string | null>(null);
+  const [stockItemId, setStockItemId] = useState<string | null>(null);
+  const [stockForm, setStockForm] = useState({ adjustmentType: 'in', quantity: 1, reason: '', referenceNumber: '' });
 
-  const filteredItems = mockItems.filter(
-    (item) =>
-      !searchQuery ||
-      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.sku.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Assets state
+  const [assetSearch, setAssetSearch] = useState('');
+  const [assetStatus, setAssetStatus] = useState('');
+  const [showAssetForm, setShowAssetForm] = useState(false);
+  const [editAssetId, setEditAssetId] = useState<string | null>(null);
+  const [assetForm, setAssetForm] = useState({ name: '', assetTag: '', type: 'laptop', serialNumber: '', purchaseDate: '', purchaseValue: 0, currency: 'USD', warehouseId: '', assignedTo: '', location: '', warrantyExpiry: '' });
+  const [deleteAssetId, setDeleteAssetId] = useState<string | null>(null);
 
-  const filteredAssets = mockAssets.filter(
-    (asset) =>
-      !searchQuery ||
-      asset.assetTag.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      asset.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (asset.assignedTo && asset.assignedTo.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
+  // Warehouse state
+  const [showWhForm, setShowWhForm] = useState(false);
+  const [editWhId, setEditWhId] = useState<string | null>(null);
+  const [whForm, setWhForm] = useState({ name: '', location: '', address: '', capacity: 0, manager: '', notes: '' });
 
-  const filteredWarehouses = mockWarehouses.filter(
-    (wh) =>
-      !searchQuery ||
-      wh.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      wh.location.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Queries
+  const { data: itemsData, isLoading: loadingItems } = useQuery({
+    queryKey: ['inventory-items', { itemSearch, itemWarehouse }],
+    queryFn: () => api.getInventoryItems({ search: itemSearch || undefined, warehouseId: itemWarehouse || undefined }).then(r => r.data),
+  });
+  const { data: lowStockData } = useQuery({
+    queryKey: ['low-stock'],
+    queryFn: () => api.getLowStockItems().then(r => r.data),
+  });
+  const { data: assetsData, isLoading: loadingAssets } = useQuery({
+    queryKey: ['assets', { assetSearch, assetStatus }],
+    queryFn: () => api.getAssets({ search: assetSearch || undefined, status: assetStatus || undefined }).then(r => r.data),
+  });
+  const { data: warehousesData, isLoading: loadingWarehouses } = useQuery({
+    queryKey: ['warehouses'],
+    queryFn: () => api.getWarehouses().then(r => r.data),
+  });
+
+  // Item mutations
+  const createItem = useMutation({ mutationFn: () => api.createInventoryItem(itemForm), onSuccess: () => { qc.invalidateQueries({ queryKey: ['inventory-items'] }); setShowItemForm(false); } });
+  const updateItem = useMutation({ mutationFn: ({ id, d }: { id: string; d: Partial<InventoryItem> }) => api.updateInventoryItem(id, d), onSuccess: () => { qc.invalidateQueries({ queryKey: ['inventory-items'] }); setEditItemId(null); } });
+  const deleteItem = useMutation({ mutationFn: (id: string) => api.deleteInventoryItem(id), onSuccess: () => { qc.invalidateQueries({ queryKey: ['inventory-items'] }); setDeleteItemId(null); } });
+  const stockMovement = useMutation({ mutationFn: () => api.recordStockMovement({ itemId: stockItemId, ...stockForm }), onSuccess: () => { qc.invalidateQueries({ queryKey: ['inventory-items'] }); qc.invalidateQueries({ queryKey: ['low-stock'] }); setStockItemId(null); } });
+
+  // Asset mutations
+  const createAsset = useMutation({ mutationFn: () => api.createAsset(assetForm), onSuccess: () => { qc.invalidateQueries({ queryKey: ['assets'] }); setShowAssetForm(false); } });
+  const updateAsset = useMutation({ mutationFn: ({ id, d }: { id: string; d: Partial<Asset> }) => api.updateAsset(id, d), onSuccess: () => { qc.invalidateQueries({ queryKey: ['assets'] }); setEditAssetId(null); } });
+  const deleteAsset = useMutation({ mutationFn: (id: string) => api.deleteAsset(id), onSuccess: () => { qc.invalidateQueries({ queryKey: ['assets'] }); setDeleteAssetId(null); } });
+
+  // Warehouse mutations
+  const createWarehouse = useMutation({ mutationFn: () => api.createWarehouse(whForm), onSuccess: () => { qc.invalidateQueries({ queryKey: ['warehouses'] }); setShowWhForm(false); } });
+  const updateWarehouse = useMutation({ mutationFn: ({ id, d }: { id: string; d: typeof whForm }) => api.updateWarehouse(id, d), onSuccess: () => { qc.invalidateQueries({ queryKey: ['warehouses'] }); setEditWhId(null); } });
+
+  const items: InventoryItem[] = itemsData?.data ?? [];
+  const assets: Asset[] = assetsData?.data ?? [];
+  const warehouses = warehousesData?.data ?? [];
+  const lowStockItems = lowStockData?.data ?? [];
+  const totalAssetValue = assets.reduce((s, a) => s + (a.purchaseValue ?? 0), 0);
 
   return (
     <div className="space-y-6">
-      {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Inventory & Assets</h1>
-          <p className="text-muted-foreground">
-            Manage inventory items, fixed assets, and warehouse locations
-          </p>
+          <h1 className="text-2xl font-bold tracking-tight">Inventory</h1>
+          <p className="text-muted-foreground">Items, assets, and warehouse management</p>
         </div>
-        <Button aria-label="Add new item or asset">
-          <Plus className="mr-1 h-4 w-4" aria-hidden="true" />
-          Add Item
-        </Button>
       </div>
 
-      {/* Summary Cards */}
+      {/* Summary */}
       <div className="grid gap-4 md:grid-cols-4">
-        <Card className="border-l-4 border-l-primary">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Items</CardTitle>
-            <Package className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{mockItems.length}</div>
-            <p className="text-xs text-muted-foreground">Inventory items tracked</p>
-          </CardContent>
-        </Card>
-        <Card className="border-l-4 border-l-danger">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Low Stock Alerts</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-danger" aria-hidden="true" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-danger">{lowStockItems.length}</div>
-            <p className="text-xs text-muted-foreground">Below minimum quantity</p>
-          </CardContent>
-        </Card>
-        <Card className="border-l-4 border-l-success">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Assets</CardTitle>
-            <Monitor className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {mockAssets.filter((a) => a.status === 'in_use').length}
-            </div>
-            <p className="text-xs text-muted-foreground">Currently in use</p>
-          </CardContent>
-        </Card>
-        <Card className="border-l-4 border-l-info">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Warehouses</CardTitle>
-            <Warehouse className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{mockWarehouses.length}</div>
-            <p className="text-xs text-muted-foreground">Storage locations</p>
-          </CardContent>
-        </Card>
+        <Card className="border-l-4 border-l-primary"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Total Items</CardTitle><Package className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold">{itemsData?.total ?? 0}</div></CardContent></Card>
+        <Card className="border-l-4 border-l-warning"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Low Stock Alerts</CardTitle><AlertTriangle className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold">{(lowStockItems as unknown[]).length}</div></CardContent></Card>
+        <Card className="border-l-4 border-l-info"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Total Assets</CardTitle><Monitor className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold">{assetsData?.total ?? 0}</div></CardContent></Card>
+        <Card className="border-l-4 border-l-success"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Asset Value</CardTitle><Monitor className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold">{formatCurrency(totalAssetValue)}</div></CardContent></Card>
       </div>
 
-      {/* Search */}
-      <div className="flex items-center gap-4">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" aria-hidden="true" />
-          <Input
-            placeholder="Search items, assets, warehouses..."
-            className="pl-8"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            aria-label="Search inventory and assets"
-          />
+      {(lowStockItems as unknown[]).length > 0 && (
+        <div className="rounded-md border border-warning/50 bg-warning/5 px-4 py-3 flex items-center gap-3">
+          <AlertTriangle className="h-5 w-5 text-warning shrink-0" />
+          <p className="text-sm font-medium">{(lowStockItems as unknown[]).length} item(s) are below minimum stock levels and require replenishment.</p>
         </div>
-      </div>
+      )}
 
-      {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
+      <Tabs defaultValue="items">
         <TabsList>
-          <TabsTrigger value="items">
-            <Package className="mr-1 h-4 w-4" aria-hidden="true" />
-            Items
-          </TabsTrigger>
-          <TabsTrigger value="assets">
-            <Monitor className="mr-1 h-4 w-4" aria-hidden="true" />
-            Assets
-          </TabsTrigger>
-          <TabsTrigger value="warehouses">
-            <Warehouse className="mr-1 h-4 w-4" aria-hidden="true" />
-            Warehouses
-          </TabsTrigger>
+          <TabsTrigger value="items"><Package className="mr-1 h-4 w-4" />Items</TabsTrigger>
+          <TabsTrigger value="assets"><Monitor className="mr-1 h-4 w-4" />Assets</TabsTrigger>
+          <TabsTrigger value="warehouses"><Warehouse className="mr-1 h-4 w-4" />Warehouses</TabsTrigger>
         </TabsList>
 
-        {/* Items Tab */}
-        <TabsContent value="items" className="mt-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Inventory Items</CardTitle>
-              <CardDescription>Track stock levels and costs for all inventory items</CardDescription>
-            </CardHeader>
-            <CardContent className="p-0">
-              {isLoading ? (
-                <div className="space-y-3 p-6" role="status" aria-label="Loading inventory items">
-                  {Array.from({ length: 7 }).map((_, i) => (
-                    <Skeleton key={i} className="h-12 w-full" />
-                  ))}
-                </div>
-              ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>SKU</TableHead>
-                      <TableHead>Warehouse</TableHead>
-                      <TableHead>Quantity</TableHead>
-                      <TableHead>Min Qty</TableHead>
-                      <TableHead>Unit Cost</TableHead>
-                      <TableHead>Category</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredItems.length > 0 ? (
-                      filteredItems.map((item) => {
-                        const isLowStock = item.quantity <= item.minQuantity;
-                        return (
-                          <TableRow key={item.id} className={cn(isLowStock && 'bg-danger/5')}>
-                            <TableCell className="font-medium">
-                              <div className="flex items-center gap-2">
-                                {isLowStock && (
-                                  <AlertTriangle className="h-4 w-4 text-danger" aria-hidden="true" />
-                                )}
-                                {item.name}
-                              </div>
-                            </TableCell>
-                            <TableCell className="font-mono text-sm">{item.sku}</TableCell>
-                            <TableCell className="text-muted-foreground">{item.warehouse}</TableCell>
-                            <TableCell>
-                              <span className={cn('font-medium', isLowStock ? 'text-danger' : '')}>
-                                {item.quantity}
-                              </span>
-                            </TableCell>
-                            <TableCell className="text-muted-foreground">{item.minQuantity}</TableCell>
-                            <TableCell>{formatCurrency(item.unitCost)}</TableCell>
-                            <TableCell>
-                              <Badge variant="outline">{item.category}</Badge>
-                            </TableCell>
-                          </TableRow>
-                        );
-                      })
-                    ) : (
-                      <TableRow>
-                        <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
-                          No inventory items found
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Assets Tab */}
-        <TabsContent value="assets" className="mt-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Fixed Assets</CardTitle>
-              <CardDescription>Track and manage organizational assets</CardDescription>
-            </CardHeader>
-            <CardContent className="p-0">
-              {isLoading ? (
-                <div className="space-y-3 p-6" role="status" aria-label="Loading assets">
-                  {Array.from({ length: 6 }).map((_, i) => (
-                    <Skeleton key={i} className="h-12 w-full" />
-                  ))}
-                </div>
-              ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Asset Tag</TableHead>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Type</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Location</TableHead>
-                      <TableHead>Assigned To</TableHead>
-                      <TableHead>Value</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredAssets.length > 0 ? (
-                      filteredAssets.map((asset) => (
-                        <TableRow key={asset.id}>
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              <Tag className="h-3 w-3 text-muted-foreground" aria-hidden="true" />
-                              <span className="font-mono text-sm font-medium">{asset.assetTag}</span>
-                            </div>
-                          </TableCell>
-                          <TableCell className="font-medium">{asset.name}</TableCell>
-                          <TableCell>
-                            <Badge variant="outline">{asset.type}</Badge>
-                          </TableCell>
-                          <TableCell>
-                            <Badge className={cn('capitalize', getAssetStatusColor(asset.status))}>
-                              {asset.status.replace('_', ' ')}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-1 text-muted-foreground">
-                              <MapPin className="h-3 w-3" aria-hidden="true" />
-                              <span className="text-sm">{asset.location}</span>
-                            </div>
-                          </TableCell>
-                          <TableCell className="text-muted-foreground">
-                            {asset.assignedTo || '--'}
-                          </TableCell>
-                          <TableCell>{formatCurrency(asset.value)}</TableCell>
-                        </TableRow>
-                      ))
-                    ) : (
-                      <TableRow>
-                        <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
-                          No assets found
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Warehouses Tab */}
-        <TabsContent value="warehouses" className="mt-4">
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {filteredWarehouses.map((wh) => {
-              const utilization = (wh.utilized / wh.capacity) * 100;
-              return (
-                <Card key={wh.id}>
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <CardTitle className="text-base">{wh.name}</CardTitle>
-                      <Badge
-                        className={cn(
-                          utilization > 90
-                            ? 'bg-danger/20 text-danger'
-                            : utilization > 70
-                            ? 'bg-warning/20 text-warning'
-                            : 'bg-success/20 text-success'
-                        )}
-                      >
-                        {utilization.toFixed(0)}% full
-                      </Badge>
-                    </div>
-                    <CardDescription className="flex items-center gap-1">
-                      <MapPin className="h-3 w-3" aria-hidden="true" />
-                      {wh.location}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <div className="h-2 rounded-full bg-muted overflow-hidden">
-                      <div
-                        className={cn(
-                          'h-full rounded-full',
-                          utilization > 90 ? 'bg-danger' : utilization > 70 ? 'bg-warning' : 'bg-success'
-                        )}
-                        style={{ width: `${utilization}%` }}
-                      />
-                    </div>
-                    <div className="grid grid-cols-2 gap-2 text-sm">
-                      <div>
-                        <p className="text-muted-foreground">Capacity</p>
-                        <p className="font-medium">{wh.capacity.toLocaleString()} units</p>
-                      </div>
-                      <div>
-                        <p className="text-muted-foreground">Items</p>
-                        <p className="font-medium">{wh.itemCount}</p>
-                      </div>
-                      <div>
-                        <p className="text-muted-foreground">Manager</p>
-                        <p className="font-medium">{wh.manager}</p>
-                      </div>
-                      <div>
-                        <p className="text-muted-foreground">Utilized</p>
-                        <p className="font-medium">{wh.utilized.toLocaleString()}</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
+        {/* ITEMS TAB */}
+        <TabsContent value="items" className="space-y-4 mt-4">
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="relative flex-1 min-w-48">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input placeholder="Search items..." className="pl-8" value={itemSearch} onChange={e => setItemSearch(e.target.value)} />
+            </div>
+            <Select value={itemWarehouse} onValueChange={setItemWarehouse}>
+              <SelectTrigger className="w-44"><SelectValue placeholder="All warehouses" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">All warehouses</SelectItem>
+                {(warehouses as { id: string; name: string }[]).map(w => <SelectItem key={w.id} value={w.id}>{w.name}</SelectItem>)}
+              </SelectContent>
+            </Select>
+            <Button size="sm" onClick={() => { setShowItemForm(true); setEditItemId(null); }}><Plus className="mr-1 h-4 w-4" />New Item</Button>
           </div>
+
+          {(showItemForm || editItemId) && (
+            <Card>
+              <CardHeader><CardTitle className="text-base">{editItemId ? 'Edit Item' : 'New Item'}</CardTitle></CardHeader>
+              <CardContent>
+                <form onSubmit={e => { e.preventDefault(); editItemId ? updateItem.mutate({ id: editItemId, d: itemForm }) : createItem.mutate(); }} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  <div className="space-y-1"><label className="text-sm font-medium">Name *</label><Input required value={itemForm.name} onChange={e => setItemForm(f => ({ ...f, name: e.target.value }))} placeholder="Item name" /></div>
+                  <div className="space-y-1"><label className="text-sm font-medium">SKU</label><Input value={itemForm.sku} onChange={e => setItemForm(f => ({ ...f, sku: e.target.value }))} placeholder="SKU-001" /></div>
+                  <div className="space-y-1"><label className="text-sm font-medium">Unit</label><Select value={itemForm.unit} onValueChange={v => setItemForm(f => ({ ...f, unit: v }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{['each','kg','liter','meter','box','pack'].map(u => <SelectItem key={u} value={u}>{u}</SelectItem>)}</SelectContent></Select></div>
+                  <div className="space-y-1"><label className="text-sm font-medium">Warehouse</label><Select value={itemForm.warehouseId} onValueChange={v => setItemForm(f => ({ ...f, warehouseId: v }))}><SelectTrigger><SelectValue placeholder="Select warehouse" /></SelectTrigger><SelectContent>{(warehouses as { id: string; name: string }[]).map(w => <SelectItem key={w.id} value={w.id}>{w.name}</SelectItem>)}</SelectContent></Select></div>
+                  <div className="space-y-1"><label className="text-sm font-medium">Qty On Hand</label><Input type="number" min={0} value={itemForm.quantityOnHand || ''} onChange={e => setItemForm(f => ({ ...f, quantityOnHand: parseInt(e.target.value) }))} /></div>
+                  <div className="space-y-1"><label className="text-sm font-medium">Min Qty</label><Input type="number" min={0} value={itemForm.minimumQuantity || ''} onChange={e => setItemForm(f => ({ ...f, minimumQuantity: parseInt(e.target.value) }))} /></div>
+                  <div className="space-y-1"><label className="text-sm font-medium">Unit Cost</label><Input type="number" min={0} step={0.01} value={itemForm.unitCost || ''} onChange={e => setItemForm(f => ({ ...f, unitCost: parseFloat(e.target.value) }))} /></div>
+                  <div className="space-y-1"><label className="text-sm font-medium">Currency</label><Select value={itemForm.currency} onValueChange={v => setItemForm(f => ({ ...f, currency: v }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{CURRENCIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></div>
+                  <div className="flex gap-2 sm:col-span-2 lg:col-span-3">
+                    <Button type="submit" disabled={createItem.isPending || updateItem.isPending}><Check className="mr-1 h-4 w-4" />{editItemId ? 'Save' : 'Create'}</Button>
+                    <Button type="button" variant="outline" onClick={() => { setShowItemForm(false); setEditItemId(null); }}><X className="mr-1 h-4 w-4" />Cancel</Button>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
+          )}
+
+          {stockItemId && (
+            <Card>
+              <CardHeader><CardTitle className="text-base">Adjust Stock</CardTitle></CardHeader>
+              <CardContent>
+                <form onSubmit={e => { e.preventDefault(); stockMovement.mutate(); }} className="flex flex-wrap gap-3 items-end">
+                  <div className="space-y-1"><label className="text-sm font-medium">Type</label><Select value={stockForm.adjustmentType} onValueChange={v => setStockForm(f => ({ ...f, adjustmentType: v }))}><SelectTrigger className="w-32"><SelectValue /></SelectTrigger><SelectContent>{['in','out','adjustment'].map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent></Select></div>
+                  <div className="space-y-1"><label className="text-sm font-medium">Quantity</label><Input type="number" min={1} value={stockForm.quantity} onChange={e => setStockForm(f => ({ ...f, quantity: parseInt(e.target.value) }))} className="w-24" /></div>
+                  <div className="space-y-1"><label className="text-sm font-medium">Reason</label><Input value={stockForm.reason} onChange={e => setStockForm(f => ({ ...f, reason: e.target.value }))} placeholder="Reason" className="w-48" /></div>
+                  <Button type="submit" disabled={stockMovement.isPending}><Check className="mr-1 h-4 w-4" />Record</Button>
+                  <Button type="button" variant="outline" onClick={() => setStockItemId(null)}><X className="mr-1 h-4 w-4" />Cancel</Button>
+                </form>
+              </CardContent>
+            </Card>
+          )}
+
+          {deleteItemId && <Card className="border-danger/50 bg-danger/5"><CardContent className="flex items-center justify-between py-3"><p className="text-sm">Delete this item?</p><div className="flex gap-2"><Button size="sm" variant="destructive" disabled={deleteItem.isPending} onClick={() => deleteItem.mutate(deleteItemId)}>Delete</Button><Button size="sm" variant="outline" onClick={() => setDeleteItemId(null)}>Cancel</Button></div></CardContent></Card>}
+
+          <Card><CardContent className="p-0">
+            {loadingItems ? <div className="space-y-px">{[1,2,3].map(i => <div key={i} className="h-12 animate-pulse bg-muted/40" />)}</div> : (
+              <Table>
+                <TableHeader><TableRow><TableHead>Name</TableHead><TableHead>SKU</TableHead><TableHead>Qty</TableHead><TableHead>Min Qty</TableHead><TableHead>Unit Cost</TableHead><TableHead className="w-28">Actions</TableHead></TableRow></TableHeader>
+                <TableBody>
+                  {items.length === 0 && <TableRow><TableCell colSpan={6} className="py-8 text-center text-muted-foreground">No items found</TableCell></TableRow>}
+                  {items.map(item => {
+                    const lowStock = (item.quantityOnHand ?? 0) <= (item.minimumQuantity ?? 0);
+                    return (
+                      <TableRow key={item.id} className={cn(lowStock && 'bg-warning/5')}>
+                        <TableCell className="font-medium">
+                          {item.name}
+                          {lowStock && <Badge className="ml-2 bg-warning/20 text-warning border-warning text-xs">Low stock</Badge>}
+                        </TableCell>
+                        <TableCell className="font-mono text-sm">{item.sku ?? '—'}</TableCell>
+                        <TableCell className={cn('font-medium', lowStock && 'text-warning')}>{item.quantityOnHand ?? 0} {item.unit}</TableCell>
+                        <TableCell className="text-muted-foreground">{item.minimumQuantity ?? 0}</TableCell>
+                        <TableCell>{item.unitCost != null ? formatCurrency(item.unitCost) : '—'}</TableCell>
+                        <TableCell>
+                          <div className="flex gap-1">
+                            <Button size="icon" variant="ghost" title="Adjust stock" onClick={() => setStockItemId(item.id)}><ArrowUpDown className="h-3.5 w-3.5" /></Button>
+                            <Button size="icon" variant="ghost" onClick={() => { setEditItemId(item.id); setItemForm({ name: item.name ?? '', sku: item.sku ?? '', description: item.description ?? '', unit: item.unit ?? 'each', warehouseId: item.warehouseId ?? '', quantityOnHand: item.quantityOnHand ?? 0, minimumQuantity: item.minimumQuantity ?? 0, maximumQuantity: item.maximumQuantity ?? 0, unitCost: item.unitCost ?? 0, currency: item.currency ?? 'USD' }); setShowItemForm(false); }}><Pencil className="h-3.5 w-3.5" /></Button>
+                            <Button size="icon" variant="ghost" onClick={() => setDeleteItemId(item.id)}><Trash2 className="h-3.5 w-3.5 text-danger" /></Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            )}
+          </CardContent></Card>
+        </TabsContent>
+
+        {/* ASSETS TAB */}
+        <TabsContent value="assets" className="space-y-4 mt-4">
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="relative flex-1 min-w-48">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input placeholder="Search assets..." className="pl-8" value={assetSearch} onChange={e => setAssetSearch(e.target.value)} />
+            </div>
+            <Select value={assetStatus} onValueChange={setAssetStatus}><SelectTrigger className="w-36"><SelectValue placeholder="All statuses" /></SelectTrigger><SelectContent><SelectItem value="">All statuses</SelectItem>{ASSET_STATUSES.map(s => <SelectItem key={s} value={s}>{s.replace('_',' ')}</SelectItem>)}</SelectContent></Select>
+            <Button size="sm" onClick={() => { setShowAssetForm(true); setEditAssetId(null); }}><Plus className="mr-1 h-4 w-4" />New Asset</Button>
+          </div>
+
+          {(showAssetForm || editAssetId) && (
+            <Card>
+              <CardHeader><CardTitle className="text-base">{editAssetId ? 'Edit Asset' : 'New Asset'}</CardTitle></CardHeader>
+              <CardContent>
+                <form onSubmit={e => { e.preventDefault(); editAssetId ? updateAsset.mutate({ id: editAssetId, d: assetForm }) : createAsset.mutate(); }} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  <div className="space-y-1"><label className="text-sm font-medium">Name *</label><Input required value={assetForm.name} onChange={e => setAssetForm(f => ({ ...f, name: e.target.value }))} placeholder="Dell Latitude 5540" /></div>
+                  <div className="space-y-1"><label className="text-sm font-medium">Asset Tag</label><Input value={assetForm.assetTag} onChange={e => setAssetForm(f => ({ ...f, assetTag: e.target.value }))} placeholder="AST-001" /></div>
+                  <div className="space-y-1"><label className="text-sm font-medium">Type</label><Select value={assetForm.type} onValueChange={v => setAssetForm(f => ({ ...f, type: v }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{ASSET_TYPES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent></Select></div>
+                  <div className="space-y-1"><label className="text-sm font-medium">Serial Number</label><Input value={assetForm.serialNumber} onChange={e => setAssetForm(f => ({ ...f, serialNumber: e.target.value }))} /></div>
+                  <div className="space-y-1"><label className="text-sm font-medium">Purchase Date</label><Input type="date" value={assetForm.purchaseDate} onChange={e => setAssetForm(f => ({ ...f, purchaseDate: e.target.value }))} /></div>
+                  <div className="space-y-1"><label className="text-sm font-medium">Purchase Value</label><Input type="number" min={0} value={assetForm.purchaseValue || ''} onChange={e => setAssetForm(f => ({ ...f, purchaseValue: parseFloat(e.target.value) }))} /></div>
+                  <div className="space-y-1"><label className="text-sm font-medium">Assigned To</label><Input value={assetForm.assignedTo} onChange={e => setAssetForm(f => ({ ...f, assignedTo: e.target.value }))} placeholder="Employee name" /></div>
+                  <div className="space-y-1"><label className="text-sm font-medium">Location</label><Input value={assetForm.location} onChange={e => setAssetForm(f => ({ ...f, location: e.target.value }))} placeholder="Office floor 3" /></div>
+                  <div className="space-y-1"><label className="text-sm font-medium">Warranty Expiry</label><Input type="date" value={assetForm.warrantyExpiry} onChange={e => setAssetForm(f => ({ ...f, warrantyExpiry: e.target.value }))} /></div>
+                  <div className="flex gap-2 sm:col-span-2 lg:col-span-3">
+                    <Button type="submit" disabled={createAsset.isPending || updateAsset.isPending}><Check className="mr-1 h-4 w-4" />{editAssetId ? 'Save' : 'Create'}</Button>
+                    <Button type="button" variant="outline" onClick={() => { setShowAssetForm(false); setEditAssetId(null); }}><X className="mr-1 h-4 w-4" />Cancel</Button>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
+          )}
+
+          {deleteAssetId && <Card className="border-danger/50 bg-danger/5"><CardContent className="flex items-center justify-between py-3"><p className="text-sm">Delete this asset?</p><div className="flex gap-2"><Button size="sm" variant="destructive" disabled={deleteAsset.isPending} onClick={() => deleteAsset.mutate(deleteAssetId)}>Delete</Button><Button size="sm" variant="outline" onClick={() => setDeleteAssetId(null)}>Cancel</Button></div></CardContent></Card>}
+
+          <Card><CardContent className="p-0">
+            {loadingAssets ? <div className="space-y-px">{[1,2,3].map(i => <div key={i} className="h-12 animate-pulse bg-muted/40" />)}</div> : (
+              <Table>
+                <TableHeader><TableRow><TableHead>Name</TableHead><TableHead>Tag</TableHead><TableHead>Type</TableHead><TableHead>Status</TableHead><TableHead>Assigned To</TableHead><TableHead>Value</TableHead><TableHead className="w-24">Actions</TableHead></TableRow></TableHeader>
+                <TableBody>
+                  {assets.length === 0 && <TableRow><TableCell colSpan={7} className="py-8 text-center text-muted-foreground">No assets found</TableCell></TableRow>}
+                  {assets.map(a => (
+                    <TableRow key={a.id}>
+                      <TableCell className="font-medium">{a.name}</TableCell>
+                      <TableCell className="font-mono text-sm">{a.assetTag ?? '—'}</TableCell>
+                      <TableCell className="capitalize">{a.type}</TableCell>
+                      <TableCell><Badge className={cn('capitalize', assetStatusColor(a.status))}>{a.status?.replace('_',' ')}</Badge></TableCell>
+                      <TableCell className="text-muted-foreground">{a.assignedTo ?? '—'}</TableCell>
+                      <TableCell>{a.purchaseValue != null ? formatCurrency(a.purchaseValue) : '—'}</TableCell>
+                      <TableCell>
+                        <div className="flex gap-1">
+                          <Button size="icon" variant="ghost" onClick={() => { setEditAssetId(a.id); setAssetForm({ name: a.name ?? '', assetTag: a.assetTag ?? '', type: a.type ?? 'laptop', serialNumber: a.serialNumber ?? '', purchaseDate: a.purchaseDate?.slice(0, 10) ?? '', purchaseValue: a.purchaseValue ?? 0, currency: a.currency ?? 'USD', warehouseId: a.warehouseId ?? '', assignedTo: a.assignedTo ?? '', location: a.location ?? '', warrantyExpiry: a.warrantyExpiry?.slice(0, 10) ?? '' }); setShowAssetForm(false); }}><Pencil className="h-3.5 w-3.5" /></Button>
+                          <Button size="icon" variant="ghost" onClick={() => setDeleteAssetId(a.id)}><Trash2 className="h-3.5 w-3.5 text-danger" /></Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </CardContent></Card>
+        </TabsContent>
+
+        {/* WAREHOUSES TAB */}
+        <TabsContent value="warehouses" className="space-y-4 mt-4">
+          <div className="flex items-center justify-between">
+            <h2 className="font-semibold">Warehouse Locations</h2>
+            <Button size="sm" onClick={() => { setShowWhForm(true); setEditWhId(null); }}><Plus className="mr-1 h-4 w-4" />New Warehouse</Button>
+          </div>
+
+          {(showWhForm || editWhId) && (
+            <Card>
+              <CardHeader><CardTitle className="text-base">{editWhId ? 'Edit Warehouse' : 'New Warehouse'}</CardTitle></CardHeader>
+              <CardContent>
+                <form onSubmit={e => { e.preventDefault(); editWhId ? updateWarehouse.mutate({ id: editWhId, d: whForm }) : createWarehouse.mutate(); }} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  <div className="space-y-1"><label className="text-sm font-medium">Name *</label><Input required value={whForm.name} onChange={e => setWhForm(f => ({ ...f, name: e.target.value }))} placeholder="Main Warehouse" /></div>
+                  <div className="space-y-1"><label className="text-sm font-medium">Location</label><Input value={whForm.location} onChange={e => setWhForm(f => ({ ...f, location: e.target.value }))} placeholder="City, Country" /></div>
+                  <div className="space-y-1"><label className="text-sm font-medium">Capacity</label><Input type="number" min={0} value={whForm.capacity || ''} onChange={e => setWhForm(f => ({ ...f, capacity: parseInt(e.target.value) }))} /></div>
+                  <div className="space-y-1"><label className="text-sm font-medium">Manager</label><Input value={whForm.manager} onChange={e => setWhForm(f => ({ ...f, manager: e.target.value }))} placeholder="Manager name" /></div>
+                  <div className="space-y-1"><label className="text-sm font-medium">Address</label><Input value={whForm.address} onChange={e => setWhForm(f => ({ ...f, address: e.target.value }))} /></div>
+                  <div className="space-y-1"><label className="text-sm font-medium">Notes</label><Input value={whForm.notes} onChange={e => setWhForm(f => ({ ...f, notes: e.target.value }))} /></div>
+                  <div className="flex gap-2 sm:col-span-2 lg:col-span-3">
+                    <Button type="submit" disabled={createWarehouse.isPending || updateWarehouse.isPending}><Check className="mr-1 h-4 w-4" />{editWhId ? 'Save' : 'Create'}</Button>
+                    <Button type="button" variant="outline" onClick={() => { setShowWhForm(false); setEditWhId(null); }}><X className="mr-1 h-4 w-4" />Cancel</Button>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
+          )}
+
+          {loadingWarehouses ? <div className="space-y-px">{[1,2].map(i => <div key={i} className="h-20 animate-pulse bg-muted/40 rounded-lg" />)}</div> : (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {(warehouses as { id: string; name: string; location?: string; capacity?: number; currentItems?: number; manager?: string }[]).map(wh => {
+                const util = wh.capacity && wh.currentItems != null ? (wh.currentItems / wh.capacity) * 100 : 0;
+                return (
+                  <Card key={wh.id}>
+                    <CardContent className="pt-4">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <p className="font-semibold">{wh.name}</p>
+                          <p className="text-xs text-muted-foreground">{wh.location ?? '—'}</p>
+                          <p className="text-xs text-muted-foreground mt-1">Manager: {wh.manager ?? '—'}</p>
+                        </div>
+                        <Button size="icon" variant="ghost" onClick={() => { setEditWhId(wh.id); setWhForm({ name: wh.name ?? '', location: wh.location ?? '', address: '', capacity: wh.capacity ?? 0, manager: wh.manager ?? '', notes: '' }); setShowWhForm(false); }}><Pencil className="h-3.5 w-3.5" /></Button>
+                      </div>
+                      {wh.capacity != null && wh.capacity > 0 && (
+                        <div className="mt-3">
+                          <div className="flex items-center justify-between text-xs mb-1">
+                            <span className="text-muted-foreground">Utilization</span>
+                            <span>{util.toFixed(1)}%</span>
+                          </div>
+                          <div className="h-2 rounded-full bg-muted overflow-hidden">
+                            <div className={cn('h-full rounded-full', util >= 90 ? 'bg-danger' : util >= 70 ? 'bg-warning' : 'bg-success')} style={{ width: `${Math.min(util, 100)}%` }} />
+                          </div>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                );
+              })}
+              {warehouses.length === 0 && <p className="text-sm text-muted-foreground col-span-3 py-4">No warehouses configured.</p>}
+            </div>
+          )}
         </TabsContent>
       </Tabs>
     </div>

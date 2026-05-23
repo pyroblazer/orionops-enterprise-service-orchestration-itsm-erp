@@ -1,0 +1,17 @@
+{
+  "framework": "nextjs",
+  "buildCommand": "cd apps/web && pnpm install && pnpm build",
+  "outputDirectory": "apps/web/.next",
+  "functions": {
+    "apps/ai/api/index.py": {
+      "runtime": "python3.12",
+      "maxDuration": 10
+    }
+  },
+  "rewrites": [
+    { "source": "/ai/(.*)", "destination": "/apps/ai/api/index" }
+  ],
+  "env": {
+    "NEXT_PUBLIC_API_URL": "@next_public_api_url"
+  }
+}

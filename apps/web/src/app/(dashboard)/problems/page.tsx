@@ -26,9 +26,11 @@ import {
 import { Pagination } from '@/components/ui/pagination';
 import { Skeleton } from '@/components/ui/skeleton';
 import { FlaskConical, Plus, RefreshCw, Filter, X } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { formatDateTime, getStatusColor, getPriorityColor, cn } from '@/lib/utils';
 
 export default function ProblemsListPage() {
+  const router = useRouter();
   const [filters, setFilters] = useState<FilterParams>({
     page: 1,
     pageSize: 20,
@@ -70,7 +72,7 @@ export default function ProblemsListPage() {
             <RefreshCw className="mr-1 h-4 w-4" aria-hidden="true" />
             Refresh
           </Button>
-          <Button aria-label="Create new problem">
+          <Button aria-label="Create new problem" onClick={() => router.push('/problems/new')}>
             <Plus className="mr-1 h-4 w-4" aria-hidden="true" />
             Create Problem
           </Button>

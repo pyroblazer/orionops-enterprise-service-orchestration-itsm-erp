@@ -1,0 +1,326 @@
+# OrionOps Deployment Guide
+
+Deploy OrionOps for free: Next.js frontend on Vercel, Spring Boot backend on Render, PostgreSQL on Supabase, Redis on Upstash, and a GitHub Actions heartbeat to keep Render awake.
+
+## Architecture overview
+
+```
+GitHub (source)
+  ├── Vercel (Hobby Free)
+  │     ├── Next.js web app        → apps/web          → https://<your-app>.vercel.app
+  │     └── Python FastAPI         → apps/ai/api/      → /ai/* routes (serverless)
+  │
+  ├── Render (Free Web Service)
+  │     └── Spring Boot (Docker)   → backend/
+  │           ├── Supabase PostgreSQL  (500 MB free)
+  │           └── Upstash Redis        (10k req/day free)
+  │
+  └── GitHub Actions
+        ├── ci.yml        → tests + build on every push/PR
+        ├── cd.yml        → triggers Render deploy via webhook on push to main
+        └── heartbeat.yml → pings Render every 14 min to prevent free-tier sleep
+```
+
+---
+
+## Step 1 — Create Supabase project (PostgreSQL)
+
+1. Go to [https://supabase.com](https://supabase.com) → sign up or log in (free, no credit card).
+2. Click **New project**.
+   - **Organization**: your personal org
+   - **Name**: `orionops`
+   - **Database password**: generate a strong password — save it now, you cannot recover it
+   - **Region**: choose the closest to your users (e.g. US East, EU West)
+   - **Plan**: Free
+3. Click **Create new project** — provisioning takes ~2 minutes.
+4. Once ready: **Project Settings → Database → Connection string → URI**.
+5. Copy the URI. It looks like:
+   ```
+   postgresql://postgres:[YOUR-PASSWORD]@db.[ref].supabase.co:5432/postgres
+   ```
+6. Convert to JDBC format (Spring Boot uses this):
+   - Replace `postgresql://` with `jdbc:postgresql://`
+   - Result: `jdbc:postgresql://db.[ref].supabase.co:5432/postgres`
+   - Save as `SPRING_DATASOURCE_URL`
+7. Save separately:
+   - `SPRING_DATASOURCE_USERNAME` = `postgres`
+   - `SPRING_DATASOURCE_PASSWORD` = the password you generated above
+
+**Supabase free tier limits:**
+- 500 MB storage, 2 GB bandwidth/month
+- Project **pauses after 7 days of inactivity** — unpause in Supabase dashboard → Settings → General → "Restore project"
+- Max 15 connections (the `application-cloud.yml` caps Hikari pool to 5 to stay safe)
+- Enable **Connection Pooling (PgBouncer)**: Project Settings → Database → Connection Pooling — improves performance on free tier
+
+---
+
+## Step 2 — Create Upstash Redis
+
+1. Go to [https://upstash.com](https://upstash.com) → sign up or log in (free, no credit card).
+2. Click **Create database**.
+   - **Name**: `orionops-redis`
+   - **Type**: Regional (not Global — saves cost)
+   - **Region**: same region as Render (Oregon / US-EAST-1)
+   - **Plan**: Free (10,000 commands/day, 256 MB)
+3. Click **Create**.
+4. On the database page, go to the **Redis** tab (not the REST API tab).
+5. Copy the connection string. It looks like:
+   ```
+   rediss://default:[PASSWORD]@[host].upstash.io:6380
+   ```
+   Note the double `s` in `rediss://` — this is TLS, required by Upstash.
+6. Save as `SPRING_DATA_REDIS_URL`.
+
+**Upstash free tier limits:**
+- 10,000 commands/day total (shared across all connections)
+- OrionOps uses Redis for session caching and token blacklisting — well within free limits at low traffic
+- If you exceed 10k: commands fail silently (Spring falls back gracefully)
+- The `application-cloud.yml` uses `spring.data.redis.url: ${SPRING_DATA_REDIS_URL}` which supports the `rediss://` TLS URL format natively via Lettuce client
+
+---
+
+## Step 3 — Push to GitHub
+
+1. Ensure your repo is on GitHub (public or private — both work with Render and Vercel).
+2. The `render.yaml` and `vercel.json` files must be at the repo root (they already are).
+3. Ensure the branch you want to deploy is `main`.
+4. Push any local changes:
+   ```bash
+   git add . && git commit -m "deployment config" && git push
+   ```
+
+---
+
+## Step 4 — Deploy backend to Render
+
+1. Go to [https://render.com](https://render.com) → sign up or log in with GitHub (free).
+2. Click **New +** → **Web Service**.
+3. Choose **Build and deploy from a Git repository** → connect your GitHub account.
+4. Select your `orionops-enterprise-service-orchestration-itsm-erp` repository.
+5. Render detects `render.yaml` automatically and pre-fills settings. If not:
+   - **Name**: `orionops-backend`
+   - **Runtime**: Docker
+   - **Dockerfile path**: `./backend/Dockerfile`
+   - **Docker Context**: `./backend`
+   - **Plan**: Free
+   - **Region**: Oregon (US West)
+6. Click **Create Web Service**.
+7. Go to the **Environment** tab and add these secret variables (those marked `sync: false` in render.yaml are intentionally blank — set them here):
+
+   | Variable | Value |
+   |---|---|
+   | `SPRING_DATASOURCE_URL` | JDBC URL from Step 1 |
+   | `SPRING_DATASOURCE_USERNAME` | `postgres` |
+   | `SPRING_DATASOURCE_PASSWORD` | Supabase DB password from Step 1 |
+   | `SPRING_DATA_REDIS_URL` | `rediss://` URL from Step 2 |
+   | `FRONTEND_URL` | leave blank for now (fill after Step 5) |
+   | `JWT_SECRET` | auto-generated by Render (`generateValue: true` in render.yaml) — no action needed |
+
+8. Click **Save Changes** → Render triggers the first deployment.
+
+**First deploy takes 5–8 minutes** (Docker image build + Maven compile inside container).
+
+Monitor logs in the **Logs** tab. Watch for:
+- `Successfully applied N migration(s)` — Flyway ran all V001–V006 migrations on Supabase
+- `Tomcat started on port 8080` — Spring Boot started
+- `Started OrionOpsApplication in X seconds` — app ready
+
+Verify:
+- Health endpoint: `https://orionops-backend.onrender.com/actuator/health` → `{"status":"UP"}`
+- Swagger UI: `https://orionops-backend.onrender.com/api/swagger-ui.html`
+
+**Render free tier notes:**
+- 512 MB RAM, 0.1 CPU, 750 hours/month
+- **Spins down after 15 minutes of no HTTP traffic** — first request after sleep takes 30–60 seconds
+- The heartbeat workflow (Step 7) prevents cold starts
+- No custom domain on free plan — use the `.onrender.com` subdomain
+
+**Flyway note:** If you need to re-run migrations (e.g. after a reset), run `DELETE FROM flyway_schema_history` in the Supabase SQL Editor, then redeploy. Never do this in production.
+
+---
+
+## Step 5 — Deploy frontend + AI to Vercel
+
+1. Go to [https://vercel.com](https://vercel.com) → sign up or log in with GitHub (free Hobby plan).
+2. Click **Add New...** → **Project**.
+3. Import your `orionops-enterprise-service-orchestration-itsm-erp` repository.
+4. Vercel auto-detects `vercel.json` at repo root:
+   - **Framework Preset**: Next.js (auto-detected from `vercel.json`)
+   - **Build Command**: `cd apps/web && pnpm install && pnpm build`
+   - **Output Directory**: `apps/web/.next`
+5. In the **Environment Variables** section add:
+   - **Name**: `NEXT_PUBLIC_API_URL`
+   - **Value**: `https://orionops-backend.onrender.com/api/v1`
+   - **Environment**: Production + Preview + Development (select all three)
+6. Click **Deploy**.
+
+**First deploy takes 2–4 minutes** (pnpm install + Next.js build).
+
+Once complete, Vercel gives you a URL like `https://orionops-<hash>.vercel.app`.
+
+**Copy this Vercel URL** — you need it for Step 6.
+
+Test the app:
+- Open the Vercel URL → login page should load
+- Test AI endpoints:
+  ```
+  POST https://<your-vercel-url>/ai/classify
+  Body: {"title": "network down", "description": "cannot reach external services"}
+  ```
+  Should return an incident classification.
+  ```
+  GET https://<your-vercel-url>/ai/health
+  ```
+  Should return `{"status": "ok"}`.
+
+**Vercel Hobby free tier limits:**
+- 100 GB bandwidth/month
+- 6,000 build minutes/month
+- Serverless functions: 100k invocations/month, 10s timeout (set in `vercel.json`)
+- 1 concurrent build
+
+**Python runtime notes:** Vercel installs `apps/ai/requirements.txt` automatically. The `apps/ai/api/index.py` exports `app` (the FastAPI instance), handled by Vercel's ASGI adapter. All `/ai/*` routes are proxied via the `rewrites` rule in `vercel.json`.
+
+---
+
+## Step 6 — Connect frontend to backend (CORS)
+
+1. Go to Render dashboard → `orionops-backend` → **Environment** tab.
+2. Set `FRONTEND_URL` to your Vercel URL (e.g. `https://orionops.vercel.app`).
+3. Click **Save Changes** → Render automatically triggers a redeploy (~3 minutes).
+
+This redeploy is required because `SecurityConfig.java` reads `app.cors.allowed-origins` from `application-cloud.yml`, which reads `${FRONTEND_URL}`. Without this, the Vercel frontend gets CORS errors on every API call.
+
+After redeploy, verify CORS from browser DevTools on your Vercel URL:
+```js
+fetch('https://orionops-backend.onrender.com/actuator/health')
+  .then(r => r.json()).then(console.log)
+// Should log: {status: "UP"} — no CORS errors
+```
+
+---
+
+## Step 7 — Enable GitHub Actions heartbeat
+
+The heartbeat pings Render every 14 minutes to prevent the free-tier sleep (which activates after 15 minutes idle).
+
+1. Go to your GitHub repo → **Settings → Actions → General**.
+2. Under **Workflow permissions**: ensure **Read and write permissions** is checked.
+3. The `heartbeat.yml` workflow is already in `.github/workflows/` and runs on schedule automatically.
+4. Verify it works: go to **Actions** tab → **Render Heartbeat** → **Run workflow** → run manually once.
+5. Check the run log: you should see `Health check HTTP status: 200`.
+
+**GitHub Actions free tier limits:**
+- 2,000 minutes/month for private repos (unlimited for public repos)
+- Heartbeat usage: 1 run every 14 min × 60 min/hr × 24 hr × 30 days ≈ 3,086 runs/month × ~10 seconds each ≈ **514 minutes/month** — well within the 2,000 min free limit
+
+**Note:** GitHub Actions cron has a minimum of 5 minutes and can be delayed up to 15 minutes during high load. If you observe cold starts, change the interval to `*/10 * * * *` (10 minutes) in `heartbeat.yml`.
+
+---
+
+## Step 8 — Set up continuous deployment (Render deploy hook)
+
+1. Render dashboard → `orionops-backend` → **Settings** → **Deploy Hook** → copy the URL.
+   It looks like: `https://api.render.com/deploy/srv-xxx?key=yyy`
+2. GitHub repo → **Settings → Secrets and variables → Actions → New repository secret**:
+   - **Name**: `RENDER_DEPLOY_HOOK_URL`
+   - **Value**: paste the deploy hook URL
+3. The `cd.yml` workflow already uses this secret to trigger Render deploys on every push to `main`.
+
+From now on: `git push origin main` → GitHub Actions builds → triggers Render deploy via webhook → Render pulls and runs the new image.
+
+---
+
+## Step 9 — Configure Vercel auto-deploy (already works by default)
+
+Vercel auto-deploys on every push to the `main` branch — no additional configuration needed.
+
+**Preview deployments**: Vercel creates a unique preview URL for every pull request — useful for testing before merging.
+
+To configure: Vercel dashboard → **Project Settings → Git → Production Branch** (should be `main`).
+
+---
+
+## Step 10 — Verify full stack end-to-end
+
+1. Open your Vercel URL in a browser.
+2. You should see the OrionOps login page.
+3. Log in with: `admin` / `admin` (from sandbox seed data in V006 migration).
+4. Navigate to **Incidents** → should load real data from Render backend via Supabase PostgreSQL.
+5. Navigate to **Reporting** → MTTR/MTTA/SLA metrics should load.
+6. Test the AI endpoint from the browser console:
+   ```js
+   fetch('/ai/classify', {
+     method: 'POST',
+     headers: {'Content-Type': 'application/json'},
+     body: JSON.stringify({title: 'VPN down', description: 'Users cannot connect to VPN'})
+   }).then(r => r.json()).then(console.log)
+   ```
+7. Click through all 24 dashboard routes — none should return a 500 error.
+
+---
+
+## Environment variables reference
+
+| Variable | Set in | Value |
+|---|---|---|
+| `SPRING_DATASOURCE_URL` | Render dashboard | Supabase JDBC URL (Step 1) |
+| `SPRING_DATASOURCE_USERNAME` | Render dashboard | `postgres` |
+| `SPRING_DATASOURCE_PASSWORD` | Render dashboard | Supabase DB password (Step 1) |
+| `SPRING_DATA_REDIS_URL` | Render dashboard | Upstash `rediss://` URL (Step 2) |
+| `JWT_SECRET` | Render (auto-generated) | 32-char random string — Render sets this |
+| `FRONTEND_URL` | Render dashboard | Your Vercel URL (Step 6) |
+| `NEXT_PUBLIC_API_URL` | Vercel dashboard | `https://orionops-backend.onrender.com/api/v1` |
+| `RENDER_DEPLOY_HOOK_URL` | GitHub Actions secret | Render deploy hook URL (Step 8) |
+
+---
+
+## Troubleshooting
+
+**CORS error in browser (Access-Control-Allow-Origin)**
+- `FRONTEND_URL` on Render is wrong or the redeploy from Step 6 hasn't finished yet.
+- Verify the exact Vercel URL (no trailing slash) is set in Render's environment.
+
+**401 Unauthorized on all API calls**
+- JWT token format mismatch — check that `JWT_SECRET` on Render is consistent between restarts (Render regenerates on first deploy only; subsequent deploys reuse the saved value).
+
+**Flyway migration failure on first deploy**
+- Check Render logs for the SQL error. Go to Supabase SQL Editor to inspect the schema.
+- Common cause: partial schema from a previous attempt. Run `DELETE FROM flyway_schema_history` in Supabase SQL Editor, then trigger a manual redeploy in Render.
+
+**Render cold start (30–60 second first response)**
+- The heartbeat isn't running yet — go to GitHub Actions → **Render Heartbeat** and trigger it manually.
+- Also check that `RENDER_DEPLOY_HOOK_URL` secret is set (Step 8), as a missing secret silently skips the heartbeat trigger.
+
+**Vercel build failure (`pnpm install` lockfile error)**
+- Run `pnpm install --no-frozen-lockfile` locally and push the updated `pnpm-lock.yaml`.
+- If the error is a TypeScript compilation error, fix it locally first (`cd apps/web && pnpm build`).
+
+**AI function timeout (504 on `/ai/classify`)**
+- Vercel Python functions initialize TF-IDF models on cold start (~8–12s). The `maxDuration: 10` in `vercel.json` is tight.
+- Workaround: call `GET /ai/health` first to warm the function, then call `/ai/classify`.
+- For consistent performance, upgrade to Vercel Pro and set `maxDuration: 30` in `vercel.json` functions config.
+
+**Supabase project paused**
+- Free tier pauses after 7 days of inactivity.
+- Unpause: Supabase dashboard → **Settings → General → Restore project**.
+- The Render heartbeat keeps Render awake but does not ping Supabase directly. Traffic through Render → Supabase will keep Supabase active as long as the heartbeat triggers DB queries (health endpoint does not). If the project keeps pausing, add a Supabase-specific heartbeat cron job.
+
+**Redis quota exceeded (Upstash 10k/day)**
+- Increase cache TTLs in `application-cloud.yml` to reduce Redis write frequency.
+- Or switch to in-memory caching (`spring.cache.type: simple`) as a temporary fallback (loses session persistence across Render restarts).
+
+---
+
+## Cost summary
+
+| Service | Plan | Monthly cost |
+|---|---|---|
+| Vercel | Hobby Free | $0 |
+| Render | Free Web Service | $0 |
+| Supabase | Free | $0 |
+| Upstash | Free | $0 |
+| GitHub Actions | Free (public) or 2k min/month (private) | $0 |
+| **Total** | | **$0** |
+
+To scale beyond free limits: upgrade Render to Starter ($7/month) for always-on service, or Supabase to Pro ($25/month) for more storage and no project pausing.

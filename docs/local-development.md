@@ -3,18 +3,21 @@
 ## Prerequisites
 
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/) (with WSL2 backend on Windows)
+- [Node.js](https://nodejs.org/) 20+ and [pnpm](https://pnpm.io/) 9+
 - 16 GB RAM recommended
 - Ports 3000, 5432, 6379, 8000, 8080, 8081, 8181, 9000, 9001, 9092, 9200 must be free
 
 ## Quick Start (All Docker)
 
-```bash
-docker compose up --build
+Run this from the repo root — works on Windows, Linux, and macOS:
+
+```sh
+pnpm docker:up
 ```
 
-That's it. Builds and starts every service. Wait 2-3 minutes for all containers to become healthy:
+This tears down any existing stack first (avoiding port conflicts), then builds and starts every service. Wait 2-3 minutes for all containers to become healthy:
 
-```bash
+```sh
 docker compose ps
 ```
 
@@ -30,13 +33,13 @@ All services healthy? Open these URLs:
 | MinIO Console | http://localhost:9001 | minioadmin / minioadmin |
 | OpenSearch | http://localhost:9200 | admin / admin |
 
-Run `docker compose up --build` again at any time — all init steps are idempotent (Kafka topics use `--if-not-exists`, MinIO bucket uses `--ignore-existing`, Flyway tracks applied migrations).
+Run `pnpm docker:up` again at any time — all init steps are idempotent (Kafka topics use `--if-not-exists`, MinIO bucket uses `--ignore-existing`, Flyway tracks applied migrations).
 
 ### Stopping
 
-```bash
-docker compose down      # Stop, keep data
-docker compose down -v   # Stop and wipe all data (fresh start)
+```sh
+pnpm docker:down        # Stop, keep data
+pnpm docker:reset       # Stop and wipe all data (fresh start)
 ```
 
 ## Hybrid Mode (Infrastructure in Docker, Apps Native)
@@ -45,14 +48,15 @@ Use this when you want hot-reload and debugger support for the backend or fronte
 
 ### Step 1: Start Infrastructure
 
-```bash
-cd backend
-docker compose up -d
+```sh
+pnpm docker:infra
 ```
+
+This tears down any running infra containers first, then starts the infrastructure stack in the background.
 
 ### Step 2: Start Backend
 
-```bash
+```sh
 cd backend
 mvn spring-boot:run
 ```
@@ -61,24 +65,32 @@ The backend reads defaults from `application.yml` which match the Docker ports. 
 
 ### Step 3: Start Web Frontend
 
-```bash
+```sh
 pnpm install
 pnpm dev:web
 ```
 
 The web app reads defaults from `apps/web/.env.example`. If you need custom values, copy it:
 
-```bash
-cp apps/web/.env.example apps/web/.env.local
-```
+- **Windows (PowerShell):** `Copy-Item apps/web/.env.example apps/web/.env.local`
+- **Linux / macOS:** `cp apps/web/.env.example apps/web/.env.local`
 
 ### Step 4: Start AI Service (Optional)
 
-```bash
+```sh
 cd apps/ai
 python -m venv .venv
-.venv\Scripts\activate          # Windows
-source .venv/bin/activate       # Linux/macOS
+```
+
+Activate the virtual environment:
+
+- **Windows (PowerShell):** `.venv\Scripts\Activate.ps1`
+- **Windows (cmd):** `.venv\Scripts\activate.bat`
+- **Linux / macOS:** `source .venv/bin/activate`
+
+Then install and run:
+
+```sh
 pip install -r requirements.txt
 uvicorn main:app --reload --port 8000
 ```
@@ -118,15 +130,12 @@ For a feature walkthrough with pre-loaded demo data, see the [Sandbox Guide](san
 
 ### Port Already in Use
 
-```bash
-# Windows
-netstat -ano | findstr :5432
-taskkill /PID <pid> /F
+Find what is using a port and stop it before running Docker:
 
-# macOS / Linux
-lsof -i :5432
-kill <pid>
-```
+- **Windows (PowerShell):** `netstat -ano | findstr :5432` then `taskkill /PID <pid> /F`
+- **Linux / macOS:** `lsof -i :5432` then `kill <pid>`
+
+Or just run `pnpm docker:up` — it calls `docker compose down` first, which releases all Docker-held ports automatically.
 
 ### Backend Fails to Start
 
@@ -142,9 +151,8 @@ Ensure no other Kafka instance is running on port 9092. The Docker Kafka adverti
 
 If migrations fail due to stale data, wipe and restart:
 
-```bash
-docker compose down -v
-docker compose up --build
+```sh
+pnpm docker:reset
 ```
 
 ### Keycloak Realm Not Imported

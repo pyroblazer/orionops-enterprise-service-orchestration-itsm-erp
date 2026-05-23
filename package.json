@@ -10,7 +10,11 @@
     "build:mobile": "pnpm --filter @orionops/mobile build",
     "lint": "turbo run lint",
     "test": "turbo run test",
-    "format": "prettier --write \"apps/**/*.{ts,tsx,js,jsx,json,css,md}\""
+    "format": "prettier --write \"apps/**/*.{ts,tsx,js,jsx,json,css,md}\"",
+    "docker:up": "docker compose down && docker compose up --build",
+    "docker:infra": "docker compose --project-directory backend down && docker compose --project-directory backend up -d",
+    "docker:down": "docker compose down",
+    "docker:reset": "docker compose down -v && docker compose up --build"
   },
   "devDependencies": {
     "turbo": "^2.3.0",

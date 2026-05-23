@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useKnowledgeArticles } from '@/lib/hooks';
 import type { FilterParams } from '@/lib/api';
 import { Button } from '@/components/ui/button';
@@ -15,6 +16,7 @@ import { formatDate, cn } from '@/lib/utils';
 const categories = ['All', 'Troubleshooting', 'How-To', 'Reference', 'Policy', 'FAQ'];
 
 export default function KnowledgeListPage() {
+  const router = useRouter();
   const [filters, setFilters] = useState<FilterParams>({ page: 1, pageSize: 20 });
   const [selectedCategory, setSelectedCategory] = useState('All');
 
@@ -28,7 +30,7 @@ export default function KnowledgeListPage() {
           <h1 className="text-2xl font-bold tracking-tight">Knowledge Base</h1>
           <p className="text-muted-foreground">Search and browse knowledge articles</p>
         </div>
-        <Button aria-label="Create new article">
+        <Button aria-label="Create new article" onClick={() => router.push('/knowledge/new')}>
           <Plus className="mr-1 h-4 w-4" /> New Article
         </Button>
       </div>

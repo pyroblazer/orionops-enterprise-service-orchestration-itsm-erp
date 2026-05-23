@@ -2,7 +2,9 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useQuery } from '@tanstack/react-query';
 import { useCreateIncident } from '@/lib/hooks';
+import { api } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input, Textarea } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -31,6 +33,12 @@ export default function NewIncidentPage() {
   });
   const [attachments, setAttachments] = useState<File[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const { data: servicesData } = useQuery({
+    queryKey: ['cmdb-services'],
+    queryFn: () => api.getCMDBServices({ pageSize: 100 }).then(r => r.data),
+  });
+  const services = servicesData?.data ?? [];
 
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -210,11 +218,10 @@ export default function NewIncidentPage() {
                     <SelectValue placeholder="Select service" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="svc-1">Email Service</SelectItem>
-                    <SelectItem value="svc-2">VPN Service</SelectItem>
-                    <SelectItem value="svc-3">Web Application</SelectItem>
-                    <SelectItem value="svc-4">Database Service</SelectItem>
-                    <SelectItem value="svc-5">File Storage</SelectItem>
+                    {(services as { id: string; name: string }[]).map(s => (
+                      <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                    ))}
+                    {services.length === 0 && <SelectItem value="" disabled>No services found</SelectItem>}
                   </SelectContent>
                 </Select>
                 <Select

@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import {
   AlertTriangle,
   BarChart3,
+  TrendingUp,
   Boxes,
   ChevronLeft,
   ChevronRight,
@@ -50,6 +51,7 @@ const navItems: NavItem[] = [
   { label: 'Vendors', href: '/vendors', icon: Truck },
   { label: 'Workforce', href: '/workforce', icon: Users },
   { label: 'Billing', href: '/billing', icon: ScrollText },
+  { label: 'Reporting', href: '/reporting', icon: TrendingUp },
   { label: 'Admin', href: '/admin', icon: Shield },
   { label: 'Audit', href: '/audit', icon: BarChart3 },
   { label: 'Settings', href: '/settings', icon: Settings },

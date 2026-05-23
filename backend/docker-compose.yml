@@ -1,7 +1,11 @@
 # ---------------------------------------------------------------------------
 # OrionOps Backend - Development Infrastructure Stack
 # ---------------------------------------------------------------------------
-# Usage:  docker compose up -d
+# Usage (cross-platform via pnpm — works on Windows, Linux, macOS):
+#   pnpm docker:infra   Tear down, then start infrastructure services in background
+#
+# Or with Docker directly (ensure nothing is running first):
+#   docker compose down && docker compose up -d
 # Teardown: docker compose down -v
 # ---------------------------------------------------------------------------
 

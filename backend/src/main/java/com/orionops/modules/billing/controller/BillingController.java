@@ -77,6 +77,14 @@ public class BillingController {
         return ResponseEntity.ok(ApiResponse.success(billingService.getBillingRecord(id)));
     }
 
+    @PutMapping("/records/{id}")
+    @Operation(summary = "Update billing record", description = "Updates status (PENDING/PAID/OVERDUE/CANCELLED) and paidAt timestamp")
+    @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE_MANAGER')")
+    public ResponseEntity<ApiResponse<BillingDTO.BillingRecordResponse>> updateBillingRecord(
+            @PathVariable UUID id, @RequestBody BillingDTO.UpdateBillingRecordRequest request) {
+        return ResponseEntity.ok(ApiResponse.success(billingService.updateBillingRecord(id, request), "Billing record updated"));
+    }
+
     @DeleteMapping("/records/{id}")
     @Operation(summary = "Delete billing record", description = "Soft-deletes a billing record")
     @PreAuthorize("hasRole('ADMIN')")

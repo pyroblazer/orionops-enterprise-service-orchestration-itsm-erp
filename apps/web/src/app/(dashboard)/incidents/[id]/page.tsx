@@ -3,8 +3,10 @@
 import { useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useIncident, useUpdateIncident } from '@/lib/hooks';
 import type { Incident } from '@/lib/api';
+import { api } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -32,51 +34,42 @@ import {
   cn,
 } from '@/lib/utils';
 
-interface ActivityItem {
-  id: string;
-  type: 'comment' | 'status_change' | 'assignment' | 'priority_change';
-  author: string;
-  content: string;
-  timestamp: string;
-  from?: string;
-  to?: string;
-}
-
-const mockActivities: ActivityItem[] = [
-  {
-    id: '1',
-    type: 'comment',
-    author: 'Jane Smith',
-    content: 'Investigating the root cause. Seems to be related to the database connection pool.',
-    timestamp: new Date(Date.now() - 3600000).toISOString(),
-  },
-  {
-    id: '2',
-    type: 'status_change',
-    author: 'John Doe',
-    content: 'Status changed',
-    from: 'new',
-    to: 'in_progress',
-    timestamp: new Date(Date.now() - 7200000).toISOString(),
-  },
-  {
-    id: '3',
-    type: 'assignment',
-    author: 'System',
-    content: 'Assigned to Jane Smith',
-    from: 'Unassigned',
-    to: 'Jane Smith',
-    timestamp: new Date(Date.now() - 10800000).toISOString(),
-  },
-];
 
 export default function IncidentDetailPage() {
   const params = useParams();
   const id = params.id as string;
+  const qc = useQueryClient();
   const { data: incident, isLoading } = useIncident(id);
   const updateIncident = useUpdateIncident();
   const [comment, setComment] = useState('');
   const [activeTab, setActiveTab] = useState('details');
+  const [showEscalateForm, setShowEscalateForm] = useState(false);
+  const [showResolveForm, setShowResolveForm] = useState(false);
+  const [escalateForm, setEscalateForm] = useState({ escalationReason: '', newAssigneeId: '' });
+  const [resolveForm, setResolveForm] = useState({ resolution: '' });
+
+  const { data: auditData } = useQuery({
+    queryKey: ['audit', 'incident', id],
+    queryFn: () => api.getAuditLogs({ entityType: 'Incident', entityId: id }).then(r => r.data.data),
+    enabled: !!id,
+  });
+
+  const invalidate = () => qc.invalidateQueries({ queryKey: ['incident', id] });
+
+  const escalateMutation = useMutation({
+    mutationFn: () => api.escalateIncident(id, { reason: escalateForm.escalationReason, newAssigneeId: escalateForm.newAssigneeId || undefined }),
+    onSuccess: () => { invalidate(); qc.invalidateQueries({ queryKey: ['audit', 'incident', id] }); setShowEscalateForm(false); },
+  });
+
+  const resolveMutation = useMutation({
+    mutationFn: () => api.resolveIncident(id, resolveForm),
+    onSuccess: () => { invalidate(); qc.invalidateQueries({ queryKey: ['audit', 'incident', id] }); setShowResolveForm(false); },
+  });
+
+  const closeMutation = useMutation({
+    mutationFn: () => api.closeIncident(id),
+    onSuccess: () => { invalidate(); qc.invalidateQueries({ queryKey: ['audit', 'incident', id] }); },
+  });
 
   const handleStatusUpdate = async (newStatus: string) => {
     await updateIncident.mutateAsync({
@@ -84,6 +77,8 @@ export default function IncidentDetailPage() {
       data: { status: newStatus as Incident['status'] },
     });
   };
+
+  const auditItems = (auditData as { id: string; action: string; actorName?: string; createdAt: string; details?: string; fieldName?: string; oldValue?: string; newValue?: string }[] | undefined) ?? [];
 
   if (isLoading) {
     return (
@@ -156,22 +151,47 @@ export default function IncidentDetailPage() {
             </Button>
           )}
           {(incident.status === 'in_progress' || incident.status === 'pending') && (
-            <Button variant="outline" onClick={() => handleStatusUpdate('resolved')}>
+            <Button variant="outline" onClick={() => setShowResolveForm(v => !v)}>
               <CheckCircle className="mr-1 h-4 w-4" />
               Resolve
             </Button>
           )}
           {incident.status === 'resolved' && (
-            <Button onClick={() => handleStatusUpdate('closed')}>
+            <Button disabled={closeMutation.isPending} onClick={() => closeMutation.mutate()}>
               Close Incident
             </Button>
           )}
-          <Button variant="outline">
+          <Button variant="outline" onClick={() => setShowEscalateForm(v => !v)}>
             <ArrowUpRight className="mr-1 h-4 w-4" />
             Escalate
           </Button>
         </div>
       </div>
+
+      {/* Lifecycle forms */}
+      {showEscalateForm && (
+        <Card>
+          <CardHeader><CardTitle className="text-base">Escalate Incident</CardTitle></CardHeader>
+          <CardContent>
+            <form onSubmit={e => { e.preventDefault(); escalateMutation.mutate(); }} className="space-y-3">
+              <div className="space-y-1"><label className="text-sm font-medium">Reason *</label><Textarea required placeholder="Reason for escalation" value={escalateForm.escalationReason} onChange={e => setEscalateForm(f => ({ ...f, escalationReason: e.target.value }))} /></div>
+              <div className="space-y-1"><label className="text-sm font-medium">New Assignee ID</label><input className="w-full rounded-md border bg-background px-3 py-2 text-sm" placeholder="UUID of new assignee (optional)" value={escalateForm.newAssigneeId} onChange={e => setEscalateForm(f => ({ ...f, newAssigneeId: e.target.value }))} /></div>
+              <div className="flex gap-2"><Button type="submit" disabled={escalateMutation.isPending}><ArrowUpRight className="mr-1 h-4 w-4" />Escalate</Button><Button type="button" variant="outline" onClick={() => setShowEscalateForm(false)}>Cancel</Button></div>
+            </form>
+          </CardContent>
+        </Card>
+      )}
+      {showResolveForm && (
+        <Card>
+          <CardHeader><CardTitle className="text-base">Resolve Incident</CardTitle></CardHeader>
+          <CardContent>
+            <form onSubmit={e => { e.preventDefault(); resolveMutation.mutate(); }} className="space-y-3">
+              <div className="space-y-1"><label className="text-sm font-medium">Resolution *</label><Textarea required placeholder="Describe how the incident was resolved" value={resolveForm.resolution} onChange={e => setResolveForm(f => ({ ...f, resolution: e.target.value }))} /></div>
+              <div className="flex gap-2"><Button type="submit" className="bg-success hover:bg-success/90" disabled={resolveMutation.isPending}><CheckCircle className="mr-1 h-4 w-4" />Mark Resolved</Button><Button type="button" variant="outline" onClick={() => setShowResolveForm(false)}>Cancel</Button></div>
+            </form>
+          </CardContent>
+        </Card>
+      )}
 
       {/* SLA Timer */}
       {incident.dueDate && (
@@ -259,41 +279,21 @@ export default function IncidentDetailPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-6">
-                  {mockActivities.map((activity) => (
-                    <div
-                      key={activity.id}
-                      className="flex gap-3"
-                      role="article"
-                      aria-label={`${activity.type} by ${activity.author}`}
-                    >
-                      <Avatar fallbackText={activity.author} className="h-8 w-8 shrink-0" />
+                  {auditItems.length === 0 && <p className="text-sm text-muted-foreground">No activity recorded yet.</p>}
+                  {auditItems.map((log) => (
+                    <div key={log.id} className="flex gap-3" role="article">
+                      <Avatar fallbackText={log.actorName ?? '?'} className="h-8 w-8 shrink-0" />
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium">{activity.author}</span>
-                          <span className="text-xs text-muted-foreground">
-                            {formatRelativeTime(activity.timestamp)}
-                          </span>
+                          <span className="text-sm font-medium">{log.actorName ?? 'System'}</span>
+                          <span className="text-xs text-muted-foreground">{formatRelativeTime(log.createdAt)}</span>
                         </div>
-                        {activity.type === 'comment' ? (
-                          <p className="mt-1 text-sm text-muted-foreground">{activity.content}</p>
-                        ) : (
-                          <p className="mt-1 text-sm">
-                            <span className="text-muted-foreground">{activity.content}: </span>
-                            {activity.from && (
-                              <Badge variant="outline" className="text-xs">
-                                {activity.from.replace('_', ' ')}
-                              </Badge>
-                            )}
-                            {activity.from && activity.to && (
-                              <span className="mx-1 text-muted-foreground">→</span>
-                            )}
-                            {activity.to && (
-                              <Badge variant="outline" className="text-xs">
-                                {activity.to.replace('_', ' ')}
-                              </Badge>
-                            )}
-                          </p>
-                        )}
+                        <p className="mt-1 text-sm text-muted-foreground">
+                          {log.action.replace(/_/g, ' ')}
+                          {log.fieldName && <span>: {log.fieldName}</span>}
+                          {log.oldValue && log.newValue && <span> {log.oldValue} → {log.newValue}</span>}
+                          {log.details && <span> — {log.details}</span>}
+                        </p>
                       </div>
                     </div>
                   ))}
@@ -339,7 +339,7 @@ export default function IncidentDetailPage() {
               <CardContent className="space-y-3">
                 <div className="flex items-center gap-2 text-sm">
                   <MessageSquare className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-                  <span>{mockActivities.filter((a) => a.type === 'comment').length} comments</span>
+                  <span>{auditItems.length} activity entries</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
                   <Paperclip className="h-4 w-4 text-muted-foreground" aria-hidden="true" />

@@ -1,11 +1,13 @@
 # ---------------------------------------------------------------------------
 # OrionOps - Full Stack Development Environment
 # ---------------------------------------------------------------------------
-# Usage:
-#   make up                     Fresh start (down + build + up)
-#   docker compose up --build   Build and start all services
-#   docker compose down         Stop all services
-#   docker compose down -v      Stop and delete all data volumes
+# Usage (cross-platform via pnpm — works on Windows, Linux, macOS):
+#   pnpm docker:up      Tear down any running stack, then build and start all
+#   pnpm docker:down    Stop all services (keep volumes)
+#   pnpm docker:reset   Stop, wipe all data volumes, then rebuild from scratch
+#
+# Or with Docker directly (ensure nothing is running first):
+#   docker compose down && docker compose up --build
 # ---------------------------------------------------------------------------
 
 include:

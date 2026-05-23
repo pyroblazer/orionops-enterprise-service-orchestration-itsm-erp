@@ -39,6 +39,12 @@ public class BillingDTO {
     }
 
     @Data @Builder @NoArgsConstructor @AllArgsConstructor
+    public static class UpdateBillingRecordRequest {
+        private String status;
+        private LocalDateTime paidAt;
+    }
+
+    @Data @Builder @NoArgsConstructor @AllArgsConstructor
     public static class CostModelRequest {
         @NotBlank private String name; private String description; private UUID serviceId;
         private String pricingType; private BigDecimal fixedPrice; private BigDecimal unitPrice;

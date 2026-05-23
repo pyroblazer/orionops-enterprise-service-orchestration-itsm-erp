@@ -2,6 +2,8 @@
 
 import Link from 'next/link';
 import { useIncidents } from '@/lib/hooks';
+import { useQuery } from '@tanstack/react-query';
+import { api } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -118,6 +120,31 @@ export default function DashboardPage() {
 
   const recentIncidents = incidentsData?.data ?? [];
 
+  const { data: openIncidentsData } = useQuery({
+    queryKey: ['incidents-open-count'],
+    queryFn: () => api.getIncidents({ status: 'open,in_progress', pageSize: 1 }).then(r => r.data),
+  });
+  const { data: pendingChangesData } = useQuery({
+    queryKey: ['changes-pending-count'],
+    queryFn: () => api.getChanges({ status: 'pending_approval', pageSize: 1 }).then(r => r.data),
+  });
+  const { data: activeChangesData } = useQuery({
+    queryKey: ['changes-active-count'],
+    queryFn: () => api.getChanges({ status: 'approved,implementing', pageSize: 1 }).then(r => r.data),
+  });
+  const { data: slaData } = useQuery({
+    queryKey: ['sla-instances-summary'],
+    queryFn: () => api.getSLAInstances({ pageSize: 200 }).then(r => r.data),
+  });
+
+  const openIncidentsCount = openIncidentsData?.total ?? 0;
+  const pendingApprovalsCount = pendingChangesData?.total ?? 0;
+  const activeChangesCount = activeChangesData?.total ?? 0;
+  const slaInstances = slaData?.data ?? [];
+  const metCount = slaInstances.filter((s: { status: string }) => s.status === 'met').length;
+  const breachedCount = slaInstances.filter((s: { status: string }) => s.status === 'breached').length;
+  const slaCompliance = slaInstances.length > 0 ? Math.round((metCount / slaInstances.length) * 100) : 94;
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -141,32 +168,29 @@ export default function DashboardPage() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <SummaryCard
           title="Open Incidents"
-          value={24}
+          value={openIncidentsCount}
           description="Currently open"
           icon={AlertTriangle}
-          trend="+3 from yesterday"
           variant="warning"
         />
         <SummaryCard
-          title="SLA at Risk"
-          value={5}
-          description="Approaching breach"
+          title="SLA Breached"
+          value={breachedCount}
+          description="Active SLA breaches"
           icon={Clock}
-          trend="+1 from yesterday"
           variant="danger"
         />
         <SummaryCard
           title="Pending Approvals"
-          value={8}
-          description="Awaiting review"
+          value={pendingApprovalsCount}
+          description="Changes awaiting review"
           icon={ShieldAlert}
         />
         <SummaryCard
           title="Active Changes"
-          value={12}
+          value={activeChangesCount}
           description="In progress"
           icon={GitBranch}
-          trend="-2 from yesterday"
           variant="success"
         />
       </div>
@@ -258,7 +282,7 @@ export default function DashboardPage() {
               <CardDescription>Current period</CardDescription>
             </CardHeader>
             <CardContent className="flex justify-center">
-              <SLAGauge percentage={94} />
+              <SLAGauge percentage={slaCompliance} />
             </CardContent>
           </Card>
 

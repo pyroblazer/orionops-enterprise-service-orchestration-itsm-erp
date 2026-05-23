@@ -118,6 +118,18 @@ public class BillingService {
     }
 
     @Transactional
+    public BillingDTO.BillingRecordResponse updateBillingRecord(UUID id, BillingDTO.UpdateBillingRecordRequest req) {
+        BillingRecord record = findBillingRecordOrThrow(id);
+        if (req.getStatus() != null) {
+            record.setStatus(BillingRecord.BillingStatus.valueOf(req.getStatus().toUpperCase()));
+            if (BillingRecord.BillingStatus.PAID.name().equalsIgnoreCase(req.getStatus()) && record.getPaidAt() == null) {
+                record.setPaidAt(req.getPaidAt() != null ? req.getPaidAt() : java.time.LocalDateTime.now());
+            }
+        }
+        return mapBillingRecord(billingRepository.save(record));
+    }
+
+    @Transactional
     public void deleteBillingRecord(UUID id) {
         BillingRecord record = findBillingRecordOrThrow(id);
         record.softDelete();

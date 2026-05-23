@@ -164,6 +164,18 @@ public class CMDBService {
     }
 
     @Transactional
+    public ServiceResponse updateService(UUID id, ServiceRequest request) {
+        Service service = findServiceOrThrow(id);
+        service.setName(request.getName());
+        service.setDescription(request.getDescription());
+        if (request.getStatus() != null) service.setStatus(request.getStatus());
+        service.setOwner(request.getOwner());
+        service.setSupportGroup(request.getSupportGroup());
+        service.setCategory(request.getCategory());
+        return mapToServiceResponse(serviceRepository.save(service));
+    }
+
+    @Transactional
     public void deleteService(UUID id) {
         Service service = findServiceOrThrow(id);
         service.softDelete();

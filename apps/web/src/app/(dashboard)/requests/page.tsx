@@ -20,6 +20,7 @@ import { Pagination } from '@/components/ui/pagination';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Megaphone, Plus, RefreshCw, Search } from 'lucide-react';
 import { formatDateTime, getStatusColor, cn } from '@/lib/utils';
+import { useRouter } from 'next/navigation';
 
 const categories = [
   { id: 'hardware', label: 'Hardware', description: 'Laptops, monitors, peripherals' },
@@ -31,6 +32,7 @@ const categories = [
 ];
 
 export default function RequestsListPage() {
+  const router = useRouter();
   const [viewMode, setViewMode] = useState<'catalog' | 'list'>('catalog');
   const [filters, setFilters] = useState<FilterParams>({
     page: 1,
@@ -81,7 +83,7 @@ export default function RequestsListPage() {
                   <CardDescription>{category.description}</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Button variant="outline" size="sm" className="w-full">
+                  <Button variant="outline" size="sm" className="w-full" onClick={() => router.push(`/requests/new?category=${category.id}`)}>
                     <Plus className="mr-1 h-3 w-3" /> Request {category.label}
                   </Button>
                 </CardContent>

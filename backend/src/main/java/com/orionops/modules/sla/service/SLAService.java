@@ -1,7 +1,7 @@
 package com.orionops.modules.sla.service;
 
 import com.orionops.common.event.EventPublisher;
-import com.orionops.common.exception.ResourceNotFoundException;
+import ResourceNotFoundException;
 import com.orionops.modules.sla.dto.SLADefinitionRequest;
 import com.orionops.modules.sla.dto.SLADefinitionResponse;
 import com.orionops.modules.sla.dto.SLAInstanceResponse;
@@ -153,6 +153,30 @@ public class SLAService {
         SLADefinition def = findDefinitionOrThrow(id);
         def.softDelete();
         definitionRepository.save(def);
+    }
+
+    @Transactional
+    public SLAInstanceResponse pauseInstance(UUID id) {
+        SLAInstance instance = instanceRepository.findById(id)
+                .filter(i -> !i.isDeleted())
+                .orElseThrow(() -> new ResourceNotFoundException("SLAInstance", id));
+        if (instance.getStatus() == SLAInstance.SLAStatus.ACTIVE) {
+            instance.setStatus(SLAInstance.SLAStatus.PAUSED);
+            instanceRepository.save(instance);
+        }
+        return mapInstanceToResponse(instance);
+    }
+
+    @Transactional
+    public SLAInstanceResponse resumeInstance(UUID id) {
+        SLAInstance instance = instanceRepository.findById(id)
+                .filter(i -> !i.isDeleted())
+                .orElseThrow(() -> new ResourceNotFoundException("SLAInstance", id));
+        if (instance.getStatus() == SLAInstance.SLAStatus.PAUSED) {
+            instance.setStatus(SLAInstance.SLAStatus.ACTIVE);
+            instanceRepository.save(instance);
+        }
+        return mapInstanceToResponse(instance);
     }
 
     private SLADefinition findDefinitionOrThrow(UUID id) {
