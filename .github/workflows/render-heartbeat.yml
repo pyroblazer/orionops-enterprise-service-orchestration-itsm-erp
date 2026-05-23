@@ -1,0 +1,36 @@
+name: Render Heartbeat
+
+on:
+  schedule:
+    # Every 14 minutes to keep Render free tier services from spinning down (15-min timeout)
+    - cron: '*/14 * * * *'
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping AI Service health endpoint
+        continue-on-error: true
+        run: |
+          curl -sf ${{ secrets.RENDER_AI_URL }}/health || echo "AI service is down or unreachable"
+
+      - name: Ping Keycloak health endpoint
+        continue-on-error: true
+        run: |
+          curl -sf ${{ secrets.RENDER_KEYCLOAK_URL }}/health/ready || echo "Keycloak is down or unreachable"
+
+      - name: Ping MinIO health endpoint
+        continue-on-error: true
+        run: |
+          curl -sf ${{ secrets.RENDER_MINIO_URL }}/minio/health/live || echo "MinIO is down or unreachable"
+
+      - name: Ping OpenSearch cluster health endpoint
+        continue-on-error: true
+        run: |
+          curl -sf ${{ secrets.RENDER_OPENSEARCH_URL }}/_cluster/health || echo "OpenSearch is down or unreachable"
+
+      - name: Summary
+        run: |
+          echo "Render heartbeat completed at $(date -u +'%Y-%m-%d %H:%M:%S UTC')"
+          echo "All Render services pinged to prevent 15-minute inactivity spin-down"
