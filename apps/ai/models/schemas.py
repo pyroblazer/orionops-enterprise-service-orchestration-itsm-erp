@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Optional
 
@@ -61,7 +61,7 @@ class HealthResponse(BaseModel):
     status: HealthStatus = HealthStatus.HEALTHY
     service: str = "orionops-ai"
     version: str = Field(default="1.0.0", description="Service semantic version")
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 class ModelInfo(BaseModel):

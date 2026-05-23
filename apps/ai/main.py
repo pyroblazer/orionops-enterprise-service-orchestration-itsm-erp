@@ -10,7 +10,7 @@ from __future__ import annotations
 import logging
 import sys
 from contextlib import asynccontextmanager
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import AsyncGenerator
 
 from fastapi import FastAPI
@@ -126,7 +126,7 @@ def health_check() -> HealthResponse:
         status=HealthStatus.HEALTHY,
         service="orionops-ai",
         version="1.0.0",
-        timestamp=datetime.utcnow(),
+        timestamp=datetime.now(timezone.utc),
     )
 
 
