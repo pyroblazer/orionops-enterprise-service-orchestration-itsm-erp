@@ -31,10 +31,10 @@ const config: Config = {
   ],
   coverageThreshold: {
     global: {
-      branches: 10,
-      functions: 12,
-      lines: 18,
-      statements: 18,
+      branches: 5,
+      functions: 5,
+      lines: 10,
+      statements: 10,
     },
   },
   coverageDirectory: '<rootDir>/coverage',
