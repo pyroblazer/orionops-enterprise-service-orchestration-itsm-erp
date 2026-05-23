@@ -58,3 +58,18 @@ coverage/
 # Cache
 .turbo/
 .cache/
+certs/
+
+# Credentials and secrets
+CREDENTIALS_SETUP.md
+CREDENTIALS.md
+*.pem
+*.key
+*.cert
+*.crt
+kafka-aiven-creds-download/
+*-creds*/
+*credentials*/
+*.jks
+*.keystore
+secrets/
