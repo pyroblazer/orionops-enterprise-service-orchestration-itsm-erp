@@ -9,9 +9,9 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, AlertTriangle, FileText, Lightbulb, Link as LinkIcon, Plus, Check, X, Pencil, Trash2 } from 'lucide-react';
+import { ArrowLeft, AlertTriangle, Lightbulb, Link as LinkIcon, Plus, Check, X, Pencil, Trash2 } from 'lucide-react';
 import { formatDateTime, getStatusColor, getPriorityColor, cn } from '@/lib/utils';
-import { api } from '@/lib/api';
+import { api, ProblemStatus } from '@/lib/api';
 
 const STATUS_TRANSITIONS: Record<string, { label: string; next: string }> = {
   open: { label: 'Start Investigation', next: 'under_investigation' },
@@ -51,7 +51,7 @@ export default function ProblemDetailPage() {
   });
 
   const transitionMutation = useMutation({
-    mutationFn: (status: string) => api.updateProblem(id, { status }),
+    mutationFn: (status: string) => api.updateProblem(id, { status: status as ProblemStatus }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['problem', id] }),
   });
 
@@ -244,7 +244,7 @@ export default function ProblemDetailPage() {
                 <p className="text-sm text-muted-foreground py-4 text-center">No activity recorded yet.</p>
               ) : (
                 <ul className="space-y-3">
-                  {(auditData as { id: string; action: string; actorName?: string; createdAt: string; details?: string }[]).map(log => (
+                  {(auditData as unknown as { id: string; action: string; actorName?: string; createdAt: string; details?: string }[]).map(log => (
                     <li key={log.id} className="flex items-start gap-3 text-sm border-b last:border-0 pb-3 last:pb-0">
                       <div className="h-2 w-2 rounded-full bg-muted-foreground mt-1.5 shrink-0" />
                       <div className="flex-1">

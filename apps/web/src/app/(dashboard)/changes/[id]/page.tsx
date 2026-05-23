@@ -41,7 +41,7 @@ export default function ChangeDetailPage() {
   const invalidate = () => qc.invalidateQueries({ queryKey: ['change', id] });
 
   const submitMutation = useMutation({ mutationFn: () => api.submitChange(id), onSuccess: invalidate });
-  const approveMutation = useMutation({ mutationFn: () => api.approveChange(id, approveForm), onSuccess: () => { invalidate(); setShowApproveForm(false); } });
+  const approveMutation = useMutation({ mutationFn: () => api.approveChange(id, { approverId: 'current-user', ...approveForm }), onSuccess: () => { invalidate(); setShowApproveForm(false); } });
   const rejectMutation = useMutation({ mutationFn: () => api.rejectChange(id, rejectForm), onSuccess: () => { invalidate(); setShowRejectForm(false); } });
   const implementMutation = useMutation({ mutationFn: () => api.implementChange(id, implementForm), onSuccess: () => { invalidate(); setShowImplementForm(false); } });
   const closeMutation = useMutation({ mutationFn: () => api.closeChange(id), onSuccess: invalidate });
@@ -229,7 +229,7 @@ export default function ChangeDetailPage() {
                 <p className="text-sm text-muted-foreground py-4 text-center">No activity recorded yet.</p>
               ) : (
                 <ul className="space-y-3">
-                  {(auditData as { id: string; action: string; actorName?: string; createdAt: string; details?: string }[]).map(log => (
+                  {(auditData as unknown as { id: string; action: string; actorName?: string; createdAt: string; details?: string }[]).map(log => (
                     <li key={log.id} className="flex items-start gap-3 text-sm border-b last:border-0 pb-3 last:pb-0">
                       <div className="h-2 w-2 rounded-full bg-muted-foreground mt-1.5 shrink-0" />
                       <div className="flex-1"><span className="font-medium">{log.action.replace('_', ' ')}</span>{log.actorName && <span className="text-muted-foreground"> by {log.actorName}</span>}{log.details && <p className="text-muted-foreground text-xs mt-0.5">{log.details}</p>}</div>

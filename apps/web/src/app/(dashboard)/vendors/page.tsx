@@ -67,12 +67,12 @@ export default function VendorsPage() {
   });
 
   const createMutation = useMutation({
-    mutationFn: (d: VendorFormData) => api.createVendor(d),
+    mutationFn: (d: VendorFormData) => api.createVendor(d as unknown as Partial<Vendor>),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['vendors'] }); setShowForm(false); setForm(EMPTY_FORM); },
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, d }: { id: string; d: VendorFormData }) => api.updateVendor(id, d),
+    mutationFn: ({ id, d }: { id: string; d: VendorFormData }) => api.updateVendor(id, d as unknown as Partial<Vendor>),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['vendors'] }); setEditingId(null); setForm(EMPTY_FORM); },
   });
 
@@ -96,8 +96,8 @@ export default function VendorsPage() {
   const vendors: Vendor[] = data?.data ?? [];
   const total = data?.total ?? 0;
   const active = vendors.filter(v => v.status === 'active');
-  const avgSla = active.length ? active.reduce((s, v) => s + (v.slaCompliance ?? 0), 0) / active.length : 0;
-  const avgOtd = active.length ? active.reduce((s, v) => s + (v.onTimeDelivery ?? 0), 0) / active.length : 0;
+  const avgSla = active.length ? active.reduce((s, v) => s + (v.slaCompliancePercent ?? 0), 0) / active.length : 0;
+  const avgOtd = active.length ? active.reduce((s, v) => s + (v.onTimeDeliveryPercent ?? 0), 0) / active.length : 0;
   const totalSpend = vendors.reduce((s, v) => s + (v.totalSpend ?? 0), 0);
 
   return (
@@ -296,16 +296,16 @@ export default function VendorsPage() {
                     <TableCell><Badge className={cn('capitalize', statusColor(v.status))}>{v.status}</Badge></TableCell>
                     <TableCell>{v.rating != null ? <Stars rating={v.rating} /> : '—'}</TableCell>
                     <TableCell>
-                      {v.slaCompliance != null && v.slaCompliance > 0 ? (
+                      {v.slaCompliancePercent != null && v.slaCompliancePercent > 0 ? (
                         <div className="flex items-center gap-2">
                           <div className="h-2 w-16 rounded-full bg-muted overflow-hidden">
-                            <div className={cn('h-full rounded-full', v.slaCompliance >= 95 ? 'bg-success' : v.slaCompliance >= 80 ? 'bg-warning' : 'bg-danger')} style={{ width: `${Math.min(v.slaCompliance, 100)}%` }} />
+                            <div className={cn('h-full rounded-full', v.slaCompliancePercent >= 95 ? 'bg-success' : v.slaCompliancePercent >= 80 ? 'bg-warning' : 'bg-danger')} style={{ width: `${Math.min(v.slaCompliancePercent, 100)}%` }} />
                           </div>
-                          <span className="text-xs text-muted-foreground">{v.slaCompliance.toFixed(1)}%</span>
+                          <span className="text-xs text-muted-foreground">{v.slaCompliancePercent.toFixed(1)}%</span>
                         </div>
                       ) : 'N/A'}
                     </TableCell>
-                    <TableCell className="text-sm">{v.onTimeDelivery != null && v.onTimeDelivery > 0 ? `${v.onTimeDelivery.toFixed(1)}%` : 'N/A'}</TableCell>
+                    <TableCell className="text-sm">{v.onTimeDeliveryPercent != null && v.onTimeDeliveryPercent > 0 ? `${v.onTimeDeliveryPercent.toFixed(1)}%` : 'N/A'}</TableCell>
                     <TableCell>{v.totalSpend != null ? formatCurrency(v.totalSpend) : '—'}</TableCell>
                     <TableCell onClick={e => e.stopPropagation()}>
                       <div className="flex gap-1">

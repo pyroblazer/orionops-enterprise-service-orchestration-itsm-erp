@@ -1,7 +1,7 @@
 package com.orionops.modules.sla.service;
 
 import com.orionops.common.event.EventPublisher;
-import ResourceNotFoundException;
+import com.orionops.common.exception.ResourceNotFoundException;
 import com.orionops.modules.sla.dto.SLADefinitionRequest;
 import com.orionops.modules.sla.dto.SLADefinitionResponse;
 import com.orionops.modules.sla.dto.SLAInstanceResponse;

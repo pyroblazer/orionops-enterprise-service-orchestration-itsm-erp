@@ -13,7 +13,7 @@ export default function SettingsPage() {
     (typeof window !== 'undefined' && document.documentElement.getAttribute('data-theme') as any) || 'light'
   );
 
-  const [profileForm, setProfileForm] = useState({ firstName: '', lastName: '', phone: '', department: '', title: '' });
+  const [profileForm, setProfileForm] = useState({ firstName: '', lastName: '', phone: '', department: '' });
   const [saveMsg, setSaveMsg] = useState('');
 
   const { data: meData } = useQuery({
@@ -23,23 +23,21 @@ export default function SettingsPage() {
 
   useEffect(() => {
     if (meData) {
-      const nameParts = (meData.name ?? '').split(' ');
       setProfileForm({
-        firstName: nameParts[0] ?? '',
-        lastName: nameParts.slice(1).join(' '),
+        firstName: meData.firstName ?? '',
+        lastName: meData.lastName ?? '',
         phone: meData.phone ?? '',
         department: meData.department ?? '',
-        title: meData.title ?? '',
       });
     }
   }, [meData]);
 
   const saveMutation = useMutation({
     mutationFn: () => api.updateUser(meData?.id ?? '', {
-      name: `${profileForm.firstName} ${profileForm.lastName}`.trim(),
+      firstName: profileForm.firstName,
+      lastName: profileForm.lastName,
       phone: profileForm.phone,
       department: profileForm.department,
-      title: profileForm.title,
     }),
     onSuccess: () => { setSaveMsg('Profile saved successfully.'); setTimeout(() => setSaveMsg(''), 3000); },
   });
@@ -94,10 +92,6 @@ export default function SettingsPage() {
               <div className="space-y-2">
                 <label htmlFor="department" className="text-sm font-medium">Department</label>
                 <Input id="department" placeholder="Engineering" value={profileForm.department} onChange={e => setProfileForm(f => ({ ...f, department: e.target.value }))} />
-              </div>
-              <div className="space-y-2">
-                <label htmlFor="title" className="text-sm font-medium">Job Title</label>
-                <Input id="title" placeholder="Senior Engineer" value={profileForm.title} onChange={e => setProfileForm(f => ({ ...f, title: e.target.value }))} />
               </div>
             </div>
             <div className="flex items-center gap-3">

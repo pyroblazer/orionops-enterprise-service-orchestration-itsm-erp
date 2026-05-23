@@ -80,7 +80,7 @@ export default function ChangesListPage() {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => exportToCSV(changes.map(c => ({ id: c.id, title: c.title, changeType: c.changeType, priority: c.priority, status: c.status, riskLevel: c.riskLevel, createdAt: c.createdAt })), 'changes.csv')}
+            onClick={() => exportToCSV(changes.map(c => ({ id: c.id, title: c.title, type: c.type, risk: c.risk, status: c.status, approvalStatus: c.approvalStatus, createdAt: c.createdAt })), 'changes.csv')}
             disabled={changes.length === 0}
             aria-label="Export changes as CSV"
           >

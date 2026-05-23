@@ -72,7 +72,7 @@ export default function InventoryPage() {
   const createItem = useMutation({ mutationFn: () => api.createInventoryItem(itemForm), onSuccess: () => { qc.invalidateQueries({ queryKey: ['inventory-items'] }); setShowItemForm(false); } });
   const updateItem = useMutation({ mutationFn: ({ id, d }: { id: string; d: Partial<InventoryItem> }) => api.updateInventoryItem(id, d), onSuccess: () => { qc.invalidateQueries({ queryKey: ['inventory-items'] }); setEditItemId(null); } });
   const deleteItem = useMutation({ mutationFn: (id: string) => api.deleteInventoryItem(id), onSuccess: () => { qc.invalidateQueries({ queryKey: ['inventory-items'] }); setDeleteItemId(null); } });
-  const stockMovement = useMutation({ mutationFn: () => api.recordStockMovement({ itemId: stockItemId, ...stockForm }), onSuccess: () => { qc.invalidateQueries({ queryKey: ['inventory-items'] }); qc.invalidateQueries({ queryKey: ['low-stock'] }); setStockItemId(null); } });
+  const stockMovement = useMutation({ mutationFn: () => api.recordStockMovement({ inventoryItemId: stockItemId ?? undefined, ...stockForm, adjustmentType: stockForm.adjustmentType as 'in' | 'out' | 'adjustment' }), onSuccess: () => { qc.invalidateQueries({ queryKey: ['inventory-items'] }); qc.invalidateQueries({ queryKey: ['low-stock'] }); setStockItemId(null); } });
 
   // Asset mutations
   const createAsset = useMutation({ mutationFn: () => api.createAsset(assetForm), onSuccess: () => { qc.invalidateQueries({ queryKey: ['assets'] }); setShowAssetForm(false); } });

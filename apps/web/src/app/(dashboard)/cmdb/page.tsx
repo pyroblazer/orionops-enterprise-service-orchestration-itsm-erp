@@ -65,12 +65,12 @@ export default function CMDBPage() {
   });
 
   const createMutation = useMutation({
-    mutationFn: (d: CIFormData) => api.createCMDBItem(d),
+    mutationFn: (d: CIFormData) => api.createCMDBItem(d as unknown as Partial<CMDBConfigItem>),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['cmdb'] }); setShowForm(false); setForm(EMPTY_FORM); },
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, d }: { id: string; d: CIFormData }) => api.updateCMDBItem(id, d),
+    mutationFn: ({ id, d }: { id: string; d: CIFormData }) => api.updateCMDBItem(id, d as unknown as Partial<CMDBConfigItem>),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['cmdb'] }); setEditingId(null); setForm(EMPTY_FORM); },
   });
 

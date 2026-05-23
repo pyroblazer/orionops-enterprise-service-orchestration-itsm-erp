@@ -1084,7 +1084,10 @@ export const api = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
-    }).then(r => r.json()),
+    }).then(async r => {
+      if (!r.ok) throw new Error('AI classification failed');
+      return r.json();
+    }),
 };
 
 // ---------------------------------------------------------------------------

@@ -39,7 +39,7 @@ export default function RequestDetailPage() {
   const invalidate = () => qc.invalidateQueries({ queryKey: ['request', id] });
 
   const submitMutation = useMutation({ mutationFn: () => api.submitRequest(id), onSuccess: invalidate });
-  const approveMutation = useMutation({ mutationFn: () => api.approveRequest(id, approveForm), onSuccess: () => { invalidate(); setShowApproveForm(false); } });
+  const approveMutation = useMutation({ mutationFn: () => api.approveRequest(id, { approverId: 'current-user', ...approveForm }), onSuccess: () => { invalidate(); setShowApproveForm(false); } });
   const fulfillMutation = useMutation({ mutationFn: () => api.fulfillRequest(id, fulfillForm), onSuccess: () => { invalidate(); setShowFulfillForm(false); } });
   const closeMutation = useMutation({ mutationFn: () => api.closeRequest(id), onSuccess: invalidate });
   const deleteMutation = useMutation({ mutationFn: () => api.deleteRequest(id), onSuccess: () => router.push('/requests') });
@@ -68,7 +68,7 @@ export default function RequestDetailPage() {
             <h1 className="text-2xl font-bold">{request.title}</h1>
           </div>
           <div className="flex items-center gap-3 pl-11 flex-wrap">
-            <Badge className={cn('capitalize', getPriorityColor(request.priority))}>{request.priority}</Badge>
+            <Badge className={cn('capitalize', getPriorityColor(request.priority ?? 'medium'))}>{request.priority ?? '—'}</Badge>
             <Badge className={cn('capitalize', getStatusColor(request.status))}>{request.status?.replace('_', ' ')}</Badge>
             {request.category && <Badge variant="outline" className="capitalize">{request.category}</Badge>}
           </div>
@@ -77,7 +77,7 @@ export default function RequestDetailPage() {
           {request.status === 'draft' && <Button size="sm" disabled={submitMutation.isPending} onClick={() => submitMutation.mutate()}><SendHorizontal className="mr-1 h-4 w-4" />Submit</Button>}
           {request.status === 'submitted' && <Button size="sm" variant="outline" className="text-success border-success" onClick={() => setShowApproveForm(true)}><CheckCircle className="mr-1 h-4 w-4" />Approve</Button>}
           {request.status === 'approved' && <Button size="sm" onClick={() => setShowFulfillForm(true)}>Fulfill</Button>}
-          {request.status === 'fulfilled' && <Button size="sm" variant="outline" disabled={closeMutation.isPending} onClick={() => closeMutation.mutate()}>Close</Button>}
+          {request.status === 'in_fulfillment' && <Button size="sm" variant="outline" disabled={closeMutation.isPending} onClick={() => closeMutation.mutate()}>Close</Button>}
           <Button variant="outline" size="sm" className="text-danger border-danger hover:bg-danger/10" onClick={() => setShowDeleteConfirm(true)}><Trash2 className="mr-1 h-3.5 w-3.5" />Delete</Button>
         </div>
       </div>
@@ -143,11 +143,11 @@ export default function RequestDetailPage() {
             <CardHeader><CardTitle>Fulfillment Tasks</CardTitle></CardHeader>
             <CardContent>
               <ul className="space-y-2">
-                {(request.fulfillmentTasks ?? []).map((task: { id: string; name: string; status: string; assignee?: string }) => (
+                {(request.fulfillmentTasks ?? []).map((task: { id: string; title: string; status: string; assignee?: string }) => (
                   <li key={task.id} className="flex items-center justify-between rounded-md border px-4 py-2 text-sm">
                     <div className="flex items-center gap-3">
                       {task.status === 'completed' ? <CheckCircle className="h-4 w-4 text-success" /> : <Clock className="h-4 w-4 text-muted-foreground" />}
-                      <span className={cn(task.status === 'completed' && 'line-through text-muted-foreground')}>{task.name}</span>
+                      <span className={cn(task.status === 'completed' && 'line-through text-muted-foreground')}>{task.title}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       {task.assignee && <span className="text-muted-foreground text-xs">{task.assignee}</span>}
@@ -168,7 +168,7 @@ export default function RequestDetailPage() {
                 <p className="text-sm text-muted-foreground py-4 text-center">No activity recorded yet.</p>
               ) : (
                 <ul className="space-y-3">
-                  {(auditData as { id: string; action: string; actorName?: string; createdAt: string; details?: string }[]).map(log => (
+                  {(auditData as unknown as { id: string; action: string; actorName?: string; createdAt: string; details?: string }[]).map(log => (
                     <li key={log.id} className="flex items-start gap-3 text-sm border-b last:border-0 pb-3 last:pb-0">
                       <div className="h-2 w-2 rounded-full bg-muted-foreground mt-1.5 shrink-0" />
                       <div className="flex-1"><span className="font-medium">{log.action.replace('_', ' ')}</span>{log.actorName && <span className="text-muted-foreground"> by {log.actorName}</span>}</div>

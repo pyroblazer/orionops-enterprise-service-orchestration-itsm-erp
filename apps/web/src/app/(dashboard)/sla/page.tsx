@@ -13,7 +13,7 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Zap, AlertTriangle, Clock, CheckCircle, Plus, Pencil, Trash2, X, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { api, SLADefinition, Priority } from '@/lib/api';
+import { api, SLADefinition, SLAInstance, Priority } from '@/lib/api';
 
 function formatMinutes(m: number): string {
   if (m < 60) return `${m}m`;
@@ -321,7 +321,7 @@ export default function SLAPage() {
   );
 }
 
-function SLAInstanceTable({ instances, onPause, onResume }: { instances: ReturnType<typeof useQuery<any>>['data'] extends { data: infer D } ? D : any[]; onPause: (id: string) => void; onResume: (id: string) => void }) {
+function SLAInstanceTable({ instances, onPause, onResume }: { instances: SLAInstance[]; onPause: (id: string) => void; onResume: (id: string) => void }) {
   if (!instances || instances.length === 0) {
     return <p className="px-4 py-6 text-sm text-muted-foreground">No instances found.</p>;
   }

@@ -36,8 +36,8 @@ export default function KnowledgeArticlePage() {
   const submitReviewMutation = useMutation({ mutationFn: () => api.submitKnowledgeForReview(id), onSuccess: invalidate });
   const publishMutation = useMutation({ mutationFn: () => api.publishKnowledgeArticle(id), onSuccess: invalidate });
   const deleteMutation = useMutation({ mutationFn: () => api.deleteKnowledgeArticle(id), onSuccess: () => router.push('/knowledge') });
-  const helpfulMutation = useMutation({ mutationFn: () => api.updateKnowledgeArticle(id, { helpfulCount: (article?.helpfulCount ?? 0) + 1 }), onSuccess: invalidate });
-  const notHelpfulMutation = useMutation({ mutationFn: () => api.updateKnowledgeArticle(id, { notHelpfulCount: (article?.notHelpfulCount ?? 0) + 1 }), onSuccess: invalidate });
+  const helpfulMutation = useMutation({ mutationFn: () => api.updateKnowledgeArticle(id, { helpfulYes: (article?.helpfulYes ?? 0) + 1 }), onSuccess: invalidate });
+  const notHelpfulMutation = useMutation({ mutationFn: () => api.updateKnowledgeArticle(id, { helpfulNo: (article?.helpfulNo ?? 0) + 1 }), onSuccess: invalidate });
 
   if (isLoading) return <div className="p-8 text-muted-foreground animate-pulse">Loading…</div>;
   if (!article) return (
@@ -111,9 +111,9 @@ export default function KnowledgeArticlePage() {
       )}
 
       <div className="flex items-center gap-4 text-sm text-muted-foreground pl-2">
-        <span className="flex items-center gap-1"><Eye className="h-4 w-4" />{article.viewCount ?? 0} views</span>
+        <span className="flex items-center gap-1"><Eye className="h-4 w-4" />{article.views ?? 0} views</span>
         {article.authorName && <span>by {article.authorName}</span>}
-        {article.publishedAt && <span>Published {formatDate(article.publishedAt)}</span>}
+        {article.updatedAt && <span>Published {formatDate(article.updatedAt)}</span>}
       </div>
 
       <Card>
@@ -127,10 +127,10 @@ export default function KnowledgeArticlePage() {
           <p className="text-sm font-medium">Was this article helpful?</p>
           <div className="flex items-center gap-3">
             <Button variant="outline" size="sm" disabled={helpfulMutation.isPending} onClick={() => helpfulMutation.mutate()}>
-              <ThumbsUp className="mr-1 h-4 w-4" />Yes {article.helpfulCount != null ? `(${article.helpfulCount})` : ''}
+              <ThumbsUp className="mr-1 h-4 w-4" />Yes {article.helpfulYes != null ? `(${article.helpfulYes})` : ''}
             </Button>
             <Button variant="outline" size="sm" disabled={notHelpfulMutation.isPending} onClick={() => notHelpfulMutation.mutate()}>
-              <ThumbsDown className="mr-1 h-4 w-4" />No {article.notHelpfulCount != null ? `(${article.notHelpfulCount})` : ''}
+              <ThumbsDown className="mr-1 h-4 w-4" />No {article.helpfulNo != null ? `(${article.helpfulNo})` : ''}
             </Button>
           </div>
         </CardContent>

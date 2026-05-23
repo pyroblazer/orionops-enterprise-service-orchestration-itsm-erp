@@ -90,7 +90,7 @@ export default function FinancePage() {
   const createInvoice = useMutation({ mutationFn: () => api.createInvoice(invForm), onSuccess: () => { qc.invalidateQueries({ queryKey: ['invoices'] }); setShowInvForm(false); } });
   const updateInvoice = useMutation({ mutationFn: ({ id, d }: { id: string; d: Partial<Invoice> }) => api.updateInvoice(id, d), onSuccess: () => { qc.invalidateQueries({ queryKey: ['invoices'] }); setEditInvId(null); } });
   const deleteInvoice = useMutation({ mutationFn: (id: string) => api.deleteInvoice(id), onSuccess: () => { qc.invalidateQueries({ queryKey: ['invoices'] }); setDeleteInvId(null); } });
-  const createPayment = useMutation({ mutationFn: () => api.createPayment({ invoiceId: payInvId, ...payForm }), onSuccess: () => { qc.invalidateQueries({ queryKey: ['invoices'] }); setPayInvId(null); } });
+  const createPayment = useMutation({ mutationFn: () => api.createPayment({ invoiceId: payInvId ?? undefined, ...payForm }), onSuccess: () => { qc.invalidateQueries({ queryKey: ['invoices'] }); setPayInvId(null); } });
 
   const budgets: Budget[] = budgetsData?.data ?? [];
   const expenses: Expense[] = expensesData?.data ?? [];

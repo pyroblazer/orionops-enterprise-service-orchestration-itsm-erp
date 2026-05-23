@@ -130,7 +130,7 @@ export default function VendorDetailPage() {
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
         <Card><CardContent className="pt-4"><p className="text-xs text-muted-foreground">Contact</p><p className="font-semibold mt-1">{vendor.contactName ?? '—'}</p><p className="text-xs text-muted-foreground">{vendor.contactEmail ?? ''}</p></CardContent></Card>
         <Card><CardContent className="pt-4"><p className="text-xs text-muted-foreground">Rating</p><div className="mt-1">{vendor.rating != null ? <Stars rating={vendor.rating} /> : <span className="font-semibold">—</span>}</div></CardContent></Card>
-        <Card><CardContent className="pt-4"><p className="text-xs text-muted-foreground">SLA Compliance</p><p className="font-semibold mt-1">{vendor.slaCompliance != null ? `${vendor.slaCompliance.toFixed(1)}%` : '—'}</p></CardContent></Card>
+        <Card><CardContent className="pt-4"><p className="text-xs text-muted-foreground">SLA Compliance</p><p className="font-semibold mt-1">{vendor.slaCompliancePercent != null ? `${vendor.slaCompliancePercent.toFixed(1)}%` : '—'}</p></CardContent></Card>
         <Card><CardContent className="pt-4"><p className="text-xs text-muted-foreground">Total Spend</p><p className="font-semibold mt-1">{vendor.totalSpend != null ? formatCurrency(vendor.totalSpend) : '—'}</p></CardContent></Card>
       </div>
 
@@ -179,7 +179,7 @@ export default function VendorDetailPage() {
             </Card>
           )}
 
-          {!performance || (performance as unknown[]).length === 0 ? (
+          {!performance || performance.entries.length === 0 ? (
             <p className="text-sm text-muted-foreground py-4">No performance records yet. Record one above.</p>
           ) : (
             <div className="rounded-lg border">
@@ -192,12 +192,12 @@ export default function VendorDetailPage() {
                   <th className="px-4 py-2 text-left">Notes</th>
                 </tr></thead>
                 <tbody>
-                  {(performance as { evaluationDate?: string; rating?: number; slaCompliancePercent?: number; onTimeDeliveryPercent?: number; notes?: string }[]).map((p, i) => (
-                    <tr key={i} className="border-b last:border-0">
+                  {performance.entries.map((p) => (
+                    <tr key={p.id} className="border-b last:border-0">
                       <td className="px-4 py-2">{p.evaluationDate ? new Date(p.evaluationDate).toLocaleDateString() : '—'}</td>
-                      <td className="px-4 py-2">{p.rating != null ? <Stars rating={p.rating} /> : '—'}</td>
-                      <td className="px-4 py-2">{p.slaCompliancePercent != null ? `${p.slaCompliancePercent.toFixed(1)}%` : '—'}</td>
-                      <td className="px-4 py-2">{p.onTimeDeliveryPercent != null ? `${p.onTimeDeliveryPercent.toFixed(1)}%` : '—'}</td>
+                      <td className="px-4 py-2"><Stars rating={p.rating} /></td>
+                      <td className="px-4 py-2">{`${p.slaCompliancePercent.toFixed(1)}%`}</td>
+                      <td className="px-4 py-2">{`${p.onTimeDeliveryPercent.toFixed(1)}%`}</td>
                       <td className="px-4 py-2 text-muted-foreground">{p.notes ?? '—'}</td>
                     </tr>
                   ))}
@@ -213,7 +213,7 @@ export default function VendorDetailPage() {
               <div><p className="text-xs text-muted-foreground">Phone</p><p className="font-medium mt-1">{vendor.contactPhone ?? '—'}</p></div>
               <div><p className="text-xs text-muted-foreground">Website</p><p className="font-medium mt-1">{vendor.website ? <a href={vendor.website} target="_blank" rel="noopener noreferrer" className="text-primary underline">{vendor.website}</a> : '—'}</p></div>
               <div><p className="text-xs text-muted-foreground">Address</p><p className="font-medium mt-1">{vendor.address ?? '—'}</p></div>
-              <div><p className="text-xs text-muted-foreground">On-Time Delivery</p><p className="font-medium mt-1">{vendor.onTimeDelivery != null ? `${vendor.onTimeDelivery.toFixed(1)}%` : '—'}</p></div>
+              <div><p className="text-xs text-muted-foreground">On-Time Delivery</p><p className="font-medium mt-1">{vendor.onTimeDeliveryPercent != null ? `${vendor.onTimeDeliveryPercent.toFixed(1)}%` : '—'}</p></div>
               {vendor.notes && <div className="sm:col-span-2"><p className="text-xs text-muted-foreground">Notes</p><p className="mt-1 text-sm">{vendor.notes}</p></div>}
             </CardContent>
           </Card>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import { useIncidents } from '@/lib/hooks';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -51,7 +51,7 @@ export default function IncidentsListPage() {
   const [showFilters, setShowFilters] = useState(false);
 
   const { data, isLoading, refetch } = useIncidents(filters);
-  const incidents = data?.data ?? [];
+  const incidents = useMemo(() => data?.data ?? [], [data?.data]);
   const totalPages = data?.totalPages ?? 1;
 
   const handleFilterChange = useCallback(

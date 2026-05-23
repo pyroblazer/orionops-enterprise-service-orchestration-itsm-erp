@@ -80,15 +80,15 @@ export default function ProcurementPage() {
   });
 
   // PR mutations
-  const createPr = useMutation({ mutationFn: () => api.createPurchaseRequest(prForm), onSuccess: () => { qc.invalidateQueries({ queryKey: ['purchase-requests'] }); setShowPrForm(false); } });
-  const updatePr = useMutation({ mutationFn: ({ id, d }: { id: string; d: Partial<PurchaseRequest> }) => api.updatePurchaseRequest(id, d), onSuccess: () => { qc.invalidateQueries({ queryKey: ['purchase-requests'] }); setEditPrId(null); } });
+  const createPr = useMutation({ mutationFn: () => api.createPurchaseRequest(prForm as unknown as Partial<PurchaseRequest>), onSuccess: () => { qc.invalidateQueries({ queryKey: ['purchase-requests'] }); setShowPrForm(false); } });
+  const updatePr = useMutation({ mutationFn: ({ id, d }: { id: string; d: Partial<PurchaseRequest> }) => api.updatePurchaseRequest(id, d as Partial<PurchaseRequest>), onSuccess: () => { qc.invalidateQueries({ queryKey: ['purchase-requests'] }); setEditPrId(null); } });
   const deletePr = useMutation({ mutationFn: (id: string) => api.deletePurchaseRequest(id), onSuccess: () => { qc.invalidateQueries({ queryKey: ['purchase-requests'] }); setDeletePrId(null); } });
   const submitPr = useMutation({ mutationFn: (id: string) => api.submitPurchaseRequest(id), onSuccess: () => qc.invalidateQueries({ queryKey: ['purchase-requests'] }) });
   const createPo = useMutation({ mutationFn: (id: string) => api.createPOFromPR(id), onSuccess: () => { qc.invalidateQueries({ queryKey: ['purchase-requests'] }); qc.invalidateQueries({ queryKey: ['purchase-orders'] }); } });
 
   // Contract mutations
-  const createContract = useMutation({ mutationFn: () => api.createContract(contractForm), onSuccess: () => { qc.invalidateQueries({ queryKey: ['contracts'] }); setShowContractForm(false); } });
-  const updateContract = useMutation({ mutationFn: ({ id, d }: { id: string; d: typeof contractForm }) => api.updateContract(id, d), onSuccess: () => { qc.invalidateQueries({ queryKey: ['contracts'] }); setEditContractId(null); } });
+  const createContract = useMutation({ mutationFn: () => api.createContract(contractForm as unknown as Partial<Contract>), onSuccess: () => { qc.invalidateQueries({ queryKey: ['contracts'] }); setShowContractForm(false); } });
+  const updateContract = useMutation({ mutationFn: ({ id, d }: { id: string; d: typeof contractForm }) => api.updateContract(id, d as unknown as Partial<Contract>), onSuccess: () => { qc.invalidateQueries({ queryKey: ['contracts'] }); setEditContractId(null); } });
   const deleteContract = useMutation({ mutationFn: (id: string) => api.deleteContract(id), onSuccess: () => { qc.invalidateQueries({ queryKey: ['contracts'] }); setDeleteContractId(null); } });
 
   const prs: PurchaseRequest[] = prsData?.data ?? [];
@@ -144,7 +144,7 @@ export default function ProcurementPage() {
             <Card>
               <CardHeader><CardTitle className="text-base">{editPrId ? 'Edit Purchase Request' : 'New Purchase Request'}</CardTitle></CardHeader>
               <CardContent>
-                <form onSubmit={e => { e.preventDefault(); editPrId ? updatePr.mutate({ id: editPrId, d: prForm }) : createPr.mutate(); }} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                <form onSubmit={e => { e.preventDefault(); editPrId ? updatePr.mutate({ id: editPrId, d: prForm as unknown as Partial<PurchaseRequest> }) : createPr.mutate(); }} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   <div className="space-y-1 sm:col-span-2 lg:col-span-1"><label className="text-sm font-medium">Title *</label><Input required value={prForm.title} onChange={e => setPrForm(f => ({ ...f, title: e.target.value }))} placeholder="Laptop procurement" /></div>
                   <div className="space-y-1"><label className="text-sm font-medium">Priority</label><Select value={prForm.priority} onValueChange={v => setPrForm(f => ({ ...f, priority: v }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{PRIORITIES.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent></Select></div>
                   <div className="space-y-1"><label className="text-sm font-medium">Estimated Cost</label><Input type="number" min={0} value={prForm.estimatedCost || ''} onChange={e => setPrForm(f => ({ ...f, estimatedCost: parseFloat(e.target.value) }))} /></div>

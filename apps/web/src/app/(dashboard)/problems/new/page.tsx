@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ArrowLeft, Check } from 'lucide-react';
-import { api } from '@/lib/api';
+import { api, Problem } from '@/lib/api';
 
 const CATEGORIES = ['infrastructure', 'application', 'network', 'security', 'hardware', 'software', 'process', 'other'];
 const PRIORITIES = ['low', 'medium', 'high', 'critical'];
@@ -21,7 +21,7 @@ export default function NewProblemPage() {
   });
 
   const createMutation = useMutation({
-    mutationFn: () => api.createProblem(form),
+    mutationFn: () => api.createProblem(form as unknown as Partial<Problem>),
     onSuccess: (res) => {
       const id = res.data?.data?.id;
       router.push(id ? `/problems/${id}` : '/problems');
