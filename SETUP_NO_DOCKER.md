@@ -126,6 +126,23 @@ pnpm dev:mobile
 1. Sign up at https://render.com (free tier sufficient)
 2. Connect your GitHub account
 
+### 4.0 Deploy Backend (Optional - Production Deployment)
+
+**The backend can run locally during development.** For production deployment to Render:
+
+1. Click **New +** → **Web Service**
+2. Connect GitHub repo
+3. Set deployment:
+   - **Root directory:** `backend`
+   - **Build command:** `./mvnw clean package -DskipTests`
+   - **Start command:** `java -jar target/*.jar`
+4. Configure environment variables (same as Phase 5 below)
+5. Deploy → Backend URL: `https://orionops-enterprise-service.onrender.com`
+
+**For local development:** Use `cd backend && ./mvnw spring-boot:run` instead.
+
+---
+
 ### 4a. Deploy AI Service
 
 **Using Render dashboard:**
@@ -315,6 +332,8 @@ spring:
 
 ## Phase 6: Configure Web Frontend for Render Services
 
+### For Local Backend Development
+
 Create or update `apps/web/.env.local`:
 ```
 NEXT_PUBLIC_API_URL=http://localhost:8080/api/v1
@@ -323,7 +342,17 @@ NEXT_PUBLIC_KEYCLOAK_REALM=orionops
 NEXT_PUBLIC_KEYCLOAK_CLIENT_ID=orionops-web
 ```
 
-When running web locally, it connects to local backend + Render Keycloak.
+### For Render Backend Deployment
+
+If backend is deployed to Render, update to:
+```
+NEXT_PUBLIC_API_URL=https://orionops-enterprise-service.onrender.com/api/v1
+NEXT_PUBLIC_KEYCLOAK_URL=https://your-keycloak.onrender.com
+NEXT_PUBLIC_KEYCLOAK_REALM=orionops
+NEXT_PUBLIC_KEYCLOAK_CLIENT_ID=orionops-web
+```
+
+**Choose one:** Use `localhost:8080` for local development, or Render URL for production.
 
 ---
 
@@ -376,6 +405,9 @@ curl http://localhost:8080/api/actuator/health
 ### Render Services
 
 ```bash
+# Backend (if deployed to Render)
+curl https://orionops-enterprise-service.onrender.com/api/actuator/health
+
 # AI Service
 curl https://your-ai.onrender.com/health
 

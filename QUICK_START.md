@@ -56,22 +56,30 @@ If you want to deploy heavy services to Render instead of running them locally:
 - Connect GitHub
 
 ### 2. Deploy Each Service
-| Service | Deploy To | Notes |
-|---------|-----------|-------|
-| **Keycloak** | Render | Uses `keycloak/Dockerfile` + Keycloak DB |
-| **AI Service** | Render | Simple FastAPI, from `apps/ai` folder |
-| **MinIO** | Render + Disk | Or use Cloudflare R2 free tier |
-| **OpenSearch** | Bonsai.io | Free managed cluster (recommended) |
-| **Kafka** | Upstash | Free serverless Kafka |
+| Service | Deploy To | URL | Notes |
+|---------|-----------|-----|-------|
+| **Backend** | Local OR Render | `localhost:8080` or `https://orionops-enterprise-service.onrender.com` | Spring Boot (optional Render deploy) |
+| **Keycloak** | Render | `https://your-keycloak.onrender.com` | Uses `keycloak/Dockerfile` + DB |
+| **AI Service** | Render | `https://your-ai.onrender.com` | Simple FastAPI, from `apps/ai` folder |
+| **MinIO** | Render + Disk | `https://your-minio.onrender.com` | Or use Cloudflare R2 free tier |
+| **OpenSearch** | Bonsai.io | `https://your-cluster.bonsai.io` | Free managed cluster (recommended) |
+| **Kafka** | Upstash | `<endpoint>:9092` | Free serverless Kafka |
 
 ### 3. Update Backend Environment Variables
-Set these before running `./mvnw spring-boot:run`:
+
+**For Local Backend:**
 ```bash
 export KEYCLOAK_AUTH_SERVER_URL=https://your-keycloak.onrender.com
 export OPENSEARCH_HOST=<your-cluster>.bonsai.io
 export OPENSEARCH_PORT=443
 export MINIO_ENDPOINT=https://your-minio.onrender.com  # or R2 URL
 export KAFKA_BOOTSTRAP_SERVERS=<your-upstash-endpoint>:9092
+```
+
+**For Web Frontend Pointing to Render Backend:**
+Update `apps/web/.env.local`:
+```
+NEXT_PUBLIC_API_URL=https://orionops-enterprise-service.onrender.com/api/v1
 ```
 
 ### 4. Keep Services Alive
