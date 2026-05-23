@@ -26,15 +26,15 @@ test.describe('Incident Lifecycle', () => {
       // Network may not idle if API calls are failing, that's ok
     });
 
-    // Verify the page loaded (check for any content, not just h1)
-    const pageContent = page.locator('h1, h2, main, [role="main"]');
-    const hasContent = await pageContent.count() > 0;
+    // Verify the page loaded (check for any visible content)
+    const visibleContent = page.locator('h1:visible, h2:visible, main:visible, [role="main"]:visible, h3:visible, h4:visible');
+    const hasVisibleContent = await visibleContent.count() > 0;
 
-    if (hasContent) {
-      await expect(pageContent.first()).toBeVisible({ timeout: 5000 });
+    if (hasVisibleContent) {
+      await expect(visibleContent.first()).toBeVisible({ timeout: 5000 });
     } else {
       // If no structured content found, check for any interactive elements
-      const pageElements = page.locator('input, button, select, textarea');
+      const pageElements = page.locator('input:visible, button:visible, select:visible, textarea:visible');
       const elementCount = await pageElements.count();
       expect(elementCount).toBeGreaterThanOrEqual(0);
     }

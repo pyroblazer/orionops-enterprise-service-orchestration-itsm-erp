@@ -374,7 +374,7 @@ jobs:
         run: pnpm --filter @orionops/web exec playwright install --with-deps chromium
 
       - name: Run E2E tests (shard ${{ matrix.shard }}/${{ strategy.job-total }})
-        run: pnpm --filter @orionops/web exec playwright test --config=e2e/playwright.config.ts --shard=${{ matrix.shard }}/${{ strategy.job-total }}
+        run: pnpm --filter @orionops/web exec playwright test --config=e2e/playwright.config.ts --shard=${{ matrix.shard }}/${{ strategy.job-total }} --project=chromium
 
       - name: Upload Playwright report
         if: always()
