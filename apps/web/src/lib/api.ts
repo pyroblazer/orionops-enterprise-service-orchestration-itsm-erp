@@ -1077,6 +1077,14 @@ export const api = {
   // --- Reporting ---
   getReportSummary: (days = 30) =>
     apiClient.get<ApiResponse<ReportSummary>>('/reports/summary', { params: { days } }),
+
+  // AI service (routes via Vercel /ai/* serverless, not Spring Boot)
+  classifyIncident: (data: { title: string; description: string }): Promise<{ category: string; priority: string; confidence: number }> =>
+    fetch('/ai/classify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    }).then(r => r.json()),
 };
 
 // ---------------------------------------------------------------------------

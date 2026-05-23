@@ -1,8 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { useIncidents } from '@/lib/hooks';
-import { useQuery } from '@tanstack/react-query';
+import { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -22,6 +22,7 @@ import {
   CheckCircle,
   Clock,
   Plus,
+  RefreshCw,
   ShieldAlert,
   TrendingUp,
   GitBranch,
@@ -112,10 +113,14 @@ function SLAGauge({ percentage }: { percentage: number }) {
 }
 
 export default function DashboardPage() {
-  const { data: incidentsData, isLoading: incidentsLoading } = useIncidents({
-    pageSize: 5,
-    sort: 'updatedAt',
-    sortOrder: 'desc',
+  const qc = useQueryClient();
+  const [autoRefresh, setAutoRefresh] = useState(false);
+  const refreshInterval = autoRefresh ? 30_000 : false;
+
+  const { data: incidentsData, isLoading: incidentsLoading } = useQuery({
+    queryKey: ['incidents', { pageSize: 5, sort: 'updatedAt', sortOrder: 'desc' }],
+    queryFn: () => api.getIncidents({ pageSize: 5, sort: 'updatedAt', sortOrder: 'desc' }).then(r => r.data),
+    refetchInterval: refreshInterval,
   });
 
   const recentIncidents = incidentsData?.data ?? [];
@@ -123,18 +128,22 @@ export default function DashboardPage() {
   const { data: openIncidentsData } = useQuery({
     queryKey: ['incidents-open-count'],
     queryFn: () => api.getIncidents({ status: 'open,in_progress', pageSize: 1 }).then(r => r.data),
+    refetchInterval: refreshInterval,
   });
   const { data: pendingChangesData } = useQuery({
     queryKey: ['changes-pending-count'],
     queryFn: () => api.getChanges({ status: 'pending_approval', pageSize: 1 }).then(r => r.data),
+    refetchInterval: refreshInterval,
   });
   const { data: activeChangesData } = useQuery({
     queryKey: ['changes-active-count'],
     queryFn: () => api.getChanges({ status: 'approved,implementing', pageSize: 1 }).then(r => r.data),
+    refetchInterval: refreshInterval,
   });
   const { data: slaData } = useQuery({
     queryKey: ['sla-instances-summary'],
     queryFn: () => api.getSLAInstances({ pageSize: 200 }).then(r => r.data),
+    refetchInterval: refreshInterval,
   });
 
   const openIncidentsCount = openIncidentsData?.total ?? 0;
@@ -155,6 +164,25 @@ export default function DashboardPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => qc.invalidateQueries()}
+            aria-label="Manually refresh dashboard"
+          >
+            <RefreshCw className="mr-1 h-4 w-4" aria-hidden="true" />
+            Refresh
+          </Button>
+          <Button
+            variant={autoRefresh ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setAutoRefresh(v => !v)}
+            aria-label={autoRefresh ? 'Disable auto-refresh' : 'Enable 30-second auto-refresh'}
+            aria-pressed={autoRefresh}
+          >
+            {autoRefresh && <span className="mr-1.5 h-2 w-2 rounded-full bg-green-400 inline-block" aria-hidden="true" />}
+            {autoRefresh ? 'Live' : 'Auto-refresh'}
+          </Button>
           <Link href="/incidents/new">
             <Button aria-label="Create new incident">
               <Plus className="mr-2 h-4 w-4" aria-hidden="true" />

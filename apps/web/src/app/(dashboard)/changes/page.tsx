@@ -27,6 +27,7 @@ import {
 import { Pagination } from '@/components/ui/pagination';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
+  Download,
   GitBranch,
   Plus,
   RefreshCw,
@@ -36,7 +37,7 @@ import {
   XCircle,
   Clock,
 } from 'lucide-react';
-import { formatDateTime, getStatusColor, getPriorityColor, cn } from '@/lib/utils';
+import { formatDateTime, getStatusColor, getPriorityColor, cn, exportToCSV } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 
 export default function ChangesListPage() {
@@ -76,6 +77,15 @@ export default function ChangesListPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => exportToCSV(changes.map(c => ({ id: c.id, title: c.title, changeType: c.changeType, priority: c.priority, status: c.status, riskLevel: c.riskLevel, createdAt: c.createdAt })), 'changes.csv')}
+            disabled={changes.length === 0}
+            aria-label="Export changes as CSV"
+          >
+            <Download className="mr-1 h-4 w-4" /> Export CSV
+          </Button>
           <Button variant="outline" size="sm" onClick={() => refetch()} aria-label="Refresh changes">
             <RefreshCw className="mr-1 h-4 w-4" /> Refresh
           </Button>

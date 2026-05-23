@@ -15,7 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ArrowLeft, Paperclip, X } from 'lucide-react';
+import { ArrowLeft, Paperclip, Sparkles, X } from 'lucide-react';
 import Link from 'next/link';
 
 export default function NewIncidentPage() {
@@ -33,6 +33,8 @@ export default function NewIncidentPage() {
   });
   const [attachments, setAttachments] = useState<File[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [classifying, setClassifying] = useState(false);
+  const [aiConfidence, setAiConfidence] = useState<number | null>(null);
 
   const { data: servicesData } = useQuery({
     queryKey: ['cmdb-services'],
@@ -63,6 +65,21 @@ export default function NewIncidentPage() {
       router.push(`/incidents/${result.id}`);
     } catch {
       setErrors({ submit: 'Failed to create incident. Please try again.' });
+    }
+  };
+
+  const handleAutoClassify = async () => {
+    if (!formData.title.trim() || !formData.description.trim()) return;
+    setClassifying(true);
+    setAiConfidence(null);
+    try {
+      const result = await api.classifyIncident({ title: formData.title, description: formData.description });
+      setFormData(prev => ({ ...prev, category: result.category, priority: result.priority }));
+      setAiConfidence(Math.round(result.confidence * 100));
+    } catch {
+      // AI unavailable — silently ignore, user can set fields manually
+    } finally {
+      setClassifying(false);
     }
   };
 
@@ -116,6 +133,25 @@ export default function NewIncidentPage() {
                   error={errors.description}
                   aria-required="true"
                 />
+                <div className="flex items-center gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={classifying || !formData.title.trim() || !formData.description.trim()}
+                    onClick={handleAutoClassify}
+                    aria-label="Auto-classify category and priority using AI"
+                  >
+                    <Sparkles className={`mr-1 h-4 w-4 ${classifying ? 'animate-spin' : ''}`} />
+                    {classifying ? 'Classifying...' : 'AI Suggest'}
+                  </Button>
+                  {aiConfidence !== null && (
+                    <span className="text-xs text-muted-foreground">
+                      AI suggested ({aiConfidence}% confidence)
+                    </span>
+                  )}
+                </div>
+
                 <div className="grid gap-4 md:grid-cols-2">
                   <Select
                     value={formData.category}

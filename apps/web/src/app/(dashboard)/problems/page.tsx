@@ -25,9 +25,9 @@ import {
 } from '@/components/ui/table';
 import { Pagination } from '@/components/ui/pagination';
 import { Skeleton } from '@/components/ui/skeleton';
-import { FlaskConical, Plus, RefreshCw, Filter, X } from 'lucide-react';
+import { Download, FlaskConical, Plus, RefreshCw, Filter, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { formatDateTime, getStatusColor, getPriorityColor, cn } from '@/lib/utils';
+import { formatDateTime, getStatusColor, getPriorityColor, cn, exportToCSV } from '@/lib/utils';
 
 export default function ProblemsListPage() {
   const router = useRouter();
@@ -68,6 +68,16 @@ export default function ProblemsListPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => exportToCSV(problems.map(p => ({ id: p.id, title: p.title, priority: p.priority, status: p.status, category: p.category, createdAt: p.createdAt })), 'problems.csv')}
+            disabled={problems.length === 0}
+            aria-label="Export problems as CSV"
+          >
+            <Download className="mr-1 h-4 w-4" aria-hidden="true" />
+            Export CSV
+          </Button>
           <Button variant="outline" size="sm" onClick={() => refetch()} aria-label="Refresh problems list">
             <RefreshCw className="mr-1 h-4 w-4" aria-hidden="true" />
             Refresh

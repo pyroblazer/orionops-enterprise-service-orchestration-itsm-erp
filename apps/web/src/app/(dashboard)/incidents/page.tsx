@@ -3,7 +3,10 @@
 import { useState, useCallback } from 'react';
 import Link from 'next/link';
 import { useIncidents } from '@/lib/hooks';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { FilterParams } from '@/lib/api';
+import { api } from '@/lib/api';
+import { exportToCSV } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -37,6 +40,7 @@ import {
 import { formatDateTime, getStatusColor, getPriorityColor, cn } from '@/lib/utils';
 
 export default function IncidentsListPage() {
+  const qc = useQueryClient();
   const [filters, setFilters] = useState<FilterParams>({
     page: 1,
     pageSize: 20,
@@ -98,6 +102,30 @@ export default function IncidentsListPage() {
     setFilters({ page: 1, pageSize: 20, sort: 'createdAt', sortOrder: 'desc' });
   }, []);
 
+  const bulkCloseMutation = useMutation({
+    mutationFn: () =>
+      Promise.allSettled([...selectedIds].map(id => api.updateIncident(id, { status: 'closed' }))),
+    onSuccess: () => {
+      setSelectedIds(new Set());
+      qc.invalidateQueries({ queryKey: ['incidents'] });
+    },
+  });
+
+  const handleExportAll = useCallback(() => {
+    exportToCSV(
+      incidents.map(i => ({ id: i.id, title: i.title, priority: i.priority, status: i.status, category: i.category, assignedTo: i.assignedToName ?? '', service: i.serviceName ?? '', createdAt: i.createdAt })),
+      'incidents.csv'
+    );
+  }, [incidents]);
+
+  const handleExportSelected = useCallback(() => {
+    const selected = incidents.filter(i => selectedIds.has(i.id));
+    exportToCSV(
+      selected.map(i => ({ id: i.id, title: i.title, priority: i.priority, status: i.status, category: i.category, assignedTo: i.assignedToName ?? '', service: i.serviceName ?? '', createdAt: i.createdAt })),
+      'incidents-selected.csv'
+    );
+  }, [incidents, selectedIds]);
+
   return (
     <div className="space-y-6">
       {/* Page Header */}
@@ -109,6 +137,16 @@ export default function IncidentsListPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleExportAll}
+            disabled={incidents.length === 0}
+            aria-label="Export incidents as CSV"
+          >
+            <Download className="mr-1 h-4 w-4" aria-hidden="true" />
+            Export CSV
+          </Button>
           <Button
             variant="outline"
             size="sm"
@@ -227,13 +265,18 @@ export default function IncidentsListPage() {
           <span className="text-sm font-medium">
             {selectedIds.size} selected
           </span>
-          <Button variant="outline" size="sm">
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={bulkCloseMutation.isPending}
+            onClick={() => bulkCloseMutation.mutate()}
+          >
             <Trash2 className="mr-1 h-3 w-3" aria-hidden="true" />
-            Delete
+            {bulkCloseMutation.isPending ? 'Closing...' : 'Close all'}
           </Button>
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" onClick={handleExportSelected}>
             <Download className="mr-1 h-3 w-3" aria-hidden="true" />
-            Export
+            Export selected
           </Button>
           <Button
             variant="ghost"
