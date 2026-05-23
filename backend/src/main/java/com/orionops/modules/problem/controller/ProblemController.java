@@ -29,7 +29,7 @@ public class ProblemController {
     private final ProblemService problemService;
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('ENGINEER', 'MANAGER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('AGENT', 'ENGINEER', 'MANAGER', 'ADMIN')")
     public ResponseEntity<ApiResponse<ProblemResponse>> createProblem(@Valid @RequestBody ProblemRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success(problemService.createProblem(request), "Problem created successfully"));

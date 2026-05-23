@@ -62,16 +62,21 @@ public class EventPublisher {
     }
 
     private void sendToKafka(String topic, String key, String payload, BaseEvent event) {
-        kafkaTemplate.send(topic, key, payload)
-                .whenComplete((result, ex) -> {
-                    if (ex != null) {
-                        log.error("Failed to publish event {} to topic {}: {}",
-                                event.getEventId(), topic, ex.getMessage(), ex);
-                    } else {
-                        log.info("Published event {} [type={}] to topic {} for aggregate {}",
-                                event.getEventId(), event.getEventType(), topic,
-                                event.getAggregateId());
-                    }
-                });
+        try {
+            kafkaTemplate.send(topic, key, payload)
+                    .whenComplete((result, ex) -> {
+                        if (ex != null) {
+                            log.error("Failed to publish event {} to topic {}: {}",
+                                    event.getEventId(), topic, ex.getMessage(), ex);
+                        } else {
+                            log.info("Published event {} [type={}] to topic {} for aggregate {}",
+                                    event.getEventId(), event.getEventType(), topic,
+                                    event.getAggregateId());
+                        }
+                    });
+        } catch (Exception e) {
+            log.error("Failed to send event {} to topic {}: {}",
+                    event.getEventId(), topic, e.getMessage(), e);
+        }
     }
 }

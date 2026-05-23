@@ -14,6 +14,9 @@ spring:
       auto-offset-reset: earliest
     producer:
       bootstrap-servers: localhost:9092
+    admin:
+      properties:
+        bootstrap.servers: localhost:9092
   data:
     redis:
       host: localhost
@@ -31,6 +34,7 @@ spring:
   autoconfigure:
     exclude:
       - org.flowable.spring.boot.eventregistry.EventRegistryAutoConfiguration
+      - org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration
 
 flowable:
   async-executor-activate: false
