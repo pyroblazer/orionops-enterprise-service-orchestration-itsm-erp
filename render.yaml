@@ -32,3 +32,4 @@ services:
       # Format: https://<your-app>.vercel.app
       - key: FRONTEND_URL
         sync: false
+        value: https://orionops.vercel.app
