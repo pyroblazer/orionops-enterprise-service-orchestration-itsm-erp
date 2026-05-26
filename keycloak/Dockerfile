@@ -13,7 +13,7 @@ ENV KC_HEALTH_ENABLED=true
 ENV KC_HTTP_ENABLED=true
 ENV KC_HTTP_PORT=8080
 # Proxy headers for Render's load balancer (replaces deprecated --proxy)
-ENV KC_PROXY_HEADERS=x-forwarded
+ENV KC_PROXY_HEADERS=xforwarded
 
 EXPOSE 8080
 
