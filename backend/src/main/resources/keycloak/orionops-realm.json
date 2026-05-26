@@ -20,7 +20,7 @@
   "ssoSessionMaxLifespan": 36000,
   "offlineSessionIdleTimeout": 2592000,
   "attributes": {
-    "frontendUrl": "http://localhost:8081"
+    "frontendUrl": "https://orionops-keycloak.onrender.com"
   },
   "roles": {
     "realm": [
@@ -101,15 +101,17 @@
       "directAccessGrantsEnabled": true,
       "serviceAccountsEnabled": false,
       "redirectUris": [
-        "http://localhost:3000/*"
+        "http://localhost:3000/*",
+        "https://orionops.vercel.app/*"
       ],
       "webOrigins": [
-        "http://localhost:3000"
+        "http://localhost:3000",
+        "https://orionops.vercel.app"
       ],
       "attributes": {
         "pkce.code.challenge.method": "S256",
         "access.token.lifespan": "900",
-        "post.logout.redirect.uris": "http://localhost:3000/*"
+        "post.logout.redirect.uris": "http://localhost:3000/*,https://orionops.vercel.app/*"
       }
     },
     {
