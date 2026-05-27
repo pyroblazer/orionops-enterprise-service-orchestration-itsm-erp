@@ -19,9 +19,12 @@ import javax.sql.DataSource;
 @org.springframework.context.annotation.Profile("!test")
 public class FlowableConfig implements EngineConfigurationConfigurer<SpringProcessEngineConfiguration> {
 
+    @org.springframework.beans.factory.annotation.Value("${flowable.database-schema-update:false}")
+    private String databaseSchemaUpdate;
+
     @Override
     public void configure(SpringProcessEngineConfiguration engineConfig) {
-        engineConfig.setDatabaseSchemaUpdate(ProcessEngineConfiguration.DB_SCHEMA_UPDATE_FALSE);
+        engineConfig.setDatabaseSchemaUpdate(databaseSchemaUpdate);
         engineConfig.setAsyncExecutorActivate(true);
         engineConfig.setHistoryLevel(org.flowable.common.engine.impl.history.HistoryLevel.FULL);
 
