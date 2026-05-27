@@ -118,3 +118,7 @@ logging:
     root: WARN
     com.orionops: INFO
     org.hibernate.SQL: WARN
+
+# --- Flowable: auto-create schema on first launch ---
+flowable:
+  database-schema-update: true
