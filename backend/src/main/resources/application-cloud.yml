@@ -3,7 +3,7 @@
 # Activated via SPRING_PROFILES_ACTIVE=cloud
 #
 # Replaces local infrastructure with free cloud services:
-#   - Supabase PostgreSQL (replaces local PostgreSQL)
+#   - Neon PostgreSQL (replaces local PostgreSQL)
 #   - Upstash Redis (replaces local Redis, TLS URL format)
 #   - Disables Kafka (uses in-process ApplicationEventPublisher)
 #   - Disables OpenSearch (uses PostgreSQL full-text)
@@ -17,7 +17,7 @@ server:
   port: ${PORT:8080}
 
 spring:
-  # --- DataSource (Supabase PostgreSQL) ---
+  # --- DataSource (Neon PostgreSQL) ---
   datasource:
     url: ${SPRING_DATASOURCE_URL}
     username: ${SPRING_DATASOURCE_USERNAME}

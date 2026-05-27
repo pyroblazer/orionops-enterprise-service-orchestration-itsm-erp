@@ -14,12 +14,12 @@ services:
         value: cloud
       - key: JAVA_OPTS
         value: "-Xmx384m -Xss256k"
-      # Supabase PostgreSQL — set in Render dashboard
-      # Format: jdbc:postgresql://db.<ref>.supabase.co:5432/postgres
+      # Neon PostgreSQL
       - key: SPRING_DATASOURCE_URL
-        sync: false
+        value: "jdbc:postgresql://ep-patient-star-aozxgghu-pooler.c-2.ap-southeast-1.aws.neon.tech/neondb?sslmode=require"
       - key: SPRING_DATASOURCE_USERNAME
-        sync: false
+        value: "neondb_owner"
+      # Set SPRING_DATASOURCE_PASSWORD in Render dashboard to your Neon password
       - key: SPRING_DATASOURCE_PASSWORD
         sync: false
       # Upstash Redis — set in Render dashboard
@@ -48,13 +48,14 @@ services:
         value: admin
       - key: KEYCLOAK_ADMIN_PASSWORD
         generateValue: true
-      # PostgreSQL database (Supabase)
+      # Neon PostgreSQL
       - key: KC_DB
         value: postgres
       - key: KC_DB_URL
-        sync: false
+        value: "jdbc:postgresql://ep-patient-star-aozxgghu-pooler.c-2.ap-southeast-1.aws.neon.tech/neondb?sslmode=require"
       - key: KC_DB_USERNAME
-        sync: false
+        value: "neondb_owner"
+      # Set KC_DB_PASSWORD in Render dashboard to your Neon password
       - key: KC_DB_PASSWORD
         sync: false
       - key: KC_DB_SCHEMA
