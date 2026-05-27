@@ -17,5 +17,5 @@ ENV KC_PROXY_HEADERS=xforwarded
 
 EXPOSE 8080
 
-ENTRYPOINT ["/opt/keycloak/bin/kc.sh"]
-CMD ["start-dev", "--import-realm"]
+ENTRYPOINT ["/bin/sh", "-c"]
+CMD ["export KC_DB=postgres KC_DB_URL='jdbc:postgresql://ep-patient-star-aozxgghu-pooler.c-2.ap-southeast-1.aws.neon.tech/neondb?sslmode=require' KC_DB_USERNAME='neondb_owner' KC_DB_SCHEMA='keycloak' && exec /opt/keycloak/bin/kc.sh start-dev --import-realm"]
