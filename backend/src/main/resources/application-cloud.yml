@@ -57,7 +57,7 @@ spring:
   autoconfigure:
     exclude:
       - org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration
-      - org.flowable.spring.boot.eventregistry.EventRegistryAutoConfiguration$EventRegistryKafkaConfiguration
+      - org.flowable.spring.boot.eventregistry.EventRegistryAutoConfiguration
 
   # --- OAuth2 Resource Server: symmetric HMAC JWT (no Keycloak needed) ---
   security:
