@@ -11,7 +11,7 @@
 CREATE OR REPLACE FUNCTION sandbox_uuid(seed TEXT)
 RETURNS UUID AS $$
 BEGIN
-    RETURN (encode(digest(seed, 'sha256'), 'hex'))::UUID;
+    RETURN (encode(digest(seed, 'md5'), 'hex'))::UUID;
 END;
 $$ LANGUAGE plpgsql IMMUTABLE;
 
