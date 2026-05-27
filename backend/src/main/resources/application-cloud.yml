@@ -73,12 +73,15 @@ spring:
 app:
   cors:
     allowed-origins:
-      - ${FRONTEND_URL:http://localhost:3000}
-      - http://localhost:3000
-      - http://localhost:3001
+      - ${FRONTEND_URL:https://orionops.vercel.app}
+      - https://orionops.vercel.app
   auth:
-    # Use symmetric HMAC-SHA256 JWT in cloud; set JWT_SECRET env var on Render
     jwt-secret: ${JWT_SECRET:}
+
+# --- Platform URL for integration links (Slack, Teams) ---
+orionops:
+  platform:
+    base-url: https://orionops.vercel.app
 
 # --- Keycloak stubs (bean reads these but they are unused when mode=cloud) ---
 keycloak:

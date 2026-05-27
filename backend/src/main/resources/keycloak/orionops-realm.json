@@ -111,7 +111,7 @@
       "attributes": {
         "pkce.code.challenge.method": "S256",
         "access.token.lifespan": "900",
-        "post.logout.redirect.uris": "http://localhost:3000/*,https://orionops.vercel.app/*"
+        "post.logout.redirect.uris": "https://orionops.vercel.app/*,http://localhost:3000/*"
       }
     },
     {

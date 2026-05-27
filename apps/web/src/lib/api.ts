@@ -659,8 +659,8 @@ export interface ReportSummary {
 // HTTP client
 // ---------------------------------------------------------------------------
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1';
-const KEYCLOAK_URL = process.env.NEXT_PUBLIC_KEYCLOAK_URL || 'http://localhost:8080/auth';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://orionops-enterprise-service.onrender.com/api/v1';
+const KEYCLOAK_URL = process.env.NEXT_PUBLIC_KEYCLOAK_URL || 'https://orionops-keycloak.onrender.com';
 
 function getAccessToken(): string | null {
   if (typeof window === 'undefined') return null;
