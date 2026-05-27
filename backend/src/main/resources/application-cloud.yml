@@ -49,6 +49,7 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration
+    schemas: public
     baseline-on-migrate: true
     baseline-version: "0"
     validate-on-migrate: true
