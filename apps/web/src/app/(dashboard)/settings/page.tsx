@@ -1,20 +1,53 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { User as UserIcon, Settings as SettingsIcon, Bell, Check } from 'lucide-react';
 import { api } from '@/lib/api';
+import type { User } from '@/lib/api';
+
+const NOTIFICATION_EVENTS = [
+  'incident_assigned', 'sla_breach_warning', 'change_approval',
+  'new_comments', 'escalation', 'major_incident',
+] as const;
+
+const NOTIFICATION_LABELS: Record<string, string> = {
+  incident_assigned: 'Incident assigned to me',
+  sla_breach_warning: 'SLA breach warnings',
+  change_approval: 'Change approval requests',
+  new_comments: 'New comments on my tickets',
+  escalation: 'Escalation notifications',
+  major_incident: 'Major incident alerts',
+};
+
+const CHANNELS = ['in_app', 'email', 'push'] as const;
+const CHANNEL_LABELS: Record<string, { label: string; desc: string }> = {
+  in_app: { label: 'In-App Notifications', desc: 'Alerts in the notification bell icon' },
+  email: { label: 'Email Notifications', desc: 'Receive email for important events' },
+  push: { label: 'Push Notifications', desc: 'Mobile push for escalations and approvals' },
+};
 
 export default function SettingsPage() {
-  const [tab, setTab] = useState<'profile' | 'preferences' | 'notifications'>('profile');
+  const qc = useQueryClient();
   const [theme, setTheme] = useState<'light' | 'dark' | 'high-contrast'>(
-    (typeof window !== 'undefined' && document.documentElement.getAttribute('data-theme') as any) || 'light'
+    (typeof window !== 'undefined' && document.documentElement.getAttribute('data-theme') as 'light' | 'dark' | 'high-contrast') || 'light'
   );
-
   const [profileForm, setProfileForm] = useState({ firstName: '', lastName: '', phone: '', department: '' });
+  const [prefForm, setPrefForm] = useState({ timezone: 'UTC', language: 'en' });
   const [saveMsg, setSaveMsg] = useState('');
+
+  // Notification toggles: channel → enabled
+  const [channels, setChannels] = useState<Record<string, boolean>>({
+    in_app: true, email: true, push: false,
+  });
+  // Notification events: event → enabled
+  const [events, setEvents] = useState<Record<string, boolean>>(
+    Object.fromEntries(NOTIFICATION_EVENTS.map(e => [e, true]))
+  );
 
   const { data: meData } = useQuery({
     queryKey: ['me'],
@@ -29,17 +62,36 @@ export default function SettingsPage() {
         phone: meData.phone ?? '',
         department: meData.department ?? '',
       });
+      const prefs = meData.preferences;
+      if (prefs) {
+        if (prefs.timezone) setPrefForm(f => ({ ...f, timezone: prefs.timezone }));
+        if (prefs.language) setPrefForm(f => ({ ...f, language: prefs.language }));
+      }
     }
   }, [meData]);
 
-  const saveMutation = useMutation({
+  const saveProfile = useMutation({
     mutationFn: () => api.updateUser(meData?.id ?? '', {
       firstName: profileForm.firstName,
       lastName: profileForm.lastName,
       phone: profileForm.phone,
       department: profileForm.department,
     }),
-    onSuccess: () => { setSaveMsg('Profile saved successfully.'); setTimeout(() => setSaveMsg(''), 3000); },
+    onSuccess: () => { setSaveMsg('Profile saved.'); setTimeout(() => setSaveMsg(''), 3000); },
+  });
+
+  const savePrefs = useMutation({
+    mutationFn: () => api.updateUser(meData?.id ?? '', {
+      preferences: { timezone: prefForm.timezone, language: prefForm.language },
+    } as Partial<User>),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['me'] }); setSaveMsg('Preferences saved.'); setTimeout(() => setSaveMsg(''), 3000); },
+  });
+
+  const saveNotifications = useMutation({
+    mutationFn: () => api.updateUser(meData?.id ?? '', {
+      preferences: Object.assign(meData?.preferences ?? {}, { channels: Object.keys(channels).filter(k => channels[k]), events: Object.keys(events).filter(k => events[k]) }),
+    }),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['me'] }); setSaveMsg('Notification preferences saved.'); setTimeout(() => setSaveMsg(''), 3000); },
   });
 
   const handleThemeChange = (newTheme: 'light' | 'dark' | 'high-contrast') => {
@@ -50,64 +102,42 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Settings</h1>
-
-      <div className="flex gap-2" role="tablist" aria-label="Settings sections">
-        {(['profile', 'preferences', 'notifications'] as const).map((t) => (
-          <Button
-            key={t}
-            variant={tab === t ? 'default' : 'outline'}
-            onClick={() => setTab(t)}
-            role="tab"
-            aria-selected={tab === t}
-          >
-            {t.charAt(0).toUpperCase() + t.slice(1)}
-          </Button>
-        ))}
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight gradient-text">Settings</h1>
+        <p className="text-sm text-muted-foreground">Manage your profile, preferences, and notifications</p>
       </div>
 
-      {tab === 'profile' && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Profile Information</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <label htmlFor="first-name" className="text-sm font-medium">First Name</label>
-                <Input id="first-name" placeholder="Enter first name" value={profileForm.firstName} onChange={e => setProfileForm(f => ({ ...f, firstName: e.target.value }))} />
-              </div>
-              <div className="space-y-2">
-                <label htmlFor="last-name" className="text-sm font-medium">Last Name</label>
-                <Input id="last-name" placeholder="Enter last name" value={profileForm.lastName} onChange={e => setProfileForm(f => ({ ...f, lastName: e.target.value }))} />
-              </div>
-              <div className="space-y-2">
-                <label htmlFor="email" className="text-sm font-medium">Email</label>
-                <Input id="email" type="email" value={meData?.email ?? ''} disabled />
-              </div>
-              <div className="space-y-2">
-                <label htmlFor="phone" className="text-sm font-medium">Phone</label>
-                <Input id="phone" type="tel" placeholder="+1 (555) 000-0000" value={profileForm.phone} onChange={e => setProfileForm(f => ({ ...f, phone: e.target.value }))} />
-              </div>
-              <div className="space-y-2">
-                <label htmlFor="department" className="text-sm font-medium">Department</label>
-                <Input id="department" placeholder="Engineering" value={profileForm.department} onChange={e => setProfileForm(f => ({ ...f, department: e.target.value }))} />
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <Button disabled={saveMutation.isPending || !meData} onClick={() => saveMutation.mutate()}>Save Profile</Button>
-              {saveMsg && <p className="text-sm text-success">{saveMsg}</p>}
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      <Tabs defaultValue="profile">
+        <TabsList>
+          <TabsTrigger value="profile"><UserIcon className="mr-1 h-4 w-4" /> Profile</TabsTrigger>
+          <TabsTrigger value="preferences"><SettingsIcon className="mr-1 h-4 w-4" /> Preferences</TabsTrigger>
+          <TabsTrigger value="notifications"><Bell className="mr-1 h-4 w-4" /> Notifications</TabsTrigger>
+        </TabsList>
 
-      {tab === 'preferences' && (
-        <div className="space-y-4">
+        <TabsContent value="profile" className="mt-4">
           <Card>
-            <CardHeader>
-              <CardTitle>Theme</CardTitle>
-            </CardHeader>
+            <CardHeader><CardTitle>Profile Information</CardTitle></CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid gap-4 md:grid-cols-2">
+                <Input label="First Name" placeholder="Enter first name" value={profileForm.firstName} onChange={e => setProfileForm(f => ({ ...f, firstName: e.target.value }))} />
+                <Input label="Last Name" placeholder="Enter last name" value={profileForm.lastName} onChange={e => setProfileForm(f => ({ ...f, lastName: e.target.value }))} />
+                <Input label="Email" type="email" value={meData?.email ?? ''} disabled />
+                <Input label="Phone" type="tel" placeholder="+1 (555) 000-0000" value={profileForm.phone} onChange={e => setProfileForm(f => ({ ...f, phone: e.target.value }))} />
+                <Input label="Department" placeholder="Engineering" value={profileForm.department} onChange={e => setProfileForm(f => ({ ...f, department: e.target.value }))} />
+              </div>
+              <div className="flex items-center gap-3">
+                <Button disabled={saveProfile.isPending || !meData} onClick={() => saveProfile.mutate()}>
+                  <Check className="mr-1 h-4 w-4" /> Save Profile
+                </Button>
+                {saveMsg && <p className="text-sm text-success">{saveMsg}</p>}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="preferences" className="mt-4 space-y-4">
+          <Card>
+            <CardHeader><CardTitle>Theme</CardTitle></CardHeader>
             <CardContent>
               <div className="grid gap-3 md:grid-cols-3">
                 {(['light', 'dark', 'high-contrast'] as const).map((t) => (
@@ -115,20 +145,16 @@ export default function SettingsPage() {
                     key={t}
                     onClick={() => handleThemeChange(t)}
                     className={`rounded-lg border-2 p-4 text-left transition-colors ${
-                      theme === t
-                        ? 'border-primary bg-primary/5'
-                        : 'border-muted hover:border-muted-foreground/30'
+                      theme === t ? 'border-primary bg-primary/5' : 'border-muted hover:border-muted-foreground/30'
                     }`}
                     aria-label={`Select ${t} theme`}
                     aria-pressed={theme === t}
                   >
-                    <div
-                      className={`mb-2 h-8 rounded ${
-                        t === 'light' ? 'bg-gray-100 border border-gray-300' :
-                        t === 'dark' ? 'bg-gray-800 border border-gray-600' :
-                        'bg-black border-2 border-white'
-                      }`}
-                    />
+                    <div className={`mb-2 h-8 rounded ${
+                      t === 'light' ? 'bg-gray-100 border border-gray-300' :
+                      t === 'dark' ? 'bg-gray-800 border border-gray-600' :
+                      'bg-black border-2 border-white'
+                    }`} />
                     <p className="font-medium capitalize">{t.replace('-', ' ')}</p>
                     <p className="text-xs text-muted-foreground mt-1">
                       {t === 'light' && 'Standard light interface'}
@@ -141,85 +167,72 @@ export default function SettingsPage() {
             </CardContent>
           </Card>
           <Card>
-            <CardHeader>
-              <CardTitle>Display</CardTitle>
-            </CardHeader>
+            <CardHeader><CardTitle>Display</CardTitle></CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <label htmlFor="timezone" className="text-sm font-medium">Timezone</label>
-                  <Input id="timezone" defaultValue="UTC" placeholder="e.g., UTC, America/New_York, Europe/London" />
-                </div>
-                <div className="space-y-2">
+                <Input label="Timezone" value={prefForm.timezone} onChange={e => setPrefForm(f => ({ ...f, timezone: e.target.value }))} placeholder="e.g., UTC, America/New_York" />
+                <div className="space-y-1">
                   <label htmlFor="language" className="text-sm font-medium">Language</label>
-                  <select
-                    id="language"
-                    className="w-full rounded-md border px-3 py-2"
-                    aria-label="Select language"
-                  >
-                    <option value="" disabled>Select language</option>
+                  <select id="language" className="w-full rounded-md border px-3 py-2 bg-background" value={prefForm.language} onChange={e => setPrefForm(f => ({ ...f, language: e.target.value }))} aria-label="Select language">
                     <option value="en">English</option>
                   </select>
-                  <p className="text-xs text-muted-foreground">Additional languages coming soon</p>
                 </div>
               </div>
-              <Button>Save Preferences</Button>
+              <div className="flex items-center gap-3">
+                <Button onClick={() => savePrefs.mutate()} disabled={savePrefs.isPending}>
+                  <Check className="mr-1 h-4 w-4" /> Save Preferences
+                </Button>
+              </div>
             </CardContent>
           </Card>
-        </div>
-      )}
+        </TabsContent>
 
-      {tab === 'notifications' && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Notification Preferences</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {[
-                { channel: 'in_app', label: 'In-App Notifications', desc: 'Alerts in the notification bell icon' },
-                { channel: 'email', label: 'Email Notifications', desc: 'Receive email for important events' },
-                { channel: 'push', label: 'Push Notifications', desc: 'Mobile push for escalations and approvals' },
-              ].map(({ channel, label, desc }) => (
+        <TabsContent value="notifications" className="mt-4">
+          <Card>
+            <CardHeader><CardTitle>Notification Preferences</CardTitle></CardHeader>
+            <CardContent className="space-y-4">
+              {CHANNELS.map((channel) => (
                 <div key={channel} className="flex items-center justify-between rounded-lg border p-4">
                   <div>
-                    <p className="font-medium">{label}</p>
-                    <p className="text-sm text-muted-foreground">{desc}</p>
+                    <p className="font-medium">{CHANNEL_LABELS[channel].label}</p>
+                    <p className="text-sm text-muted-foreground">{CHANNEL_LABELS[channel].desc}</p>
                   </div>
                   <label className="relative inline-flex cursor-pointer items-center">
-                    <input type="checkbox" defaultChecked className="peer sr-only" aria-label={`Toggle ${label}`} />
+                    <input
+                      type="checkbox"
+                      checked={channels[channel] ?? false}
+                      onChange={(e) => setChannels(c => ({ ...c, [channel]: e.target.checked }))}
+                      className="peer sr-only"
+                      aria-label={`Toggle ${CHANNEL_LABELS[channel].label}`}
+                    />
                     <div className="h-6 w-11 rounded-full bg-muted peer-checked:bg-primary after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:after:translate-x-full" />
                   </label>
                 </div>
               ))}
               <div className="pt-4 space-y-3">
                 <p className="font-medium">Notify me about:</p>
-                {[
-                  'Incident assigned to me',
-                  'SLA breach warnings',
-                  'Change approval requests',
-                  'New comments on my tickets',
-                  'Escalation notifications',
-                  'Major incident alerts',
-                ].map((item) => (
-                  <div key={item} className="flex items-center gap-2">
+                {NOTIFICATION_EVENTS.map((event) => (
+                  <div key={event} className="flex items-center gap-2">
                     <input
                       type="checkbox"
-                      id={`notify-${item.toLowerCase().replace(/\s+/g, '-')}`}
-                      defaultChecked
+                      id={`notify-${event}`}
+                      checked={events[event] ?? true}
+                      onChange={(e) => setEvents(ev => ({ ...ev, [event]: e.target.checked }))}
                       className="h-4 w-4 rounded border-2"
                     />
-                    <label htmlFor={`notify-${item.toLowerCase().replace(/\s+/g, '-')}`} className="text-sm">
-                      {item}
-                    </label>
+                    <label htmlFor={`notify-${event}`} className="text-sm">{NOTIFICATION_LABELS[event]}</label>
                   </div>
                 ))}
               </div>
-              <Button>Save Notification Preferences</Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+              <div className="flex items-center gap-3">
+                <Button onClick={() => saveNotifications.mutate()} disabled={saveNotifications.isPending}>
+                  <Check className="mr-1 h-4 w-4" /> Save Notification Preferences
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

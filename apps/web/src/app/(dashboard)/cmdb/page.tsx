@@ -29,13 +29,13 @@ function statusColor(status: string) {
     : 'bg-muted text-muted-foreground';
 }
 
-interface CIFormData {
+interface CIFormData extends Partial<CMDBConfigItem> {
   name: string;
   type: string;
-  status: string;
-  environment: string;
-  owner: string;
-  description: string;
+  status: 'active' | 'inactive' | 'maintenance' | 'decommissioned';
+  environment: 'production' | 'staging' | 'development' | string;
+  owner?: string;
+  description?: string;
 }
 
 const EMPTY_FORM: CIFormData = { name: '', type: 'server', status: 'active', environment: 'production', owner: '', description: '' };
@@ -65,12 +65,12 @@ export default function CMDBPage() {
   });
 
   const createMutation = useMutation({
-    mutationFn: (d: CIFormData) => api.createCMDBItem(d as unknown as Partial<CMDBConfigItem>),
+    mutationFn: (d: CIFormData) => api.createCMDBItem(d),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['cmdb'] }); setShowForm(false); setForm(EMPTY_FORM); },
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, d }: { id: string; d: CIFormData }) => api.updateCMDBItem(id, d as unknown as Partial<CMDBConfigItem>),
+    mutationFn: ({ id, d }: { id: string; d: CIFormData }) => api.updateCMDBItem(id, d),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['cmdb'] }); setEditingId(null); setForm(EMPTY_FORM); },
   });
 
@@ -128,14 +128,14 @@ export default function CMDBPage() {
               </div>
               <div className="space-y-1">
                 <label className="text-sm font-medium">Status</label>
-                <Select value={form.status} onValueChange={v => setForm(f => ({ ...f, status: v }))}>
+                <Select value={form.status} onValueChange={v => setForm(f => ({ ...f, status: v as 'active' | 'inactive' | 'maintenance' | 'decommissioned' }))}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>{CI_STATUSES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div className="space-y-1">
                 <label className="text-sm font-medium">Environment</label>
-                <Select value={form.environment} onValueChange={v => setForm(f => ({ ...f, environment: v }))}>
+                <Select value={form.environment} onValueChange={v => setForm(f => ({ ...f, environment: v as 'production' | 'staging' | 'development' | string }))}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>{ENVIRONMENTS.map(e => <SelectItem key={e} value={e}>{e}</SelectItem>)}</SelectContent>
                 </Select>

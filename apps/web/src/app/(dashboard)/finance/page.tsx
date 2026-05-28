@@ -9,9 +9,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { DollarSign, TrendingDown, Receipt, CreditCard, Plus, Search, Check, X, Pencil, Trash2 } from 'lucide-react';
+import { DollarSign, TrendingDown, Receipt, CreditCard, Building, Plus, Search, Check, X, Pencil, Trash2 } from 'lucide-react';
 import { formatCurrency, formatDateTime, cn } from '@/lib/utils';
-import { api, Budget, Expense, Invoice } from '@/lib/api';
+import { api, Budget, Expense, Invoice, CostCenter } from '@/lib/api';
 
 const EXPENSE_CATEGORIES = ['travel', 'software', 'hardware', 'consulting', 'infrastructure', 'supplies', 'services', 'other'];
 const CURRENCIES = ['USD', 'EUR', 'GBP', 'SGD', 'AUD'];
@@ -58,6 +58,12 @@ export default function FinancePage() {
   const [payInvId, setPayInvId] = useState<string | null>(null);
   const [payForm, setPayForm] = useState({ amount: 0, paymentDate: new Date().toISOString().slice(0, 10), method: 'bank_transfer' });
 
+  // Cost Center state
+  const [showCcForm, setShowCcForm] = useState(false);
+  const [editCcId, setEditCcId] = useState<string | null>(null);
+  const [ccForm, setCcForm] = useState({ name: '', code: '', description: '', managerId: '', status: 'active' });
+  const [deleteCcId, setDeleteCcId] = useState<string | null>(null);
+
   // Queries
   const { data: budgetsData, isLoading: loadingBudgets } = useQuery({
     queryKey: ['budgets'],
@@ -91,6 +97,11 @@ export default function FinancePage() {
   const updateInvoice = useMutation({ mutationFn: ({ id, d }: { id: string; d: Partial<Invoice> }) => api.updateInvoice(id, d), onSuccess: () => { qc.invalidateQueries({ queryKey: ['invoices'] }); setEditInvId(null); } });
   const deleteInvoice = useMutation({ mutationFn: (id: string) => api.deleteInvoice(id), onSuccess: () => { qc.invalidateQueries({ queryKey: ['invoices'] }); setDeleteInvId(null); } });
   const createPayment = useMutation({ mutationFn: () => api.createPayment({ invoiceId: payInvId ?? undefined, ...payForm }), onSuccess: () => { qc.invalidateQueries({ queryKey: ['invoices'] }); setPayInvId(null); } });
+
+  // Cost Center mutations
+  const createCc = useMutation({ mutationFn: () => api.createCostCenter(ccForm), onSuccess: () => { qc.invalidateQueries({ queryKey: ['cost-centers'] }); setShowCcForm(false); setCcForm({ name: '', code: '', description: '', managerId: '', status: 'active' }); } });
+  const updateCc = useMutation({ mutationFn: ({ id, d }: { id: string; d: typeof ccForm }) => api.updateCostCenter(id, d), onSuccess: () => { qc.invalidateQueries({ queryKey: ['cost-centers'] }); setEditCcId(null); } });
+  const deleteCc = useMutation({ mutationFn: (id: string) => api.deleteCostCenter(id), onSuccess: () => { qc.invalidateQueries({ queryKey: ['cost-centers'] }); setDeleteCcId(null); } });
 
   const budgets: Budget[] = budgetsData?.data ?? [];
   const expenses: Expense[] = expensesData?.data ?? [];
@@ -148,6 +159,7 @@ export default function FinancePage() {
           <TabsTrigger value="budgets"><DollarSign className="mr-1 h-4 w-4" />Budgets</TabsTrigger>
           <TabsTrigger value="expenses"><Receipt className="mr-1 h-4 w-4" />Expenses</TabsTrigger>
           <TabsTrigger value="invoices"><CreditCard className="mr-1 h-4 w-4" />Invoices</TabsTrigger>
+          <TabsTrigger value="costcenters"><Building className="mr-1 h-4 w-4" />Cost Centers</TabsTrigger>
         </TabsList>
 
         {/* BUDGETS TAB */}
@@ -414,6 +426,67 @@ export default function FinancePage() {
                 </TableBody>
               </Table>
             )}
+          </CardContent></Card>
+        </TabsContent>
+
+        {/* COST CENTERS TAB */}
+        <TabsContent value="costcenters" className="space-y-4 mt-4">
+          <div className="flex items-center justify-between">
+            <h2 className="font-semibold">Cost Centers</h2>
+            <Button size="sm" onClick={() => { setShowCcForm(true); setEditCcId(null); setCcForm({ name: '', code: '', description: '', managerId: '', status: 'active' }); }}><Plus className="mr-1 h-4 w-4" /> New Cost Center</Button>
+          </div>
+
+          {(showCcForm || editCcId) && (
+            <Card>
+              <CardHeader><CardTitle className="text-base">{editCcId ? 'Edit Cost Center' : 'New Cost Center'}</CardTitle></CardHeader>
+              <CardContent>
+                <form onSubmit={e => { e.preventDefault(); editCcId ? updateCc.mutate({ id: editCcId, d: ccForm }) : createCc.mutate(); }} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  <div className="space-y-1"><label className="text-sm font-medium">Name *</label><Input required value={ccForm.name} onChange={e => setCcForm(f => ({ ...f, name: e.target.value }))} placeholder="Engineering" /></div>
+                  <div className="space-y-1"><label className="text-sm font-medium">Code *</label><Input required value={ccForm.code} onChange={e => setCcForm(f => ({ ...f, code: e.target.value }))} placeholder="ENG-001" /></div>
+                  <div className="space-y-1"><label className="text-sm font-medium">Status</label><Select value={ccForm.status} onValueChange={v => setCcForm(f => ({ ...f, status: v }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="active">Active</SelectItem><SelectItem value="inactive">Inactive</SelectItem></SelectContent></Select></div>
+                  <div className="space-y-1 sm:col-span-2"><label className="text-sm font-medium">Description</label><Input value={ccForm.description} onChange={e => setCcForm(f => ({ ...f, description: e.target.value }))} placeholder="Optional description" /></div>
+                  <div className="flex gap-2 sm:col-span-2 lg:col-span-3">
+                    <Button type="submit" disabled={createCc.isPending || updateCc.isPending}><Check className="mr-1 h-4 w-4" />{editCcId ? 'Save' : 'Create'}</Button>
+                    <Button type="button" variant="outline" onClick={() => { setShowCcForm(false); setEditCcId(null); }}><X className="mr-1 h-4 w-4" />Cancel</Button>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
+          )}
+
+          {deleteCcId && (
+            <Card className="border-danger/50 bg-danger/5"><CardContent className="flex items-center justify-between py-3">
+              <p className="text-sm">Delete this cost center?</p>
+              <div className="flex gap-2">
+                <Button size="sm" variant="destructive" disabled={deleteCc.isPending} onClick={() => deleteCc.mutate(deleteCcId)}>Delete</Button>
+                <Button size="sm" variant="outline" onClick={() => setDeleteCcId(null)}>Cancel</Button>
+              </div>
+            </CardContent></Card>
+          )}
+
+          <Card><CardContent className="p-0">
+            <Table>
+              <TableHeader><TableRow>
+                <TableHead>Name</TableHead><TableHead>Code</TableHead><TableHead>Status</TableHead><TableHead>Description</TableHead><TableHead className="w-20">Actions</TableHead>
+              </TableRow></TableHeader>
+              <TableBody>
+                {costCenters.length === 0 && <TableRow><TableCell colSpan={5} className="py-8 text-center text-muted-foreground">No cost centers found</TableCell></TableRow>}
+                {(costCenters as CostCenter[]).map(cc => (
+                  <TableRow key={cc.id}>
+                    <TableCell className="font-medium">{cc.name}</TableCell>
+                    <TableCell className="font-mono text-sm">{cc.code}</TableCell>
+                    <TableCell><Badge className="bg-success/20 text-success">Active</Badge></TableCell>
+                    <TableCell className="text-muted-foreground text-sm max-w-[200px] truncate">{cc.description}</TableCell>
+                    <TableCell>
+                      <div className="flex gap-1">
+                        <Button size="icon" variant="ghost" onClick={() => { setEditCcId(cc.id); setCcForm({ name: cc.name ?? '', code: cc.code ?? '', description: cc.description ?? '', managerId: cc.managerId ?? '', status: 'active' }); setShowCcForm(false); }}><Pencil className="h-3.5 w-3.5" /></Button>
+                        <Button size="icon" variant="ghost" onClick={() => setDeleteCcId(cc.id)}><Trash2 className="h-3.5 w-3.5 text-danger" /></Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </CardContent></Card>
         </TabsContent>
       </Tabs>

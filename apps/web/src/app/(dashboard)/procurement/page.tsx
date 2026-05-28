@@ -52,7 +52,7 @@ export default function ProcurementPage() {
   const [prPriority, setPrPriority] = useState('');
   const [showPrForm, setShowPrForm] = useState(false);
   const [editPrId, setEditPrId] = useState<string | null>(null);
-  const [prForm, setPrForm] = useState({ title: '', description: '', itemDescription: '', quantity: 1, estimatedCost: 0, currency: 'USD', vendorId: '', priority: 'medium', requiredDate: '', justification: '' });
+  const [prForm, setPrForm] = useState<Partial<PurchaseRequest> & { title: string; itemDescription: string; quantity: number; estimatedCost: number; currency: string }>({ title: '', description: '', itemDescription: '', quantity: 1, estimatedCost: 0, currency: 'USD', vendorId: '', priority: 'medium', requiredDate: '', justification: '' });
   const [deletePrId, setDeletePrId] = useState<string | null>(null);
 
   // PO state
@@ -62,7 +62,7 @@ export default function ProcurementPage() {
   const [contractStatus, setContractStatus] = useState('');
   const [showContractForm, setShowContractForm] = useState(false);
   const [editContractId, setEditContractId] = useState<string | null>(null);
-  const [contractForm, setContractForm] = useState({ title: '', vendorId: '', startDate: '', endDate: '', value: 0, currency: 'USD', autoRenewal: false, termsUrl: '', notes: '' });
+  const [contractForm, setContractForm] = useState<Partial<Contract> & { title: string; vendorId: string; startDate: string; endDate: string; value: number; currency: string; autoRenewal: boolean }>({ title: '', vendorId: '', startDate: '', endDate: '', value: 0, currency: 'USD', autoRenewal: false, termsUrl: '', notes: '' });
   const [deleteContractId, setDeleteContractId] = useState<string | null>(null);
 
   // Queries
@@ -80,15 +80,15 @@ export default function ProcurementPage() {
   });
 
   // PR mutations
-  const createPr = useMutation({ mutationFn: () => api.createPurchaseRequest(prForm as unknown as Partial<PurchaseRequest>), onSuccess: () => { qc.invalidateQueries({ queryKey: ['purchase-requests'] }); setShowPrForm(false); } });
+  const createPr = useMutation({ mutationFn: () => api.createPurchaseRequest(prForm), onSuccess: () => { qc.invalidateQueries({ queryKey: ['purchase-requests'] }); setShowPrForm(false); } });
   const updatePr = useMutation({ mutationFn: ({ id, d }: { id: string; d: Partial<PurchaseRequest> }) => api.updatePurchaseRequest(id, d as Partial<PurchaseRequest>), onSuccess: () => { qc.invalidateQueries({ queryKey: ['purchase-requests'] }); setEditPrId(null); } });
   const deletePr = useMutation({ mutationFn: (id: string) => api.deletePurchaseRequest(id), onSuccess: () => { qc.invalidateQueries({ queryKey: ['purchase-requests'] }); setDeletePrId(null); } });
   const submitPr = useMutation({ mutationFn: (id: string) => api.submitPurchaseRequest(id), onSuccess: () => qc.invalidateQueries({ queryKey: ['purchase-requests'] }) });
   const createPo = useMutation({ mutationFn: (id: string) => api.createPOFromPR(id), onSuccess: () => { qc.invalidateQueries({ queryKey: ['purchase-requests'] }); qc.invalidateQueries({ queryKey: ['purchase-orders'] }); } });
 
   // Contract mutations
-  const createContract = useMutation({ mutationFn: () => api.createContract(contractForm as unknown as Partial<Contract>), onSuccess: () => { qc.invalidateQueries({ queryKey: ['contracts'] }); setShowContractForm(false); } });
-  const updateContract = useMutation({ mutationFn: ({ id, d }: { id: string; d: typeof contractForm }) => api.updateContract(id, d as unknown as Partial<Contract>), onSuccess: () => { qc.invalidateQueries({ queryKey: ['contracts'] }); setEditContractId(null); } });
+  const createContract = useMutation({ mutationFn: () => api.createContract(contractForm), onSuccess: () => { qc.invalidateQueries({ queryKey: ['contracts'] }); setShowContractForm(false); } });
+  const updateContract = useMutation({ mutationFn: ({ id, d }: { id: string; d: typeof contractForm }) => api.updateContract(id, d), onSuccess: () => { qc.invalidateQueries({ queryKey: ['contracts'] }); setEditContractId(null); } });
   const deleteContract = useMutation({ mutationFn: (id: string) => api.deleteContract(id), onSuccess: () => { qc.invalidateQueries({ queryKey: ['contracts'] }); setDeleteContractId(null); } });
 
   const prs: PurchaseRequest[] = prsData?.data ?? [];
@@ -144,9 +144,9 @@ export default function ProcurementPage() {
             <Card>
               <CardHeader><CardTitle className="text-base">{editPrId ? 'Edit Purchase Request' : 'New Purchase Request'}</CardTitle></CardHeader>
               <CardContent>
-                <form onSubmit={e => { e.preventDefault(); editPrId ? updatePr.mutate({ id: editPrId, d: prForm as unknown as Partial<PurchaseRequest> }) : createPr.mutate(); }} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                <form onSubmit={e => { e.preventDefault(); editPrId ? updatePr.mutate({ id: editPrId, d: prForm }) : createPr.mutate(); }} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   <div className="space-y-1 sm:col-span-2 lg:col-span-1"><label className="text-sm font-medium">Title *</label><Input required value={prForm.title} onChange={e => setPrForm(f => ({ ...f, title: e.target.value }))} placeholder="Laptop procurement" /></div>
-                  <div className="space-y-1"><label className="text-sm font-medium">Priority</label><Select value={prForm.priority} onValueChange={v => setPrForm(f => ({ ...f, priority: v }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{PRIORITIES.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent></Select></div>
+                  <div className="space-y-1"><label className="text-sm font-medium">Priority</label><Select value={prForm.priority || 'medium'} onValueChange={v => setPrForm(f => ({ ...f, priority: v as 'critical' | 'high' | 'medium' | 'low' }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{PRIORITIES.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent></Select></div>
                   <div className="space-y-1"><label className="text-sm font-medium">Estimated Cost</label><Input type="number" min={0} value={prForm.estimatedCost || ''} onChange={e => setPrForm(f => ({ ...f, estimatedCost: parseFloat(e.target.value) }))} /></div>
                   <div className="space-y-1"><label className="text-sm font-medium">Currency</label><Select value={prForm.currency} onValueChange={v => setPrForm(f => ({ ...f, currency: v }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{CURRENCIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></div>
                   <div className="space-y-1"><label className="text-sm font-medium">Quantity</label><Input type="number" min={1} value={prForm.quantity} onChange={e => setPrForm(f => ({ ...f, quantity: parseInt(e.target.value) }))} /></div>

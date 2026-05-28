@@ -6,7 +6,7 @@ import { auth } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Package, Eye, EyeOff, ExternalLink } from 'lucide-react';
+import { Package, Eye, EyeOff, ExternalLink, Shield } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -22,8 +22,8 @@ export default function LoginPage() {
     }
   }, [router]);
 
-  const handleSSOLogin = () => {
-    window.location.href = auth.getLoginUrl();
+  const handleSSOLogin = async () => {
+    window.location.href = await auth.getLoginUrl();
   };
 
   const handleLocalLogin = async (e: React.FormEvent) => {
@@ -32,8 +32,6 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      // In production, this would go through Keycloak
-      // For local development, we simulate a login
       if (email && password) {
         auth.setTokens('dev-access-token', 'dev-refresh-token');
         router.push('/dashboard');
@@ -48,23 +46,48 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md" role="main" aria-label="Login form">
-        <CardHeader className="text-center">
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background p-4">
+      {/* Branded background gradient */}
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background: `
+            radial-gradient(ellipse 80% 50% at 50% -20%, hsl(var(--primary) / 0.15), transparent),
+            radial-gradient(ellipse 60% 40% at 80% 100%, hsl(var(--info) / 0.1), transparent)
+          `,
+        }}
+        aria-hidden="true"
+      />
+
+      {/* Subtle grid pattern */}
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.03]"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h40v40H0z' fill='none' stroke='currentColor' stroke-width='0.5'/%3E%3C/svg%3E")`,
+        }}
+        aria-hidden="true"
+      />
+
+      <Card
+        className="relative w-full max-w-md border-border/50 shadow-xl backdrop-blur-sm"
+        role="main"
+        aria-label="Login form"
+      >
+        <CardHeader className="text-center pb-2">
           <div className="mb-4 flex justify-center">
             <div
-              className="flex h-14 w-14 items-center justify-center rounded-lg bg-primary"
+              className="flex h-14 w-14 items-center justify-center rounded-xl bg-primary shadow-md"
               aria-hidden="true"
             >
               <Package className="h-8 w-8 text-primary-foreground" />
             </div>
           </div>
-          <CardTitle className="text-2xl">OrionOps</CardTitle>
-          <CardDescription>
+          <CardTitle className="text-2xl tracking-tight">OrionOps</CardTitle>
+          <CardDescription className="text-sm">
             Enterprise Service Orchestration Platform
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-4">
           <form onSubmit={handleLocalLogin} className="space-y-4">
             <Input
               label="Email"
@@ -89,7 +112,7 @@ export default function LoginPage() {
               />
               <button
                 type="button"
-                className="absolute right-3 top-8 text-muted-foreground hover:text-foreground"
+                className="absolute right-3 top-8 text-muted-foreground hover:text-foreground transition-colors"
                 onClick={() => setShowPassword(!showPassword)}
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
               >
@@ -109,7 +132,7 @@ export default function LoginPage() {
 
             <Button
               type="submit"
-              className="w-full"
+              className="w-full h-10"
               disabled={loading}
               aria-busy={loading}
             >
@@ -129,7 +152,7 @@ export default function LoginPage() {
           <Button
             type="button"
             variant="outline"
-            className="w-full"
+            className="w-full h-10"
             onClick={handleSSOLogin}
             aria-label="Sign in with SSO via Keycloak"
           >
@@ -137,11 +160,10 @@ export default function LoginPage() {
             Sign in with SSO (Keycloak)
           </Button>
 
-          <p className="mt-6 text-center text-xs text-muted-foreground">
-            Protected by enterprise authentication.
-            <br />
-            Contact your administrator for access.
-          </p>
+          <div className="mt-6 flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
+            <Shield className="h-3 w-3" aria-hidden="true" />
+            <span>Protected by enterprise authentication</span>
+          </div>
         </CardContent>
       </Card>
     </div>

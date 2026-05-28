@@ -101,15 +101,15 @@ export default function InventoryPage() {
       {/* Summary */}
       <div className="grid gap-4 md:grid-cols-4">
         <Card className="border-l-4 border-l-primary"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Total Items</CardTitle><Package className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold">{itemsData?.total ?? 0}</div></CardContent></Card>
-        <Card className="border-l-4 border-l-warning"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Low Stock Alerts</CardTitle><AlertTriangle className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold">{(lowStockItems as unknown[]).length}</div></CardContent></Card>
+        <Card className="border-l-4 border-l-warning"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Low Stock Alerts</CardTitle><AlertTriangle className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold">{lowStockItems.length}</div></CardContent></Card>
         <Card className="border-l-4 border-l-info"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Total Assets</CardTitle><Monitor className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold">{assetsData?.total ?? 0}</div></CardContent></Card>
         <Card className="border-l-4 border-l-success"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Asset Value</CardTitle><Monitor className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold">{formatCurrency(totalAssetValue)}</div></CardContent></Card>
       </div>
 
-      {(lowStockItems as unknown[]).length > 0 && (
+      {lowStockItems.length > 0 && (
         <div className="rounded-md border border-warning/50 bg-warning/5 px-4 py-3 flex items-center gap-3">
           <AlertTriangle className="h-5 w-5 text-warning shrink-0" />
-          <p className="text-sm font-medium">{(lowStockItems as unknown[]).length} item(s) are below minimum stock levels and require replenishment.</p>
+          <p className="text-sm font-medium">{lowStockItems.length} item(s) are below minimum stock levels and require replenishment.</p>
         </div>
       )}
 

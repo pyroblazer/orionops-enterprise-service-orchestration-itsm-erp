@@ -335,7 +335,7 @@ function SLAInstanceTable({ instances, onPause, onResume }: { instances: SLAInst
         </TableRow>
       </TableHeader>
       <TableBody>
-        {instances.map((inst: any) => {
+        {instances.map((inst: SLAInstance) => {
           const elapsed = inst.elapsedMinutes ?? 0;
           const remaining = inst.remainingMinutes;
           const total = elapsed + (remaining ?? 0);

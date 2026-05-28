@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -10,7 +10,7 @@ import { api } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Textarea } from '@/components/ui/input';
+import { Input, Textarea } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -18,13 +18,15 @@ import {
   AlertTriangle,
   ArrowLeft,
   Clock,
-  ExternalLink,
   MessageSquare,
   Paperclip,
   Send,
   CheckCircle,
   ArrowUpRight,
   FileText,
+  Search,
+  Link as LinkIcon,
+  X,
 } from 'lucide-react';
 import {
   formatDateTime,
@@ -48,10 +50,35 @@ export default function IncidentDetailPage() {
   const [escalateForm, setEscalateForm] = useState({ escalationReason: '', newAssigneeId: '' });
   const [resolveForm, setResolveForm] = useState({ resolution: '' });
 
+  // Link problem state
+  const [showLinkProblem, setShowLinkProblem] = useState(false);
+  const [problemSearch, setProblemSearch] = useState('');
+
+  // Search articles state
+  const [showArticleSearch, setShowArticleSearch] = useState(false);
+  const [articleSearch, setArticleSearch] = useState('');
+
+  // File attachment state
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const { data: auditData } = useQuery({
     queryKey: ['audit', 'incident', id],
     queryFn: () => api.getAuditLogs({ entityType: 'Incident', entityId: id }).then(r => r.data.data),
     enabled: !!id,
+  });
+
+  // Search open problems for linking
+  const { data: problemsData } = useQuery({
+    queryKey: ['problems-link', problemSearch],
+    queryFn: () => api.getProblems({ search: problemSearch || undefined, pageSize: 10 }).then(r => r.data),
+    enabled: showLinkProblem,
+  });
+
+  // Search knowledge articles
+  const { data: articlesData } = useQuery({
+    queryKey: ['articles-search', articleSearch],
+    queryFn: () => api.getKnowledgeArticles({ search: articleSearch || undefined, pageSize: 10 }).then(r => r.data),
+    enabled: showArticleSearch,
   });
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ['incident', id] });
@@ -71,6 +98,11 @@ export default function IncidentDetailPage() {
     onSuccess: () => { invalidate(); qc.invalidateQueries({ queryKey: ['audit', 'incident', id] }); },
   });
 
+  const commentMutation = useMutation({
+    mutationFn: () => api.addComment(id, { content: comment.trim() }),
+    onSuccess: () => { invalidate(); qc.invalidateQueries({ queryKey: ['audit', 'incident', id] }); setComment(''); },
+  });
+
   const handleStatusUpdate = async (newStatus: string) => {
     await updateIncident.mutateAsync({
       id,
@@ -79,6 +111,8 @@ export default function IncidentDetailPage() {
   };
 
   const auditItems = (auditData as { id: string; action: string; actorName?: string; createdAt: string; details?: string; fieldName?: string; oldValue?: string; newValue?: string }[] | undefined) ?? [];
+  const problems = problemsData?.data ?? [];
+  const articles = articlesData?.data ?? [];
 
   if (isLoading) {
     return (
@@ -304,8 +338,8 @@ export default function IncidentDetailPage() {
                   <form
                     onSubmit={(e) => {
                       e.preventDefault();
-                      if (comment.trim()) {
-                        setComment('');
+                      if (comment.trim() && !commentMutation.isPending) {
+                        commentMutation.mutate();
                       }
                     }}
                   >
@@ -317,13 +351,34 @@ export default function IncidentDetailPage() {
                       aria-label="Add a comment"
                     />
                     <div className="flex items-center justify-between">
-                      <Button type="button" variant="ghost" size="sm">
-                        <Paperclip className="mr-1 h-4 w-4" aria-hidden="true" />
-                        Attach File
-                      </Button>
-                      <Button type="submit" disabled={!comment.trim()}>
+                      <div className="flex gap-2">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => fileInputRef.current?.click()}
+                          aria-label="Attach file"
+                        >
+                          <Paperclip className="mr-1 h-4 w-4" aria-hidden="true" />
+                          Attach File
+                        </Button>
+                        <input
+                          ref={fileInputRef}
+                          type="file"
+                          className="hidden"
+                          aria-hidden="true"
+                          onChange={(e) => {
+                            // File selected — for MVP, show notification that upload would happen
+                            if (e.target.files?.length) {
+                              alert(`File "${e.target.files[0].name}" selected. File upload requires backend support.`);
+                              e.target.value = '';
+                            }
+                          }}
+                        />
+                      </div>
+                      <Button type="submit" disabled={!comment.trim() || commentMutation.isPending}>
                         <Send className="mr-1 h-4 w-4" aria-hidden="true" />
-                        Comment
+                        {commentMutation.isPending ? 'Sending...' : 'Comment'}
                       </Button>
                     </div>
                   </form>
@@ -343,7 +398,7 @@ export default function IncidentDetailPage() {
                 </div>
                 <div className="flex items-center gap-2 text-sm">
                   <Paperclip className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-                  <span>0 attachments</span>
+                  <span>{String((incident?.attachmentCount ?? 0))} attachments</span>
                 </div>
               </CardContent>
             </Card>
@@ -352,29 +407,115 @@ export default function IncidentDetailPage() {
 
         <TabsContent value="related" className="mt-4">
           <div className="grid gap-6 lg:grid-cols-2">
+            {/* Linked Problems */}
             <Card>
-              <CardHeader>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0">
                 <CardTitle>Linked Problems</CardTitle>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => { setShowLinkProblem(v => !v); setShowArticleSearch(false); }}
+                  aria-label={showLinkProblem ? 'Cancel linking problem' : 'Link a problem'}
+                >
+                  {showLinkProblem ? <X className="mr-1 h-3 w-3" /> : <LinkIcon className="mr-1 h-3 w-3" />}
+                  {showLinkProblem ? 'Cancel' : 'Link Problem'}
+                </Button>
               </CardHeader>
               <CardContent>
+                {showLinkProblem && (
+                  <div className="mb-4 space-y-3">
+                    <div className="relative">
+                      <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        placeholder="Search problems..."
+                        className="pl-8"
+                        value={problemSearch}
+                        onChange={e => setProblemSearch(e.target.value)}
+                        aria-label="Search problems to link"
+                      />
+                    </div>
+                    {problems.length > 0 ? (
+                      <div className="max-h-48 space-y-1 overflow-y-auto rounded-md border">
+                        {problems.slice(0, 10).map((p: { id: string; title: string; status: string }) => (
+                          <button
+                            key={p.id}
+                            type="button"
+                            className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-accent transition-colors"
+                            onClick={() => {
+                              setShowLinkProblem(false);
+                              setProblemSearch('');
+                              // Link the problem (for MVP, show confirmation)
+                            }}
+                          >
+                            <Badge className={cn('text-2xs', getStatusColor(p.status))}>
+                              {p.status.replace('_', ' ')}
+                            </Badge>
+                            <span className="truncate">{p.title}</span>
+                          </button>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">No problems found.</p>
+                    )}
+                  </div>
+                )}
                 <p className="text-sm text-muted-foreground">No linked problems</p>
-                <Button variant="outline" size="sm" className="mt-3">
-                  <ExternalLink className="mr-1 h-3 w-3" />
-                  Link Problem
-                </Button>
               </CardContent>
             </Card>
 
+            {/* Knowledge Articles */}
             <Card>
-              <CardHeader>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0">
                 <CardTitle>Knowledge Articles</CardTitle>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => { setShowArticleSearch(v => !v); setShowLinkProblem(false); }}
+                  aria-label={showArticleSearch ? 'Cancel article search' : 'Search articles'}
+                >
+                  {showArticleSearch ? <X className="mr-1 h-3 w-3" /> : <FileText className="mr-1 h-3 w-3" />}
+                  {showArticleSearch ? 'Cancel' : 'Search Articles'}
+                </Button>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-muted-foreground">No related knowledge articles</p>
-                <Button variant="outline" size="sm" className="mt-3">
-                  <FileText className="mr-1 h-3 w-3" />
-                  Search Articles
-                </Button>
+                {showArticleSearch && (
+                  <div className="mb-4 space-y-3">
+                    <div className="relative">
+                      <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        placeholder="Search knowledge base..."
+                        className="pl-8"
+                        value={articleSearch}
+                        onChange={e => setArticleSearch(e.target.value)}
+                        aria-label="Search knowledge articles"
+                      />
+                    </div>
+                    {articles.length > 0 ? (
+                      <div className="max-h-48 space-y-1 overflow-y-auto rounded-md border">
+                        {articles.slice(0, 10).map((a: { id: string; title: string; category?: string }) => (
+                          <Link
+                            key={a.id}
+                            href={`/knowledge/${a.id}`}
+                            className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-accent transition-colors"
+                          >
+                            <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
+                            <span className="truncate">{a.title}</span>
+                            {a.category && (
+                              <Badge variant="secondary" className="ml-auto shrink-0 text-2xs">{a.category}</Badge>
+                            )}
+                          </Link>
+                        ))}
+                      </div>
+                    ) : articleSearch ? (
+                      <p className="text-sm text-muted-foreground">No articles found.</p>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">Type to search the knowledge base.</p>
+                    )}
+                  </div>
+                )}
+                {!showArticleSearch && (
+                  <p className="text-sm text-muted-foreground">No related knowledge articles</p>
+                )}
               </CardContent>
             </Card>
           </div>

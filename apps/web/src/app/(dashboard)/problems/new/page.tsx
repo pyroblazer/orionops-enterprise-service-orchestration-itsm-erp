@@ -15,13 +15,13 @@ const PRIORITIES = ['low', 'medium', 'high', 'critical'];
 
 export default function NewProblemPage() {
   const router = useRouter();
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<Partial<Problem> & { title: string; description: string }>({
     title: '', description: '', category: 'infrastructure', priority: 'medium',
-    affectedService: '', workaround: '', notes: '',
+    affectedService: '', workaround: '',
   });
 
   const createMutation = useMutation({
-    mutationFn: () => api.createProblem(form as unknown as Partial<Problem>),
+    mutationFn: () => api.createProblem(form),
     onSuccess: (res) => {
       const id = res.data?.data?.id;
       router.push(id ? `/problems/${id}` : '/problems');
@@ -53,7 +53,7 @@ export default function NewProblemPage() {
               </div>
               <div className="space-y-1">
                 <label className="text-sm font-medium">Priority</label>
-                <Select value={form.priority} onValueChange={v => setForm(f => ({ ...f, priority: v }))}>
+                <Select value={form.priority || 'medium'} onValueChange={v => setForm(f => ({ ...f, priority: v as 'critical' | 'high' | 'medium' | 'low' }))}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>{PRIORITIES.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
                 </Select>
@@ -69,11 +69,7 @@ export default function NewProblemPage() {
             </div>
             <div className="space-y-1">
               <label className="text-sm font-medium">Workaround</label>
-              <textarea className="w-full rounded-md border bg-background px-3 py-2 text-sm min-h-20" value={form.workaround} onChange={e => setForm(f => ({ ...f, workaround: e.target.value }))} placeholder="Temporary workaround if available" />
-            </div>
-            <div className="space-y-1">
-              <label className="text-sm font-medium">Notes</label>
-              <Input value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} placeholder="Additional notes" />
+              <textarea className="w-full rounded-md border bg-background px-3 py-2 text-sm min-h-20" value={form.workaround ?? ''} onChange={e => setForm(f => ({ ...f, workaround: e.target.value }))} placeholder="Temporary workaround if available" />
             </div>
             <div className="flex gap-2">
               <Button type="submit" disabled={createMutation.isPending}><Check className="mr-1 h-4 w-4" />Create Problem</Button>

@@ -6,11 +6,12 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { api } from '@/lib/api';
+import { api, AuditLog } from '@/lib/api';
+import { Download, Search } from 'lucide-react';
 
 export default function AuditPage() {
   const [entityType, setEntityType] = useState('');
-  const [userId, _setUserId] = useState('');
+  const [userId, setUserId] = useState('');
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
   const [page, setPage] = useState(0);
@@ -38,7 +39,21 @@ export default function AuditPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Audit Log Explorer</h1>
-        <Button variant="outline">Export CSV</Button>
+        <Button variant="outline" onClick={() => {
+          if (!data || data.length === 0) return;
+          const headers = ['Timestamp', 'User', 'Action', 'Resource', 'Resource ID', 'IP Address'];
+          const rows = data.map((e: AuditLog) => [
+            e.timestamp, e.userName || e.userId || '', e.action, e.entityType || e.resource, e.resourceId || '', e.ipAddress || ''
+          ]);
+          const csv = [headers, ...rows].map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
+          const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url; a.download = `audit-log-${new Date().toISOString().slice(0, 10)}.csv`;
+          a.click(); URL.revokeObjectURL(url);
+        }}>
+          <Download className="mr-1 h-4 w-4" /> Export CSV
+        </Button>
       </div>
 
       <Card>
@@ -58,6 +73,20 @@ export default function AuditPage() {
                   <option key={t} value={t}>{t}</option>
                 ))}
               </select>
+            </div>
+            <div className="space-y-1">
+              <label htmlFor="user-filter" className="text-sm font-medium">User</label>
+              <div className="relative">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="user-filter"
+                  placeholder="User ID or name"
+                  value={userId}
+                  onChange={(e) => { setUserId(e.target.value); setPage(0); }}
+                  className="pl-8"
+                  aria-label="Filter by user"
+                />
+              </div>
             </div>
             <div className="space-y-1">
               <label htmlFor="from-date" className="text-sm font-medium">From Date</label>
@@ -105,7 +134,7 @@ export default function AuditPage() {
               </tr>
             </thead>
             <tbody>
-              {data?.map((event: any) => (
+              {data?.map((event: AuditLog) => (
                 <tr key={event.id} className="border-b hover:bg-muted/30">
                   <td className="px-4 py-3 text-sm whitespace-nowrap">
                     {new Date(event.timestamp).toLocaleString()}
@@ -123,7 +152,7 @@ export default function AuditPage() {
                       {event.action}
                     </Badge>
                   </td>
-                  <td className="px-4 py-3 text-sm">{event.resourceType}</td>
+                  <td className="px-4 py-3 text-sm">{event.entityType || event.resource}</td>
                   <td className="px-4 py-3 text-sm font-mono text-xs">
                     {event.resourceId?.slice(0, 8)}...
                   </td>

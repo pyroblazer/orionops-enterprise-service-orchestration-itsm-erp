@@ -240,19 +240,17 @@ export default function ProblemDetailPage() {
           <Card>
             <CardHeader><CardTitle>Activity Log</CardTitle><CardDescription>Recent actions on this problem</CardDescription></CardHeader>
             <CardContent>
-              {!auditData || (auditData as unknown[]).length === 0 ? (
+              {!auditData || auditData.length === 0 ? (
                 <p className="text-sm text-muted-foreground py-4 text-center">No activity recorded yet.</p>
               ) : (
                 <ul className="space-y-3">
-                  {(auditData as unknown as { id: string; action: string; actorName?: string; createdAt: string; details?: string }[]).map(log => (
+                  {auditData.map(log => (
                     <li key={log.id} className="flex items-start gap-3 text-sm border-b last:border-0 pb-3 last:pb-0">
                       <div className="h-2 w-2 rounded-full bg-muted-foreground mt-1.5 shrink-0" />
                       <div className="flex-1">
                         <span className="font-medium">{log.action.replace('_', ' ')}</span>
-                        {log.actorName && <span className="text-muted-foreground"> by {log.actorName}</span>}
-                        {log.details && <p className="text-muted-foreground text-xs mt-0.5">{log.details}</p>}
+                        {log.userName && <span className="text-muted-foreground"> by {log.userName}</span>}
                       </div>
-                      <span className="text-xs text-muted-foreground shrink-0">{formatDateTime(log.createdAt)}</span>
                     </li>
                   ))}
                 </ul>

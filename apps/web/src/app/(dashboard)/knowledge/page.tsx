@@ -20,7 +20,10 @@ export default function KnowledgeListPage() {
   const [filters, setFilters] = useState<FilterParams>({ page: 1, pageSize: 20 });
   const [selectedCategory, setSelectedCategory] = useState('All');
 
-  const { data, isLoading } = useKnowledgeArticles(filters);
+  const { data, isLoading } = useKnowledgeArticles({
+    ...filters,
+    ...(selectedCategory !== 'All' && { category: selectedCategory }),
+  });
   const articles = data?.data ?? [];
 
   return (

@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft, AlertTriangle, CheckCircle, Clock, ListChecks, Check, X, SendHorizontal, Trash2 } from 'lucide-react';
 import { formatDateTime, getStatusColor, getPriorityColor, cn } from '@/lib/utils';
-import { api } from '@/lib/api';
+import { api, AuditLog } from '@/lib/api';
 
 export default function RequestDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -30,7 +30,7 @@ export default function RequestDetailPage() {
     enabled: !!id,
   });
 
-  const { data: auditData } = useQuery({
+  const { data: auditData } = useQuery<AuditLog[]>({
     queryKey: ['audit', 'request', id],
     queryFn: () => api.getAuditLogs({ entityType: 'ServiceRequest', entityId: id }).then(r => r.data.data),
     enabled: !!id,
@@ -164,15 +164,14 @@ export default function RequestDetailPage() {
           <Card>
             <CardHeader><CardTitle>Activity Log</CardTitle></CardHeader>
             <CardContent>
-              {!auditData || (auditData as unknown[]).length === 0 ? (
+              {!auditData || auditData.length === 0 ? (
                 <p className="text-sm text-muted-foreground py-4 text-center">No activity recorded yet.</p>
               ) : (
                 <ul className="space-y-3">
-                  {(auditData as unknown as { id: string; action: string; actorName?: string; createdAt: string; details?: string }[]).map(log => (
+                  {(auditData as AuditLog[]).map(log => (
                     <li key={log.id} className="flex items-start gap-3 text-sm border-b last:border-0 pb-3 last:pb-0">
                       <div className="h-2 w-2 rounded-full bg-muted-foreground mt-1.5 shrink-0" />
-                      <div className="flex-1"><span className="font-medium">{log.action.replace('_', ' ')}</span>{log.actorName && <span className="text-muted-foreground"> by {log.actorName}</span>}</div>
-                      <span className="text-xs text-muted-foreground shrink-0">{formatDateTime(log.createdAt)}</span>
+                      <div className="flex-1"><span className="font-medium">{log.action.replace('_', ' ')}</span>{log.userName && <span className="text-muted-foreground"> by {log.userName}</span>}</div>
                     </li>
                   ))}
                 </ul>

@@ -12,6 +12,9 @@
     { "source": "/ai/(.*)", "destination": "/apps/ai/api/index" }
   ],
   "env": {
-    "NEXT_PUBLIC_API_URL": "https://orionops-enterprise-service.onrender.com/api/v1"
+    "NEXT_PUBLIC_API_URL": "https://orionops-enterprise-service.onrender.com/api/v1",
+    "NEXT_PUBLIC_KEYCLOAK_URL": "https://orionops-keycloak.onrender.com",
+    "NEXT_PUBLIC_KEYCLOAK_REALM": "orionops",
+    "NEXT_PUBLIC_KEYCLOAK_CLIENT_ID": "orionops-web"
   }
 }

@@ -14,19 +14,17 @@ import { formatCurrency, cn } from '@/lib/utils';
 import { api, Vendor } from '@/lib/api';
 
 const VENDOR_TYPES = ['hardware', 'software', 'service', 'cloud', 'consulting'];
-const VENDOR_STATUSES = ['active', 'inactive', 'pending', 'suspended'];
+const VENDOR_STATUSES = ['active', 'inactive', 'on_hold', 'blacklisted'];
 
-interface VendorFormData {
+type VendorFormData = Omit<Partial<Vendor>, 'id' | 'slaCompliancePercent' | 'onTimeDeliveryPercent' | 'rating' | 'totalSpend' | 'createdAt' | 'updatedAt'> & {
   name: string; type: string; status: string;
-  contactName: string; contactEmail: string; contactPhone: string;
-  website: string; address: string; notes: string;
-}
+};
 const EMPTY_FORM: VendorFormData = { name: '', type: 'software', status: 'active', contactName: '', contactEmail: '', contactPhone: '', website: '', address: '', notes: '' };
 
 function statusColor(s: string) {
   return s === 'active' ? 'bg-success/20 text-success border-success'
-    : s === 'pending' ? 'bg-warning/20 text-warning border-warning'
-    : s === 'suspended' ? 'bg-danger/20 text-danger border-danger'
+    : s === 'on_hold' ? 'bg-warning/20 text-warning border-warning'
+    : s === 'blacklisted' ? 'bg-danger/20 text-danger border-danger'
     : 'bg-muted text-muted-foreground';
 }
 
@@ -67,12 +65,12 @@ export default function VendorsPage() {
   });
 
   const createMutation = useMutation({
-    mutationFn: (d: VendorFormData) => api.createVendor(d as unknown as Partial<Vendor>),
+    mutationFn: (d: VendorFormData) => api.createVendor(d),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['vendors'] }); setShowForm(false); setForm(EMPTY_FORM); },
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, d }: { id: string; d: VendorFormData }) => api.updateVendor(id, d as unknown as Partial<Vendor>),
+    mutationFn: ({ id, d }: { id: string; d: VendorFormData }) => api.updateVendor(id, d),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['vendors'] }); setEditingId(null); setForm(EMPTY_FORM); },
   });
 
@@ -175,9 +173,9 @@ export default function VendorsPage() {
               </div>
               <div className="space-y-1">
                 <label className="text-sm font-medium">Status</label>
-                <Select value={form.status} onValueChange={v => setForm(f => ({ ...f, status: v }))}>
+                <Select value={form.status} onValueChange={v => setForm(f => ({ ...f, status: v as 'active' | 'inactive' | 'on_hold' | 'blacklisted' }))}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>{VENDOR_STATUSES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                  <SelectContent>{VENDOR_STATUSES.map(s => <SelectItem key={s} value={s}>{s.replace('_', ' ')}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div className="space-y-1">

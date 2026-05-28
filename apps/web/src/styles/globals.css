@@ -6,7 +6,7 @@
   /* ===== Light Theme (Default) ===== */
   :root,
   [data-theme="light"] {
-    --background: 0 0% 100%;
+    --background: 210 20% 98%;
     --foreground: 222 47% 11%;
     --card: 0 0% 100%;
     --card-foreground: 222 47% 11%;
@@ -18,7 +18,7 @@
     --secondary-foreground: 222 47% 11%;
     --muted: 210 40% 96%;
     --muted-foreground: 215 16% 47%;
-    --accent: 210 40% 96%;
+    --accent: 210 40% 93%;
     --accent-foreground: 222 47% 11%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 210 40% 98%;
@@ -28,7 +28,7 @@
     --warning-foreground: 222 47% 11%;
     --success: 142 71% 45%;
     --success-foreground: 210 40% 98%;
-    --info: 188 94% 43%;
+    --info: 199 89% 48%;
     --info-foreground: 210 40% 98%;
     --border: 214 32% 91%;
     --input: 214 32% 91%;
@@ -36,23 +36,28 @@
     --radius: 0.5rem;
     --focus-width: 2px;
     --border-width: 1px;
+    --sidebar-bg: 0 0% 100%;
+    --sidebar-border: 214 32% 91%;
+    --header-bg: 0 0% 100%;
+    --gradient-start: 221 83% 53%;
+    --gradient-end: 199 89% 48%;
   }
 
   /* ===== Dark Theme ===== */
   [data-theme="dark"] {
-    --background: 222 47% 11%;
+    --background: 222 47% 8%;
     --foreground: 210 40% 98%;
-    --card: 222 47% 15%;
+    --card: 222 47% 12%;
     --card-foreground: 210 40% 98%;
-    --popover: 222 47% 15%;
+    --popover: 222 47% 12%;
     --popover-foreground: 210 40% 98%;
     --primary: 217 91% 60%;
-    --primary-foreground: 222 47% 11%;
+    --primary-foreground: 222 47% 8%;
     --secondary: 217 33% 17%;
     --secondary-foreground: 210 40% 98%;
     --muted: 217 33% 17%;
     --muted-foreground: 215 20% 65%;
-    --accent: 217 33% 17%;
+    --accent: 217 33% 22%;
     --accent-foreground: 210 40% 98%;
     --destructive: 0 63% 31%;
     --destructive-foreground: 210 40% 98%;
@@ -64,45 +69,55 @@
     --success-foreground: 210 40% 98%;
     --info: 188 94% 43%;
     --info-foreground: 210 40% 98%;
-    --border: 217 33% 25%;
-    --input: 217 33% 25%;
+    --border: 217 33% 20%;
+    --input: 217 33% 20%;
     --ring: 217 91% 60%;
     --focus-width: 2px;
     --border-width: 1px;
+    --sidebar-bg: 222 47% 10%;
+    --sidebar-border: 217 33% 20%;
+    --header-bg: 222 47% 10%;
+    --gradient-start: 217 91% 60%;
+    --gradient-end: 188 94% 43%;
   }
 
-  /* ===== High Contrast Theme ===== */
+  /* ===== High Contrast Theme (WCAG AAA — softened from pure black) ===== */
   [data-theme="high-contrast"] {
-    --background: 0 0% 0%;
-    --foreground: 0 0% 100%;
-    --card: 0 0% 5%;
-    --card-foreground: 0 0% 100%;
-    --popover: 0 0% 5%;
-    --popover-foreground: 0 0% 100%;
-    --primary: 210 100% 60%;
-    --primary-foreground: 0 0% 0%;
-    --secondary: 0 0% 15%;
-    --secondary-foreground: 0 0% 100%;
-    --muted: 0 0% 15%;
-    --muted-foreground: 0 0% 80%;
-    --accent: 0 0% 20%;
-    --accent-foreground: 0 0% 100%;
-    --destructive: 0 100% 55%;
-    --destructive-foreground: 0 0% 0%;
-    --danger: 0 100% 55%;
-    --danger-foreground: 0 0% 0%;
-    --warning: 45 100% 55%;
-    --warning-foreground: 0 0% 0%;
-    --success: 120 100% 45%;
-    --success-foreground: 0 0% 0%;
-    --info: 180 100% 50%;
-    --info-foreground: 0 0% 0%;
-    --border: 0 0% 60%;
-    --input: 0 0% 60%;
-    --ring: 0 0% 100%;
+    --background: 220 20% 6%;
+    --foreground: 60 10% 96%;
+    --card: 220 15% 10%;
+    --card-foreground: 60 10% 96%;
+    --popover: 220 15% 10%;
+    --popover-foreground: 60 10% 96%;
+    --primary: 210 100% 65%;
+    --primary-foreground: 220 20% 6%;
+    --secondary: 220 10% 18%;
+    --secondary-foreground: 60 10% 96%;
+    --muted: 220 10% 18%;
+    --muted-foreground: 60 5% 72%;
+    --accent: 220 10% 22%;
+    --accent-foreground: 60 10% 96%;
+    --destructive: 0 85% 60%;
+    --destructive-foreground: 220 20% 6%;
+    --danger: 0 85% 60%;
+    --danger-foreground: 220 20% 6%;
+    --warning: 50 95% 55%;
+    --warning-foreground: 220 20% 6%;
+    --success: 135 70% 50%;
+    --success-foreground: 220 20% 6%;
+    --info: 195 90% 55%;
+    --info-foreground: 220 20% 6%;
+    --border: 60 5% 50%;
+    --input: 60 5% 50%;
+    --ring: 60 10% 96%;
     --radius: 0.25rem;
     --focus-width: 3px;
     --border-width: 2px;
+    --sidebar-bg: 220 18% 8%;
+    --sidebar-border: 60 5% 50%;
+    --header-bg: 220 18% 8%;
+    --gradient-start: 210 100% 65%;
+    --gradient-end: 195 90% 55%;
   }
 
   *,
@@ -113,8 +128,8 @@
   }
 
   html {
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
-      'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
+    font-family: var(--font-sans, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+      'Helvetica Neue', Arial, 'Noto Sans', sans-serif);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -128,11 +143,10 @@
   /* High contrast specific overrides */
   [data-theme="high-contrast"] * {
     text-shadow: none !important;
-    box-shadow: none !important;
   }
 
   [data-theme="high-contrast"] *:focus-visible {
-    outline: var(--focus-width) solid hsl(var(--foreground)) !important;
+    outline: var(--focus-width) solid hsl(var(--ring)) !important;
     outline-offset: 2px;
   }
 
@@ -140,28 +154,33 @@
   [data-theme="high-contrast"] select,
   [data-theme="high-contrast"] textarea {
     border-width: 2px !important;
-    border-color: hsl(var(--foreground)) !important;
+    border-color: hsl(var(--border)) !important;
     background-color: hsl(var(--background)) !important;
     color: hsl(var(--foreground)) !important;
   }
 
   [data-theme="high-contrast"] button:focus-visible {
-    outline: 3px solid hsl(var(--foreground)) !important;
+    outline: 3px solid hsl(var(--ring)) !important;
     outline-offset: 2px;
   }
 
   [data-theme="high-contrast"] table {
-    border: 2px solid hsl(var(--foreground));
+    border: 2px solid hsl(var(--border));
   }
 
   [data-theme="high-contrast"] th,
   [data-theme="high-contrast"] td {
-    border: 1px solid hsl(var(--foreground));
+    border: 1px solid hsl(var(--border));
   }
 
   [data-theme="high-contrast"] a {
     text-decoration: underline;
     color: hsl(var(--primary));
+  }
+
+  /* Card distinction in high contrast — subtle left accent instead of shadow */
+  [data-theme="high-contrast"] .card-accent {
+    border-left: 3px solid hsl(var(--primary)) !important;
   }
 }
 
@@ -181,6 +200,36 @@
   .high-contrast-focus {
     @apply focus-visible:outline-[var(--focus-width)] focus-visible:outline-solid
            focus-visible:outline-ring;
+  }
+
+  /* Gradient text utility */
+  .gradient-text {
+    background: linear-gradient(135deg, hsl(var(--gradient-start)), hsl(var(--gradient-end)));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Summary card gradient backgrounds */
+  .card-gradient-primary {
+    background: linear-gradient(135deg, hsl(var(--primary) / 0.08), hsl(var(--primary) / 0.02));
+  }
+
+  .card-gradient-danger {
+    background: linear-gradient(135deg, hsl(var(--danger) / 0.08), hsl(var(--danger) / 0.02));
+  }
+
+  .card-gradient-warning {
+    background: linear-gradient(135deg, hsl(var(--warning) / 0.08), hsl(var(--warning) / 0.02));
+  }
+
+  .card-gradient-success {
+    background: linear-gradient(135deg, hsl(var(--success) / 0.08), hsl(var(--success) / 0.02));
+  }
+
+  /* Sidebar section header */
+  .sidebar-section-header {
+    @apply px-3 pt-4 pb-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground;
   }
 }
 

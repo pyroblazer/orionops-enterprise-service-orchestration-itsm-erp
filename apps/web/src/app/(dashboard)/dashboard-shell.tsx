@@ -42,8 +42,7 @@ export function DashboardShell({
   const [_searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [shortcutsVisible, setShortcutsVisible] = useState(false);
-  const { getTheme, setTheme } = useTheme();
-  const currentTheme = getTheme();
+  const { theme: currentTheme, setTheme } = useTheme();
 
   const { data: notifications } = useNotifications();
   const markAllRead = useMarkAllNotificationsRead();
@@ -62,6 +61,7 @@ export function DashboardShell({
 
   const handleLogout = useCallback(() => {
     auth.clearTokens();
+    document.cookie = 'orionops_authenticated=; path=/; max-age=0';
     window.location.href = auth.getLogoutUrl();
   }, []);
 
@@ -104,7 +104,8 @@ export function DashboardShell({
           )}
         >
           <header
-            className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+            className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b px-4 backdrop-blur-md bg-background/80"
+            style={{ borderColor: 'hsl(var(--sidebar-border))' }}
             role="banner"
           >
             <Button

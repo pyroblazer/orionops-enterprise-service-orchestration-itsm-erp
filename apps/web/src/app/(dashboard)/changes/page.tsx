@@ -106,7 +106,7 @@ export default function ChangesListPage() {
               </p>
               <p className="text-xs text-muted-foreground">Review and approve pending changes</p>
             </div>
-            <Button variant="outline" size="sm" className="ml-auto">
+            <Button variant="outline" size="sm" className="ml-auto" onClick={() => handleFilterChange('status', 'pending_approval')}>
               Review Changes
             </Button>
           </CardContent>
@@ -120,7 +120,7 @@ export default function ChangesListPage() {
             <TabsTrigger value="list" aria-label="List view">
               <List className="mr-1 h-4 w-4" /> List
             </TabsTrigger>
-            <TabsTrigger value="calendar" aria-label="Calendar view">
+            <TabsTrigger value="calendar" disabled title="Coming soon" aria-label="Calendar view (coming soon)">
               <Calendar className="mr-1 h-4 w-4" /> Calendar
             </TabsTrigger>
           </TabsList>

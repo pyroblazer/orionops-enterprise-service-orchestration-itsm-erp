@@ -42,6 +42,18 @@ export default function NewIncidentPage() {
   });
   const services = servicesData?.data ?? [];
 
+  const { data: ciData } = useQuery({
+    queryKey: ['cmdb-items'],
+    queryFn: () => api.getCMDBItems({ pageSize: 200 }).then(r => r.data),
+  });
+  const configItems = ciData?.data ?? [];
+
+  const { data: usersData } = useQuery({
+    queryKey: ['users-list'],
+    queryFn: () => api.getUsers({ pageSize: 200 }).then(r => r.data),
+  });
+  const users = usersData?.data ?? [];
+
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {};
     if (!formData.title.trim()) newErrors.title = 'Title is required';
@@ -268,10 +280,10 @@ export default function NewIncidentPage() {
                     <SelectValue placeholder="Select CI" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="ci-1">PROD-WEB-01</SelectItem>
-                    <SelectItem value="ci-2">PROD-DB-01</SelectItem>
-                    <SelectItem value="ci-3">PROD-APP-01</SelectItem>
-                    <SelectItem value="ci-4">NETWORK-SW-01</SelectItem>
+                    {(configItems as { id: string; name: string; type?: string }[]).map(ci => (
+                      <SelectItem key={ci.id} value={ci.id}>{ci.name}{ci.type ? ` (${ci.type})` : ''}</SelectItem>
+                    ))}
+                    {configItems.length === 0 && <SelectItem value="" disabled>No CIs found</SelectItem>}
                   </SelectContent>
                 </Select>
                 <Select
@@ -282,10 +294,12 @@ export default function NewIncidentPage() {
                     <SelectValue placeholder="Select assignee" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="user-1">Jane Smith</SelectItem>
-                    <SelectItem value="user-2">John Doe</SelectItem>
-                    <SelectItem value="user-3">Alice Johnson</SelectItem>
-                    <SelectItem value="user-4">Bob Williams</SelectItem>
+                    {(users as { id: string; firstName?: string; lastName?: string; email?: string }[]).map(u => (
+                      <SelectItem key={u.id} value={u.id}>
+                        {u.firstName && u.lastName ? `${u.firstName} ${u.lastName}` : u.email ?? u.id}
+                      </SelectItem>
+                    ))}
+                    {users.length === 0 && <SelectItem value="" disabled>No users found</SelectItem>}
                   </SelectContent>
                 </Select>
                 <Input

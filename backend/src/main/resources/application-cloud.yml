@@ -8,7 +8,7 @@
 #   - Disables Kafka (uses in-process ApplicationEventPublisher)
 #   - Disables OpenSearch (uses PostgreSQL full-text)
 #   - Disables MinIO (object storage not needed for MVP)
-#   - Disables Keycloak (uses symmetric HMAC JWT)
+#   - Keycloak on Render (issues JWTs, validated via JWK endpoint)
 #   - Disables OPA (uses Spring Security RBAC)
 #   - Disables OpenTelemetry export
 # ---------------------------------------------------------------------------
@@ -60,14 +60,12 @@ spring:
       - org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration
       - org.flowable.spring.boot.eventregistry.EventRegistryAutoConfiguration
 
-  # --- OAuth2 Resource Server: symmetric HMAC JWT (no Keycloak needed) ---
+  # --- OAuth2 Resource Server: validates JWTs from Keycloak via JWK endpoint ---
   security:
     oauth2:
       resourceserver:
         jwt:
-          # Cloud profile uses symmetric key — SecurityConfig reads JWT_SECRET env var directly
-          # Leave issuer-uri blank; JwtDecoder bean is constructed from JWT_SECRET in SecurityConfig
-          issuer-uri: ""
+          issuer-uri: "https://orionops-keycloak.onrender.com/realms/orionops"
 
 # --- CORS: allow Vercel frontend ---
 app:
@@ -76,23 +74,24 @@ app:
       - ${FRONTEND_URL:https://orionops.vercel.app}
       - https://orionops.vercel.app
   auth:
-    jwt-secret: ${JWT_SECRET:}
+    jwt-secret:
 
 # --- Platform URL for integration links (Slack, Teams) ---
 orionops:
   platform:
     base-url: https://orionops.vercel.app
 
-# --- Keycloak stubs (bean reads these but they are unused when mode=cloud) ---
+# --- Keycloak (Render instance) ---
 keycloak:
-  enabled: false
-  auth-server-url: "https://placeholder.keycloak.invalid"
+  enabled: true
+  auth-server-url: "https://orionops-keycloak.onrender.com"
   realm: "orionops"
   client-id: "orionops-backend"
   client-secret: ""
   resourceserver:
     jwt:
-      jwk-set-uri: "https://placeholder.keycloak.invalid/realms/orionops/protocol/openid-connect/certs"
+      issuer-uri: "https://orionops-keycloak.onrender.com/realms/orionops"
+      jwk-set-uri: "https://orionops-keycloak.onrender.com/realms/orionops/protocol/openid-connect/certs"
 
 # --- Disable OpenSearch ---
 opensearch:

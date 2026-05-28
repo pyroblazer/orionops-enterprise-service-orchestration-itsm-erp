@@ -40,24 +40,28 @@ interface SummaryCardProps {
 
 function SummaryCard({ title, value, description, icon: Icon, trend, variant = 'default' }: SummaryCardProps) {
   const variantStyles = {
-    default: 'border-l-primary',
-    warning: 'border-l-warning',
-    danger: 'border-l-danger',
-    success: 'border-l-success',
+    default: { border: 'border-l-primary', gradient: 'card-gradient-primary', iconColor: 'text-primary' },
+    warning: { border: 'border-l-warning', gradient: 'card-gradient-warning', iconColor: 'text-warning' },
+    danger: { border: 'border-l-danger', gradient: 'card-gradient-danger', iconColor: 'text-danger' },
+    success: { border: 'border-l-success', gradient: 'card-gradient-success', iconColor: 'text-success' },
   };
 
+  const style = variantStyles[variant];
+
   return (
-    <Card className={cn('border-l-4', variantStyles[variant])}>
+    <Card className={cn('border-l-4 transition-shadow hover:shadow-md', style.border, style.gradient)}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium">{title}</CardTitle>
-        <Icon className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+        <div className={cn('flex h-8 w-8 items-center justify-center rounded-lg bg-background/80', style.iconColor)}>
+          <Icon className="h-4 w-4" aria-hidden="true" />
+        </div>
       </CardHeader>
       <CardContent>
         <div className="text-2xl font-bold">{value}</div>
         <p className="text-xs text-muted-foreground">
           {description}
           {trend && (
-            <span className={cn('ml-1', trend.startsWith('+') ? 'text-success' : 'text-danger')}>
+            <span className={cn('ml-1 font-medium', trend.startsWith('+') ? 'text-success' : 'text-danger')}>
               {trend}
             </span>
           )}
@@ -158,8 +162,8 @@ export default function DashboardPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-2xl font-bold tracking-tight gradient-text">Dashboard</h1>
+          <p className="text-sm text-muted-foreground">
             Overview of your service management operations
           </p>
         </div>

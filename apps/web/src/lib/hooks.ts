@@ -1,6 +1,7 @@
 'use client';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useState, useCallback } from 'react';
 import { api, type FilterParams, type Incident, type Problem, type Change, type ServiceRequest, type SearchResults } from './api';
 
 // --- Query Key Factory ---
@@ -345,28 +346,21 @@ function getStoredTheme(): Theme {
 }
 
 export function useTheme() {
-  // This is a simple client-side implementation.
-  // In a full app, this would use React state + context.
-  const getTheme = (): Theme => getStoredTheme();
+  const [theme, setThemeState] = useState<Theme>(getStoredTheme);
 
-  const setTheme = (theme: Theme): void => {
+  const setTheme = useCallback((t: Theme): void => {
     if (typeof window === 'undefined') return;
-    localStorage.setItem('orionops_theme', theme);
-    document.documentElement.setAttribute('data-theme', theme);
-    if (theme === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  };
+    setThemeState(t);
+    localStorage.setItem('orionops_theme', t);
+    document.documentElement.setAttribute('data-theme', t);
+    document.documentElement.classList.toggle('dark', t === 'dark');
+  }, []);
 
-  const toggleTheme = (): void => {
-    const current = getStoredTheme();
+  const toggleTheme = useCallback((): void => {
     const themes: Theme[] = ['light', 'dark', 'high-contrast'];
-    const currentIndex = themes.indexOf(current);
-    const nextIndex = (currentIndex + 1) % themes.length;
+    const nextIndex = (themes.indexOf(theme) + 1) % themes.length;
     setTheme(themes[nextIndex]);
-  };
+  }, [theme, setTheme]);
 
-  return { getTheme, setTheme, toggleTheme };
+  return { theme, getTheme: () => theme, setTheme, toggleTheme };
 }

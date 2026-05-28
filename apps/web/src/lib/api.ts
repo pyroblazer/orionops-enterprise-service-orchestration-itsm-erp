@@ -73,6 +73,15 @@ export interface Incident {
   linkedProblems?: string[];
   relatedCIs?: string[];
   tags: string[];
+  attachmentCount?: number;
+}
+
+export interface AuditLogEntry {
+  id: string;
+  action: string;
+  actorName?: string;
+  createdAt: string;
+  details?: string;
 }
 
 export type IncidentStatus = 'new' | 'in_progress' | 'pending' | 'resolved' | 'closed' | 'cancelled';
@@ -625,6 +634,10 @@ export interface User {
   avatar?: string;
   department?: string;
   phone?: string;
+  displayName?: string;
+  status?: string;
+  lastLoginAt?: string;
+  preferences?: Record<string, string>;
 }
 
 export interface SearchResults {
@@ -661,6 +674,8 @@ export interface ReportSummary {
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://orionops-enterprise-service.onrender.com/api/v1';
 const KEYCLOAK_URL = process.env.NEXT_PUBLIC_KEYCLOAK_URL || 'https://orionops-keycloak.onrender.com';
+const KEYCLOAK_REALM = process.env.NEXT_PUBLIC_KEYCLOAK_REALM || 'orionops';
+const KEYCLOAK_CLIENT_ID = process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_ID || 'orionops-web';
 
 function getAccessToken(): string | null {
   if (typeof window === 'undefined') return null;
@@ -712,8 +727,8 @@ apiClient.interceptors.response.use(
       }
       try {
         const response = await axios.post(
-          `${KEYCLOAK_URL}/realms/orionops/protocol/openid-connect/token`,
-          { grant_type: 'refresh_token', refresh_token: refreshToken, client_id: 'orionops-web' },
+          `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/token`,
+          { grant_type: 'refresh_token', refresh_token: refreshToken, client_id: KEYCLOAK_CLIENT_ID },
           { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
         );
         const { access_token, refresh_token: newRefreshToken } = response.data;
@@ -761,6 +776,8 @@ export const api = {
     apiClient.patch<ApiResponse<Incident>>(`/incidents/${id}/resolve`, data),
   closeIncident: (id: string) =>
     apiClient.patch<ApiResponse<Incident>>(`/incidents/${id}/close`),
+  addComment: (id: string, data: { content: string }) =>
+    apiClient.post<ApiResponse<Incident>>(`/incidents/${id}/comments`, data),
 
   // --- Problems ---
   getProblems: (params?: FilterParams) =>
@@ -1094,19 +1111,61 @@ export const api = {
 // Auth helpers
 // ---------------------------------------------------------------------------
 
+// --- PKCE (RFC 7636) ---
+function generateRandomString(length: number = 64): string {
+  const array = new Uint8Array(length);
+  crypto.getRandomValues(array);
+  return Array.from(array, b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function sha256(plain: string): Promise<ArrayBuffer> {
+  return crypto.subtle.digest('SHA-256', new TextEncoder().encode(plain));
+}
+
+function base64URLEncode(buffer: ArrayBuffer): string {
+  return btoa(String.fromCharCode(...new Uint8Array(buffer)))
+    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+async function generatePKCE(): Promise<{ verifier: string; challenge: string }> {
+  const verifier = generateRandomString(64);
+  const challenge = base64URLEncode(await sha256(verifier));
+  return { verifier, challenge };
+}
+
 export const auth = {
   setTokens,
   clearTokens,
   getAccessToken,
   getRefreshToken,
   isAuthenticated: (): boolean => !!getAccessToken(),
-  getLoginUrl: (): string => {
-    const redirectUri = typeof window !== 'undefined' ? `${window.location.origin}/login/callback` : '';
-    return `${KEYCLOAK_URL}/realms/orionops/protocol/openid-connect/auth?client_id=orionops-web&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=openid profile email`;
+  getLoginUrl: async (): Promise<string> => {
+    const redirectUri = typeof window !== 'undefined'
+      ? `${window.location.origin}/login/callback` : '';
+    const { verifier, challenge } = await generatePKCE();
+    const state = generateRandomString(32);
+
+    sessionStorage.setItem('orionops_pkce_verifier', verifier);
+    sessionStorage.setItem('orionops_oauth_state', state);
+
+    const params = new URLSearchParams({
+      client_id: KEYCLOAK_CLIENT_ID,
+      redirect_uri: redirectUri,
+      response_type: 'code',
+      scope: 'openid profile email',
+      code_challenge: challenge,
+      code_challenge_method: 'S256',
+      state,
+    });
+
+    return `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/auth?${params.toString()}`;
   },
   getLogoutUrl: (): string => {
-    const redirectUri = typeof window !== 'undefined' ? `${window.location.origin}/login` : '';
-    return `${KEYCLOAK_URL}/realms/orionops/protocol/openid-connect/logout?client_id=orionops-web&post_logout_redirect_uri=${encodeURIComponent(redirectUri)}`;
+    const redirectUri = typeof window !== 'undefined'
+      ? `${window.location.origin}/login` : '';
+    return `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/logout`
+      + `?client_id=${KEYCLOAK_CLIENT_ID}`
+      + `&post_logout_redirect_uri=${encodeURIComponent(redirectUri)}`;
   },
 };
 

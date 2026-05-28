@@ -15,13 +15,13 @@ const PRIORITIES = ['low', 'medium', 'high', 'critical'];
 
 export default function NewRequestPage() {
   const router = useRouter();
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<Partial<ServiceRequest> & { attachmentNotes: string }>({
     title: '', description: '', category: 'software', priority: 'medium',
     requiredDate: '', justification: '', attachmentNotes: '',
   });
 
   const createMutation = useMutation({
-    mutationFn: () => api.createRequest(form as unknown as Partial<ServiceRequest>),
+    mutationFn: () => api.createRequest(form),
     onSuccess: (res) => {
       const id = res.data?.data?.id;
       router.push(id ? `/requests/${id}` : '/requests');
@@ -56,7 +56,7 @@ export default function NewRequestPage() {
               </div>
               <div className="space-y-1">
                 <label className="text-sm font-medium">Priority</label>
-                <Select value={form.priority} onValueChange={v => setForm(p => ({ ...p, priority: v }))}>
+                <Select value={form.priority || 'medium'} onValueChange={v => setForm(p => ({ ...p, priority: v as 'critical' | 'high' | 'medium' | 'low' }))}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>{PRIORITIES.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
                 </Select>
