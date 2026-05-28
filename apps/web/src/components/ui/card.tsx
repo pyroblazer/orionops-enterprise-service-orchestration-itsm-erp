@@ -8,7 +8,7 @@ const Card = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      'rounded-lg border bg-card text-card-foreground shadow-sm',
+      'rounded-2xl bg-card text-card-foreground shadow-soft transition-all duration-200 hover:shadow-medium',
       className
     )}
     {...props}
@@ -34,7 +34,7 @@ const CardTitle = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <p
     ref={ref}
-    className={cn('font-semibold leading-none tracking-tight', className)}
+    className={cn('font-semibold leading-none tracking-tight text-lg', className)}
     {...props}
   />
 ));
@@ -72,4 +72,20 @@ const CardFooter = React.forwardRef<
 ));
 CardFooter.displayName = 'CardFooter';
 
-export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent };
+// Modern glass card variant
+const GlassCard = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => (
+  <div
+    ref={ref}
+    className={cn(
+      'rounded-2xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-white/20 shadow-soft transition-all duration-200 hover:shadow-medium',
+      className
+    )}
+    {...props}
+  />
+));
+GlassCard.displayName = 'GlassCard';
+
+export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent, GlassCard };

@@ -130,17 +130,19 @@ function CallbackHandler() {
   if (error) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background p-4">
-        <div className="w-full max-w-md text-center space-y-4">
+        <div className="w-full max-w-md text-center space-y-6">
           <div className="flex justify-center">
-            <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-destructive">
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-destructive shadow-medium">
               <Package className="h-8 w-8 text-destructive-foreground" />
             </div>
           </div>
-          <h1 className="text-xl font-semibold text-foreground">Authentication Failed</h1>
-          <p className="text-sm text-muted-foreground">{error}</p>
+          <div className="space-y-2">
+            <h1 className="text-2xl font-bold text-foreground">Authentication Failed</h1>
+            <p className="text-sm text-muted-foreground">{error}</p>
+          </div>
           <a
             href="/login"
-            className="inline-flex h-10 items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+            className="inline-flex h-11 items-center justify-center rounded-xl bg-primary px-6 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 shadow-medium hover:shadow-large transition-all"
           >
             Try Again
           </a>
@@ -152,8 +154,11 @@ function CallbackHandler() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background">
       <div className="text-center space-y-4">
-        <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
-        <p className="text-sm text-muted-foreground">Completing sign in...</p>
+        <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto spinner-modern" />
+        <div className="space-y-1">
+          <p className="text-sm font-medium text-foreground">Completing sign in</p>
+          <p className="text-xs text-muted-foreground">Securing your session...</p>
+        </div>
       </div>
     </div>
   );

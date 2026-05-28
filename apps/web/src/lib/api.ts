@@ -1160,6 +1160,28 @@ export const auth = {
 
     return `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/auth?${params.toString()}`;
   },
+  getSignupUrl: async (): Promise<string> => {
+    const redirectUri = typeof window !== 'undefined'
+      ? `${window.location.origin}/login/callback` : '';
+    const { verifier, challenge } = await generatePKCE();
+    const state = generateRandomString(32);
+
+    sessionStorage.setItem('orionops_pkce_verifier', verifier);
+    sessionStorage.setItem('orionops_oauth_state', state);
+
+    const params = new URLSearchParams({
+      client_id: KEYCLOAK_CLIENT_ID,
+      redirect_uri: redirectUri,
+      response_type: 'code',
+      scope: 'openid profile email',
+      code_challenge: challenge,
+      code_challenge_method: 'S256',
+      state,
+      action: 'register',
+    });
+
+    return `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/auth?${params.toString()}`;
+  },
   getLogoutUrl: (): string => {
     const redirectUri = typeof window !== 'undefined'
       ? `${window.location.origin}/login` : '';

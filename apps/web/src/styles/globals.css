@@ -3,82 +3,188 @@
 @tailwind utilities;
 
 @layer base {
-  /* ===== Light Theme (Default) ===== */
-  :root,
-  [data-theme="light"] {
-    --background: 210 20% 98%;
-    --foreground: 222 47% 11%;
-    --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
-    --primary: 221 83% 53%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222 47% 11%;
-    --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 47%;
-    --accent: 210 40% 93%;
-    --accent-foreground: 222 47% 11%;
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 210 40% 98%;
-    --danger: 0 84% 60%;
-    --danger-foreground: 210 40% 98%;
-    --warning: 38 92% 50%;
-    --warning-foreground: 222 47% 11%;
-    --success: 142 71% 45%;
-    --success-foreground: 210 40% 98%;
-    --info: 199 89% 48%;
-    --info-foreground: 210 40% 98%;
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 221 83% 53%;
-    --radius: 0.5rem;
-    --focus-width: 2px;
-    --border-width: 1px;
-    --sidebar-bg: 0 0% 100%;
-    --sidebar-border: 214 32% 91%;
-    --header-bg: 0 0% 100%;
-    --gradient-start: 221 83% 53%;
-    --gradient-end: 199 89% 48%;
+  /* ===== Modern Design Tokens (Chromium Optimized) ===== */
+
+  /* Cascade layers for CSS organization */
+  @layer base, components, utilities;
+
+  /* Smooth scrolling */
+  html {
+    scroll-behavior: smooth;
   }
 
-  /* ===== Dark Theme ===== */
-  [data-theme="dark"] {
-    --background: 222 47% 8%;
-    --foreground: 210 40% 98%;
-    --card: 222 47% 12%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222 47% 12%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 217 91% 60%;
-    --primary-foreground: 222 47% 8%;
-    --secondary: 217 33% 17%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217 33% 17%;
-    --muted-foreground: 215 20% 65%;
-    --accent: 217 33% 22%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 63% 31%;
+  /* Container queries support */
+  @supports (container-type: inline-size) {
+    .container {
+      container-type: inline-size;
+      container-name: sidebar;
+    }
+
+    @container sidebar (min-width: 200px) {
+      .nav-item-text {
+        display: block;
+      }
+    }
+
+    @container sidebar (max-width: 199px) {
+      .nav-item-text {
+        display: none;
+      }
+    }
+  }
+
+  /* Modern font optimization */
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Enable GPU acceleration for animations */
+  .gpu-accel {
+    transform: translateZ(0);
+    will-change: transform, opacity;
+    backface-visibility: hidden;
+    transform-style: preserve-3d;
+  }
+
+  /* Modern shadow system */
+  .shadow-soft {
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  }
+
+  .shadow-medium {
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0  0 / 0.1);
+  }
+
+  .shadow-large {
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  }
+
+  .shadow-float {
+    box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  }
+
+  .shadow-glow {
+    box-shadow: 0 0 24px -4px hsl(var(--primary) / 0.3);
+  }
+}
+
+@layer base {
+  /* ===== Light Theme (Modern Softened) ===== */
+  :root,
+  [data-theme="light"] {
+    /* Backgrounds */
+    --background: 0 0% 100%;
+    --foreground: 215 16% 47%;
+    --card: 0 0% 100%;
+    --card-foreground: 215 16% 47%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 215 16% 47%;
+
+    /* Primary - softened for modern look */
+    --primary: 221 83% 51%;
+    --primary-foreground: 210 40% 98%;
+
+    /* Secondary - softer edges */
+    --secondary: 210 40% 95%;
+    --secondary-foreground: 215 16% 47%;
+    --muted: 210 40% 95%;
+    --muted-foreground: 215 19% 61%;
+    --accent: 210 40% 93%;
+    --accent-foreground: 215 16% 47%;
+
+    /* Status colors - softened */
+    --destructive: 0 84% 57%;
     --destructive-foreground: 210 40% 98%;
-    --danger: 0 63% 31%;
+    --danger: 0 84% 57%;
     --danger-foreground: 210 40% 98%;
-    --warning: 38 92% 50%;
-    --warning-foreground: 210 40% 98%;
-    --success: 142 71% 45%;
+    --warning: 38 92% 47%;
+    --warning-foreground: 215 16% 47%;
+    --success: 142 71% 42%;
     --success-foreground: 210 40% 98%;
-    --info: 188 94% 43%;
+    --info: 199 89% 45%;
     --info-foreground: 210 40% 98%;
-    --border: 217 33% 20%;
-    --input: 217 33% 20%;
-    --ring: 217 91% 60%;
+
+    /* Modern softened borders */
+    --border: 214 32% 89%;
+    --input: 214 32% 89%;
+    --ring: 221 83% 51%;
+
+    /* Modern rounded corners */
+    --radius: 0.75rem;
     --focus-width: 2px;
-    --border-width: 1px;
-    --sidebar-bg: 222 47% 10%;
-    --sidebar-border: 217 33% 20%;
-    --header-bg: 222 47% 10%;
-    --gradient-start: 217 91% 60%;
-    --gradient-end: 188 94% 43%;
+    --border-width: 0px; /* Remove borders, use shadows instead */
+
+    /* Sidebar - softened */
+    --sidebar-bg: 0 0% 100%;
+    --sidebar-border: 214 32% 89%;
+    --header-bg: 0 0% 98%;
+
+    /* Modern gradient colors */
+    --gradient-start: 221 83% 51%;
+    --gradient-end: 199 89% 45%;
+
+    /* Modern shadow colors */
+    --shadow-color: 215 16% 47% / 0.08;
+    --shadow-color-hover: 215 16% 47% / 0.12;
+  }
+
+  /* ===== Dark Theme (Modern Enhanced) ===== */
+  [data-theme="dark"] {
+    /* Backgrounds - deeper, softer */
+    --background: 222 47% 7%;
+    --foreground: 210 40% 96%;
+    --card: 222 47% 11%;
+    --card-foreground: 210 40% 96%;
+    --popover: 222 47% 11%;
+    --popover-foreground: 210 40% 96%;
+
+    /* Primary - enhanced for dark mode */
+    --primary: 217 91% 58%;
+    --primary-foreground: 222 47% 8%;
+
+    /* Secondary - enhanced depth */
+    --secondary: 217 33% 16%;
+    --secondary-foreground: 210 40% 96%;
+    --muted: 217 33% 16%;
+    --muted-foreground: 215 20% 63%;
+    --accent: 217 33% 21%;
+    --accent-foreground: 210 40% 96%;
+
+    /* Status colors - enhanced for contrast */
+    --destructive: 0 63% 29%;
+    --destructive-foreground: 210 40% 98%;
+    --danger: 0 63% 29%;
+    --danger-foreground: 210 40% 98%;
+    --warning: 38 92% 48%;
+    --warning-foreground: 210 40% 98%;
+    --success: 142 71% 43%;
+    --success-foreground: 210 40% 98%;
+    --info: 188 94% 41%;
+    --info-foreground: 210 40% 98%;
+
+    /* Modern dark borders */
+    --border: 217 33% 18%;
+    --input: 217 33% 18%;
+    --ring: 217 91% 58%;
+
+    /* Modern rounded corners */
+    --radius: 0.75rem;
+    --focus-width: 2px;
+    --border-width: 0px; /* Remove borders, use shadows instead */
+
+    /* Sidebar - enhanced depth */
+    --sidebar-bg: 222 47% 9%;
+    --sidebar-border: 217 33% 18%;
+    --header-bg: 222 47% 9%;
+
+    /* Modern gradient colors */
+    --gradient-start: 217 91% 58%;
+    --gradient-end: 188 94% 41%;
+
+    /* Modern shadow colors */
+    --shadow-color: 210 40% 96% / 0.08;
+    --shadow-color-hover: 210 40% 96% / 0.12;
   }
 
   /* ===== High Contrast Theme (WCAG AAA — softened from pure black) ===== */
@@ -202,38 +308,118 @@
            focus-visible:outline-ring;
   }
 
-  /* Gradient text utility */
+  /* Gradient text utility - enhanced */
   .gradient-text {
     background: linear-gradient(135deg, hsl(var(--gradient-start)), hsl(var(--gradient-end)));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+    font-weight: 600;
   }
 
-  /* Summary card gradient backgrounds */
+  /* Modern card styling - no borders, soft shadows */
+  .card-soft {
+    @apply rounded-2xl shadow-soft hover:shadow-medium transition-all duration-200;
+  }
+
+  .card-medium {
+    @apply rounded-2xl shadow-medium hover:shadow-large transition-all duration-200;
+  }
+
+  .card-large {
+    @apply rounded-3xl shadow-large hover:shadow-float transition-all duration-200;
+  }
+
+  /* Glassmorphism effect */
+  .glass {
+    @apply backdrop-blur-sm bg-white/80 dark:bg-gray-800/80 border border-white/20;
+  }
+
+  /* Summary card gradient backgrounds - enhanced */
   .card-gradient-primary {
-    background: linear-gradient(135deg, hsl(var(--primary) / 0.08), hsl(var(--primary) / 0.02));
+    background: linear-gradient(135deg, hsl(var(--primary) / 0.1), hsl(var(--primary) / 0.03));
+    @apply rounded-t-2xl;
   }
 
   .card-gradient-danger {
-    background: linear-gradient(135deg, hsl(var(--danger) / 0.08), hsl(var(--danger) / 0.02));
+    background: linear-gradient(135deg, hsl(var(--danger) / 0.1), hsl(var(--danger) / 0.03));
+    @apply rounded-t-2xl;
   }
 
   .card-gradient-warning {
-    background: linear-gradient(135deg, hsl(var(--warning) / 0.08), hsl(var(--warning) / 0.02));
+    background: linear-gradient(135deg, hsl(var(--warning) / 0.1), hsl(var(--warning) / 0.03));
+    @apply rounded-t-2xl;
   }
 
   .card-gradient-success {
-    background: linear-gradient(135deg, hsl(var(--success) / 0.08), hsl(var(--success) / 0.02));
+    background: linear-gradient(135deg, hsl(var(--success) / 0.1), hsl(var(--success) / 0.03));
+    @apply rounded-t-2xl;
   }
 
-  /* Sidebar section header */
+  /* Sidebar section header - enhanced */
   .sidebar-section-header {
     @apply px-3 pt-4 pb-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground;
+  }
+
+  /* Modern button styles */
+  .btn-primary {
+    @apply rounded-xl h-10 px-4 py-2 font-medium transition-all duration-200
+           hover:scale-105 active:scale-95 focus-visible:ring-2 focus-visible:ring-ring
+           focus-visible:ring-offset-2 bg-primary text-primary-foreground
+           hover:bg-primary/90 shadow-soft hover:shadow-md;
+  }
+
+  .btn-secondary {
+    @apply rounded-xl h-10 px-4 py-2 font-medium transition-all duration-200
+           hover:scale-105 active:scale-95 focus-visible:ring-2 focus-visible:ring-ring
+           focus-visible:ring-offset-2 bg-secondary text-secondary-foreground
+           hover:bg-secondary/80 shadow-soft;
+  }
+
+  /* Loading spinner - modern */
+  .spinner-modern {
+    animation: spin 1s linear infinite;
+    @apply text-primary;
+  }
+
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  /* Smooth transitions */
+  .transition-smooth {
+    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .transition-bounce {
+    transition: all 0.2s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  }
+
+  /* Modern input styling */
+  .input-modern {
+    @apply w-full rounded-xl border-0 bg-muted/50 px-4 py-2
+           text-sm transition-all duration-200 placeholder:text-muted-foreground/60
+           focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2
+           focus-visible:ring-offset-background focus:bg-background hover:bg-muted/70;
+  }
+
+  /* Avatar modern styling */
+  .avatar-modern {
+    @apply rounded-full w-10 h-10 flex items-center justify-center
+           text-sm font-medium bg-primary/10 text-primary
+           transition-all duration-200 hover:scale-105;
+  }
+
+  /* Badge modern styling */
+  .badge-modern {
+    @apply rounded-full px-3 py-1 text-xs font-medium transition-all duration-200
+           hover:scale-105 active:scale-95;
   }
 }
 
 @layer utilities {
+  /* Modern scrollbar styling */
   .scrollbar-thin {
     scrollbar-width: thin;
   }
@@ -245,5 +431,92 @@
 
   .scrollbar-none::-webkit-scrollbar {
     display: none;
+  }
+
+  /* Custom scrollbar with modern design */
+  .scrollbar-modern::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .scrollbar-modern::-webkit-scrollbar-track {
+    background: hsl(var(--muted) / 0.3);
+    border-radius: 3px;
+  }
+
+  .scrollbar-modern::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground) / 0.5);
+    border-radius: 3px;
+    transition: all 0.2s;
+  }
+
+  .scrollbar-modern::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground) / 0.8);
+  }
+
+  /* Smooth scrolling */
+  .scroll-smooth {
+    scroll-behavior: smooth;
+  }
+
+  /* Content visibility for performance */
+  .content-visibility-auto {
+    content-visibility: auto;
+    contain-intrinsic-size: 1000px;
+  }
+
+  /* Modern layout utilities */
+  .aspect-auto {
+    aspect-ratio: auto;
+  }
+
+  .aspect-square {
+    aspect-ratio: 1 / 1;
+  }
+
+  .aspect-video {
+    aspect-ratio: 16 / 9;
+  }
+
+  /* Blur utilities */
+  .blur-smooth {
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+
+  .blur-intense {
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+
+  /* Gradient backgrounds */
+  .gradient-bg-primary {
+    background: linear-gradient(135deg, hsl(var(--primary) / 0.05), hsl(var(--info) / 0.05));
+  }
+
+  .gradient-bg-dark {
+    background: linear-gradient(135deg, hsl(var(--background)), hsl(var(--card)));
+  }
+
+  /* Floating action button */
+  .fab {
+    @apply fixed bottom-6 right-6 w-14 h-14 rounded-full shadow-lg
+           bg-primary text-primary-foreground hover:shadow-xl
+           transition-all duration-200 hover:scale-110 active:scale-95
+           flex items-center justify-center z-50;
+  }
+
+  /* Pulse animation for important actions */
+  .pulse-animation {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: .5;
+    }
   }
 }
