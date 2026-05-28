@@ -26,12 +26,12 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           type={type}
           id={inputId}
           className={cn(
-            'flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors',
+            'flex h-10 w-full rounded-lg border-0 bg-muted/50 px-4 py-2 text-sm shadow-soft transition-all duration-200',
             'file:border-0 file:bg-transparent file:text-sm file:font-medium',
-            'placeholder:text-muted-foreground',
-            'focus-visible:outline-none focus-visible:ring-[var(--focus-width)] focus-visible:ring-ring',
-            'disabled:cursor-not-allowed disabled:opacity-50',
-            error && 'border-danger focus-visible:ring-danger',
+            'placeholder:text-muted-foreground/60',
+            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background focus:bg-background hover:bg-muted/70',
+            'disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-muted/30',
+            error && 'focus:ring-2 focus:ring-danger shadow-soft focus:shadow-none',
             className
           )}
           ref={ref}
@@ -92,11 +92,11 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
         <textarea
           id={textareaId}
           className={cn(
-            'flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors',
-            'placeholder:text-muted-foreground',
-            'focus-visible:outline-none focus-visible:ring-[var(--focus-width)] focus-visible:ring-ring',
-            'disabled:cursor-not-allowed disabled:opacity-50',
-            error && 'border-danger focus-visible:ring-danger',
+            'flex min-h-[100px] w-full rounded-lg border-0 bg-muted/50 px-4 py-2 text-sm shadow-soft transition-all duration-200 resize-none',
+            'placeholder:text-muted-foreground/60',
+            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background focus:bg-background hover:bg-muted/70',
+            'disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-muted/30',
+            error && 'focus:ring-2 focus:ring-danger shadow-soft focus:shadow-none',
             className
           )}
           ref={ref}
