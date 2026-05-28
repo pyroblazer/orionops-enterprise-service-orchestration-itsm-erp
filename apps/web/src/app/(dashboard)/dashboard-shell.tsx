@@ -39,7 +39,6 @@ export function DashboardShell({
 }) {
   const router = useRouter();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [_searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [shortcutsVisible, setShortcutsVisible] = useState(false);
   const { theme: currentTheme, setTheme } = useTheme();
@@ -75,7 +74,6 @@ export function DashboardShell({
             break;
           case 'k':
             e.preventDefault();
-            setSearchOpen(true);
             break;
           case '/':
             e.preventDefault();
@@ -84,7 +82,6 @@ export function DashboardShell({
         }
       }
       if (e.key === 'Escape') {
-        setSearchOpen(false);
         setShortcutsVisible(false);
       }
     };
@@ -130,7 +127,6 @@ export function DashboardShell({
                   className="pl-8"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  onFocus={() => setSearchOpen(true)}
                   aria-label="Global search"
                 />
               </div>

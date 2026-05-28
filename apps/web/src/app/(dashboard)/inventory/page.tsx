@@ -141,7 +141,7 @@ export default function InventoryPage() {
             <Card>
               <CardHeader><CardTitle className="text-base">{editItemId ? 'Edit Item' : 'New Item'}</CardTitle></CardHeader>
               <CardContent>
-                <form onSubmit={e => { e.preventDefault(); editItemId ? updateItem.mutate({ id: editItemId, d: itemForm }) : createItem.mutate(); }} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                <form onSubmit={e => { e.preventDefault(); (editItemId ? updateItem.mutate({ id: editItemId, d: itemForm }) : createItem.mutate()); }} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   <div className="space-y-1"><label className="text-sm font-medium">Name *</label><Input required value={itemForm.name} onChange={e => setItemForm(f => ({ ...f, name: e.target.value }))} placeholder="Item name" /></div>
                   <div className="space-y-1"><label className="text-sm font-medium">SKU</label><Input value={itemForm.sku} onChange={e => setItemForm(f => ({ ...f, sku: e.target.value }))} placeholder="SKU-001" /></div>
                   <div className="space-y-1"><label className="text-sm font-medium">Unit</label><Select value={itemForm.unit} onValueChange={v => setItemForm(f => ({ ...f, unit: v }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{['each','kg','liter','meter','box','pack'].map(u => <SelectItem key={u} value={u}>{u}</SelectItem>)}</SelectContent></Select></div>
@@ -193,7 +193,7 @@ export default function InventoryPage() {
                         <TableCell className="font-mono text-sm">{item.sku ?? '—'}</TableCell>
                         <TableCell className={cn('font-medium', lowStock && 'text-warning')}>{item.quantityOnHand ?? 0} {item.unit}</TableCell>
                         <TableCell className="text-muted-foreground">{item.minimumQuantity ?? 0}</TableCell>
-                        <TableCell>{item.unitCost != null ? formatCurrency(item.unitCost) : '—'}</TableCell>
+                        <TableCell>{item.unitCost !== undefined ? formatCurrency(item.unitCost) : '—'}</TableCell>
                         <TableCell>
                           <div className="flex gap-1">
                             <Button size="icon" variant="ghost" title="Adjust stock" onClick={() => setStockItemId(item.id)}><ArrowUpDown className="h-3.5 w-3.5" /></Button>
@@ -225,7 +225,7 @@ export default function InventoryPage() {
             <Card>
               <CardHeader><CardTitle className="text-base">{editAssetId ? 'Edit Asset' : 'New Asset'}</CardTitle></CardHeader>
               <CardContent>
-                <form onSubmit={e => { e.preventDefault(); editAssetId ? updateAsset.mutate({ id: editAssetId, d: assetForm }) : createAsset.mutate(); }} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                <form onSubmit={e => { e.preventDefault(); (editAssetId ? updateAsset.mutate({ id: editAssetId, d: assetForm }) : createAsset.mutate()); }} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   <div className="space-y-1"><label className="text-sm font-medium">Name *</label><Input required value={assetForm.name} onChange={e => setAssetForm(f => ({ ...f, name: e.target.value }))} placeholder="Dell Latitude 5540" /></div>
                   <div className="space-y-1"><label className="text-sm font-medium">Asset Tag</label><Input value={assetForm.assetTag} onChange={e => setAssetForm(f => ({ ...f, assetTag: e.target.value }))} placeholder="AST-001" /></div>
                   <div className="space-y-1"><label className="text-sm font-medium">Type</label><Select value={assetForm.type} onValueChange={v => setAssetForm(f => ({ ...f, type: v }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{ASSET_TYPES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent></Select></div>
@@ -259,7 +259,7 @@ export default function InventoryPage() {
                       <TableCell className="capitalize">{a.type}</TableCell>
                       <TableCell><Badge className={cn('capitalize', assetStatusColor(a.status))}>{a.status?.replace('_',' ')}</Badge></TableCell>
                       <TableCell className="text-muted-foreground">{a.assignedTo ?? '—'}</TableCell>
-                      <TableCell>{a.purchaseValue != null ? formatCurrency(a.purchaseValue) : '—'}</TableCell>
+                      <TableCell>{a.purchaseValue !== undefined ? formatCurrency(a.purchaseValue) : '—'}</TableCell>
                       <TableCell>
                         <div className="flex gap-1">
                           <Button size="icon" variant="ghost" onClick={() => { setEditAssetId(a.id); setAssetForm({ name: a.name ?? '', assetTag: a.assetTag ?? '', type: a.type ?? 'laptop', serialNumber: a.serialNumber ?? '', purchaseDate: a.purchaseDate?.slice(0, 10) ?? '', purchaseValue: a.purchaseValue ?? 0, currency: a.currency ?? 'USD', warehouseId: a.warehouseId ?? '', assignedTo: a.assignedTo ?? '', location: a.location ?? '', warrantyExpiry: a.warrantyExpiry?.slice(0, 10) ?? '' }); setShowAssetForm(false); }}><Pencil className="h-3.5 w-3.5" /></Button>
@@ -285,7 +285,7 @@ export default function InventoryPage() {
             <Card>
               <CardHeader><CardTitle className="text-base">{editWhId ? 'Edit Warehouse' : 'New Warehouse'}</CardTitle></CardHeader>
               <CardContent>
-                <form onSubmit={e => { e.preventDefault(); editWhId ? updateWarehouse.mutate({ id: editWhId, d: whForm }) : createWarehouse.mutate(); }} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                <form onSubmit={e => { e.preventDefault(); (editWhId ? updateWarehouse.mutate({ id: editWhId, d: whForm }) : createWarehouse.mutate()); }} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   <div className="space-y-1"><label className="text-sm font-medium">Name *</label><Input required value={whForm.name} onChange={e => setWhForm(f => ({ ...f, name: e.target.value }))} placeholder="Main Warehouse" /></div>
                   <div className="space-y-1"><label className="text-sm font-medium">Location</label><Input value={whForm.location} onChange={e => setWhForm(f => ({ ...f, location: e.target.value }))} placeholder="City, Country" /></div>
                   <div className="space-y-1"><label className="text-sm font-medium">Capacity</label><Input type="number" min={0} value={whForm.capacity || ''} onChange={e => setWhForm(f => ({ ...f, capacity: parseInt(e.target.value) }))} /></div>
@@ -304,7 +304,7 @@ export default function InventoryPage() {
           {loadingWarehouses ? <div className="space-y-px">{[1,2].map(i => <div key={i} className="h-20 animate-pulse bg-muted/40 rounded-lg" />)}</div> : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {(warehouses as { id: string; name: string; location?: string; capacity?: number; currentItems?: number; manager?: string }[]).map(wh => {
-                const util = wh.capacity && wh.currentItems != null ? (wh.currentItems / wh.capacity) * 100 : 0;
+                const util = wh.capacity && wh.currentItems !== undefined ? (wh.currentItems / wh.capacity) * 100 : 0;
                 return (
                   <Card key={wh.id}>
                     <CardContent className="pt-4">
@@ -316,7 +316,7 @@ export default function InventoryPage() {
                         </div>
                         <Button size="icon" variant="ghost" onClick={() => { setEditWhId(wh.id); setWhForm({ name: wh.name ?? '', location: wh.location ?? '', address: '', capacity: wh.capacity ?? 0, manager: wh.manager ?? '', notes: '' }); setShowWhForm(false); }}><Pencil className="h-3.5 w-3.5" /></Button>
                       </div>
-                      {wh.capacity != null && wh.capacity > 0 && (
+                      {wh.capacity !== undefined && wh.capacity > 0 && (
                         <div className="mt-3">
                           <div className="flex items-center justify-between text-xs mb-1">
                             <span className="text-muted-foreground">Utilization</span>

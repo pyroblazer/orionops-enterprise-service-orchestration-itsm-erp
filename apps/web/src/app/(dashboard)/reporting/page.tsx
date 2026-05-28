@@ -8,7 +8,7 @@ import { api } from '@/lib/api';
 const DAYS_OPTIONS = [7, 14, 30, 90] as const;
 
 function fmt(val: number | null | undefined, unit: string) {
-  if (val == null) return '—';
+  if (val === null || val === undefined) return '—';
   return `${val.toFixed(1)} ${unit}`;
 }
 

@@ -173,7 +173,7 @@ export default function FinancePage() {
             <Card>
               <CardHeader><CardTitle className="text-base">{editBudgetId ? 'Edit Budget' : 'New Budget'}</CardTitle></CardHeader>
               <CardContent>
-                <form onSubmit={e => { e.preventDefault(); editBudgetId ? updateBudget.mutate({ id: editBudgetId, d: budgetForm }) : createBudget.mutate(); }} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                <form onSubmit={e => { e.preventDefault(); (editBudgetId ? updateBudget.mutate({ id: editBudgetId, d: budgetForm }) : createBudget.mutate()); }} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   <div className="space-y-1"><label className="text-sm font-medium">Name *</label><Input required value={budgetForm.name} onChange={e => setBudgetForm(f => ({ ...f, name: e.target.value }))} placeholder="IT Infrastructure Budget" /></div>
                   <div className="space-y-1"><label className="text-sm font-medium">Fiscal Year</label><Input type="number" value={budgetForm.fiscalYear} onChange={e => setBudgetForm(f => ({ ...f, fiscalYear: parseInt(e.target.value) }))} /></div>
                   <div className="space-y-1"><label className="text-sm font-medium">Cost Center</label>
@@ -278,7 +278,7 @@ export default function FinancePage() {
             <Card>
               <CardHeader><CardTitle className="text-base">{editExpId ? 'Edit Expense' : 'New Expense'}</CardTitle></CardHeader>
               <CardContent>
-                <form onSubmit={e => { e.preventDefault(); editExpId ? updateExpense.mutate({ id: editExpId, d: expForm }) : createExpense.mutate(); }} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                <form onSubmit={e => { e.preventDefault(); (editExpId ? updateExpense.mutate({ id: editExpId, d: expForm }) : createExpense.mutate()); }} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   <div className="space-y-1 sm:col-span-2 lg:col-span-1"><label className="text-sm font-medium">Title *</label><Input required value={expForm.title} onChange={e => setExpForm(f => ({ ...f, title: e.target.value }))} placeholder="Cloud infrastructure - May" /></div>
                   <div className="space-y-1"><label className="text-sm font-medium">Amount *</label><Input required type="number" min={0} value={expForm.amount || ''} onChange={e => setExpForm(f => ({ ...f, amount: parseFloat(e.target.value) }))} /></div>
                   <div className="space-y-1"><label className="text-sm font-medium">Currency</label><Select value={expForm.currency} onValueChange={v => setExpForm(f => ({ ...f, currency: v }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{CURRENCIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></div>
@@ -357,7 +357,7 @@ export default function FinancePage() {
             <Card>
               <CardHeader><CardTitle className="text-base">{editInvId ? 'Edit Invoice' : 'New Invoice'}</CardTitle></CardHeader>
               <CardContent>
-                <form onSubmit={e => { e.preventDefault(); editInvId ? updateInvoice.mutate({ id: editInvId, d: invForm }) : createInvoice.mutate(); }} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                <form onSubmit={e => { e.preventDefault(); (editInvId ? updateInvoice.mutate({ id: editInvId, d: invForm }) : createInvoice.mutate()); }} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   <div className="space-y-1"><label className="text-sm font-medium">Invoice Number *</label><Input required value={invForm.invoiceNumber} onChange={e => setInvForm(f => ({ ...f, invoiceNumber: e.target.value }))} placeholder="INV-2026-0001" /></div>
                   <div className="space-y-1"><label className="text-sm font-medium">Vendor ID</label><Input value={invForm.vendorId} onChange={e => setInvForm(f => ({ ...f, vendorId: e.target.value }))} placeholder="Vendor UUID" /></div>
                   <div className="space-y-1"><label className="text-sm font-medium">Amount *</label><Input required type="number" min={0} value={invForm.amount || ''} onChange={e => setInvForm(f => ({ ...f, amount: parseFloat(e.target.value) }))} /></div>
@@ -440,7 +440,7 @@ export default function FinancePage() {
             <Card>
               <CardHeader><CardTitle className="text-base">{editCcId ? 'Edit Cost Center' : 'New Cost Center'}</CardTitle></CardHeader>
               <CardContent>
-                <form onSubmit={e => { e.preventDefault(); editCcId ? updateCc.mutate({ id: editCcId, d: ccForm }) : createCc.mutate(); }} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                <form onSubmit={e => { e.preventDefault(); (editCcId ? updateCc.mutate({ id: editCcId, d: ccForm }) : createCc.mutate()); }} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   <div className="space-y-1"><label className="text-sm font-medium">Name *</label><Input required value={ccForm.name} onChange={e => setCcForm(f => ({ ...f, name: e.target.value }))} placeholder="Engineering" /></div>
                   <div className="space-y-1"><label className="text-sm font-medium">Code *</label><Input required value={ccForm.code} onChange={e => setCcForm(f => ({ ...f, code: e.target.value }))} placeholder="ENG-001" /></div>
                   <div className="space-y-1"><label className="text-sm font-medium">Status</label><Select value={ccForm.status} onValueChange={v => setCcForm(f => ({ ...f, status: v }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="active">Active</SelectItem><SelectItem value="inactive">Inactive</SelectItem></SelectContent></Select></div>

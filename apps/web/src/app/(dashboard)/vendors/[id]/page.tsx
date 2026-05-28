@@ -129,9 +129,9 @@ export default function VendorDetailPage() {
 
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
         <Card><CardContent className="pt-4"><p className="text-xs text-muted-foreground">Contact</p><p className="font-semibold mt-1">{vendor.contactName ?? '—'}</p><p className="text-xs text-muted-foreground">{vendor.contactEmail ?? ''}</p></CardContent></Card>
-        <Card><CardContent className="pt-4"><p className="text-xs text-muted-foreground">Rating</p><div className="mt-1">{vendor.rating != null ? <Stars rating={vendor.rating} /> : <span className="font-semibold">—</span>}</div></CardContent></Card>
-        <Card><CardContent className="pt-4"><p className="text-xs text-muted-foreground">SLA Compliance</p><p className="font-semibold mt-1">{vendor.slaCompliancePercent != null ? `${vendor.slaCompliancePercent.toFixed(1)}%` : '—'}</p></CardContent></Card>
-        <Card><CardContent className="pt-4"><p className="text-xs text-muted-foreground">Total Spend</p><p className="font-semibold mt-1">{vendor.totalSpend != null ? formatCurrency(vendor.totalSpend) : '—'}</p></CardContent></Card>
+        <Card><CardContent className="pt-4"><p className="text-xs text-muted-foreground">Rating</p><div className="mt-1">{vendor.rating !== undefined ? <Stars rating={vendor.rating} /> : <span className="font-semibold">—</span>}</div></CardContent></Card>
+        <Card><CardContent className="pt-4"><p className="text-xs text-muted-foreground">SLA Compliance</p><p className="font-semibold mt-1">{vendor.slaCompliancePercent !== undefined ? `${vendor.slaCompliancePercent.toFixed(1)}%` : '—'}</p></CardContent></Card>
+        <Card><CardContent className="pt-4"><p className="text-xs text-muted-foreground">Total Spend</p><p className="font-semibold mt-1">{vendor.totalSpend !== undefined ? formatCurrency(vendor.totalSpend) : '—'}</p></CardContent></Card>
       </div>
 
       <Tabs defaultValue="performance">
@@ -213,7 +213,7 @@ export default function VendorDetailPage() {
               <div><p className="text-xs text-muted-foreground">Phone</p><p className="font-medium mt-1">{vendor.contactPhone ?? '—'}</p></div>
               <div><p className="text-xs text-muted-foreground">Website</p><p className="font-medium mt-1">{vendor.website ? <a href={vendor.website} target="_blank" rel="noopener noreferrer" className="text-primary underline">{vendor.website}</a> : '—'}</p></div>
               <div><p className="text-xs text-muted-foreground">Address</p><p className="font-medium mt-1">{vendor.address ?? '—'}</p></div>
-              <div><p className="text-xs text-muted-foreground">On-Time Delivery</p><p className="font-medium mt-1">{vendor.onTimeDeliveryPercent != null ? `${vendor.onTimeDeliveryPercent.toFixed(1)}%` : '—'}</p></div>
+              <div><p className="text-xs text-muted-foreground">On-Time Delivery</p><p className="font-medium mt-1">{vendor.onTimeDeliveryPercent !== undefined ? `${vendor.onTimeDeliveryPercent.toFixed(1)}%` : '—'}</p></div>
               {vendor.notes && <div className="sm:col-span-2"><p className="text-xs text-muted-foreground">Notes</p><p className="mt-1 text-sm">{vendor.notes}</p></div>}
             </CardContent>
           </Card>

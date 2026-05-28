@@ -127,10 +127,10 @@ export default function KnowledgeArticlePage() {
           <p className="text-sm font-medium">Was this article helpful?</p>
           <div className="flex items-center gap-3">
             <Button variant="outline" size="sm" disabled={helpfulMutation.isPending} onClick={() => helpfulMutation.mutate()}>
-              <ThumbsUp className="mr-1 h-4 w-4" />Yes {article.helpfulYes != null ? `(${article.helpfulYes})` : ''}
+              <ThumbsUp className="mr-1 h-4 w-4" />Yes {article.helpfulYes !== null ? `(${article.helpfulYes})` : ''}
             </Button>
             <Button variant="outline" size="sm" disabled={notHelpfulMutation.isPending} onClick={() => notHelpfulMutation.mutate()}>
-              <ThumbsDown className="mr-1 h-4 w-4" />No {article.helpfulNo != null ? `(${article.helpfulNo})` : ''}
+              <ThumbsDown className="mr-1 h-4 w-4" />No {article.helpfulNo !== null ? `(${article.helpfulNo})` : ''}
             </Button>
           </div>
         </CardContent>

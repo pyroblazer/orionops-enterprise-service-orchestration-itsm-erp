@@ -238,7 +238,7 @@ export default function SLAPage() {
             <Card>
               <CardHeader><CardTitle className="text-base">{editingDefId ? 'Edit SLA Definition' : 'New SLA Definition'}</CardTitle></CardHeader>
               <CardContent>
-                <form onSubmit={e => { e.preventDefault(); editingDefId ? updateMut.mutate({ id: editingDefId, d: defForm }) : createMut.mutate(defForm); }}
+                <form onSubmit={e => { e.preventDefault(); (editingDefId ? updateMut.mutate({ id: editingDefId, d: defForm }) : createMut.mutate(defForm)); }}
                   className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   <div className="space-y-1 sm:col-span-2 lg:col-span-1">
                     <label className="text-sm font-medium">Name *</label>
@@ -352,7 +352,7 @@ function SLAInstanceTable({ instances, onPause, onResume }: { instances: SLAInst
                   <div className="h-2 w-20 rounded-full bg-muted overflow-hidden">
                     <div className={cn('h-full rounded-full', inst.status === 'breached' ? 'bg-danger' : pct > 70 ? 'bg-warning' : 'bg-primary')} style={{ width: `${pct}%` }} />
                   </div>
-                  <span className="text-xs text-muted-foreground">{remaining != null ? formatMinutes(remaining) : '—'}</span>
+                  <span className="text-xs text-muted-foreground">{remaining !== undefined ? formatMinutes(remaining) : '—'}</span>
                 </div>
               </TableCell>
               <TableCell>

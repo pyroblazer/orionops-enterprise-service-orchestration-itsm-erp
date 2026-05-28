@@ -144,7 +144,7 @@ export default function ProcurementPage() {
             <Card>
               <CardHeader><CardTitle className="text-base">{editPrId ? 'Edit Purchase Request' : 'New Purchase Request'}</CardTitle></CardHeader>
               <CardContent>
-                <form onSubmit={e => { e.preventDefault(); editPrId ? updatePr.mutate({ id: editPrId, d: prForm }) : createPr.mutate(); }} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                <form onSubmit={e => { e.preventDefault(); (editPrId ? updatePr.mutate({ id: editPrId, d: prForm }) : createPr.mutate()); }} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   <div className="space-y-1 sm:col-span-2 lg:col-span-1"><label className="text-sm font-medium">Title *</label><Input required value={prForm.title} onChange={e => setPrForm(f => ({ ...f, title: e.target.value }))} placeholder="Laptop procurement" /></div>
                   <div className="space-y-1"><label className="text-sm font-medium">Priority</label><Select value={prForm.priority || 'medium'} onValueChange={v => setPrForm(f => ({ ...f, priority: v as 'critical' | 'high' | 'medium' | 'low' }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{PRIORITIES.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent></Select></div>
                   <div className="space-y-1"><label className="text-sm font-medium">Estimated Cost</label><Input type="number" min={0} value={prForm.estimatedCost || ''} onChange={e => setPrForm(f => ({ ...f, estimatedCost: parseFloat(e.target.value) }))} /></div>
@@ -208,7 +208,7 @@ export default function ProcurementPage() {
                       <TableCell className="font-mono font-medium">{po.poNumber ?? po.id.slice(0, 8)}</TableCell>
                       <TableCell>{po.vendorName ?? '—'}</TableCell>
                       <TableCell><Badge className={cn('capitalize', poStatusColor(po.status))}>{po.status}</Badge></TableCell>
-                      <TableCell>{po.totalAmount != null ? formatCurrency(po.totalAmount) : '—'}</TableCell>
+                      <TableCell>{po.totalAmount !== undefined ? formatCurrency(po.totalAmount) : '—'}</TableCell>
                       <TableCell className="text-sm text-muted-foreground">{po.expectedDelivery ? formatDateTime(po.expectedDelivery) : '—'}</TableCell>
                     </TableRow>
                   ))}
@@ -229,7 +229,7 @@ export default function ProcurementPage() {
             <Card>
               <CardHeader><CardTitle className="text-base">{editContractId ? 'Edit Contract' : 'New Contract'}</CardTitle></CardHeader>
               <CardContent>
-                <form onSubmit={e => { e.preventDefault(); editContractId ? updateContract.mutate({ id: editContractId, d: contractForm }) : createContract.mutate(); }} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                <form onSubmit={e => { e.preventDefault(); (editContractId ? updateContract.mutate({ id: editContractId, d: contractForm }) : createContract.mutate()); }} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   <div className="space-y-1"><label className="text-sm font-medium">Title *</label><Input required value={contractForm.title} onChange={e => setContractForm(f => ({ ...f, title: e.target.value }))} placeholder="Annual SaaS agreement" /></div>
                   <div className="space-y-1"><label className="text-sm font-medium">Vendor ID</label><Input value={contractForm.vendorId} onChange={e => setContractForm(f => ({ ...f, vendorId: e.target.value }))} placeholder="Vendor UUID" /></div>
                   <div className="space-y-1"><label className="text-sm font-medium">Contract Value</label><Input type="number" min={0} value={contractForm.value || ''} onChange={e => setContractForm(f => ({ ...f, value: parseFloat(e.target.value) }))} /></div>
@@ -261,7 +261,7 @@ export default function ProcurementPage() {
                   {contracts.length === 0 && <TableRow><TableCell colSpan={6} className="py-8 text-center text-muted-foreground">No contracts found</TableCell></TableRow>}
                   {contracts.map(c => {
                     const daysToExpiry = c.endDate ? (new Date(c.endDate).getTime() - Date.now()) / 86400000 : null;
-                    const expiring = daysToExpiry != null && daysToExpiry >= 0 && daysToExpiry <= 30;
+                    const expiring = daysToExpiry !== null && daysToExpiry >= 0 && daysToExpiry <= 30;
                     return (
                       <TableRow key={c.id}>
                         <TableCell className="font-medium">
@@ -270,7 +270,7 @@ export default function ProcurementPage() {
                         </TableCell>
                         <TableCell>{c.vendorName ?? c.vendorId ?? '—'}</TableCell>
                         <TableCell><Badge className={cn('capitalize', contractStatusColor(c.status ?? 'active'))}>{(c.status ?? 'active').replace('_',' ')}</Badge></TableCell>
-                        <TableCell>{c.value != null ? formatCurrency(c.value) : '—'}</TableCell>
+                        <TableCell>{c.value !== null ? formatCurrency(c.value) : '—'}</TableCell>
                         <TableCell className="text-sm text-muted-foreground">{c.endDate ? formatDateTime(c.endDate) : '—'}</TableCell>
                         <TableCell>
                           <div className="flex gap-1">

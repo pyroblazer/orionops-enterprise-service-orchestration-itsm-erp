@@ -292,9 +292,9 @@ export default function VendorsPage() {
                     </TableCell>
                     <TableCell><Badge className={cn('capitalize', typeColor(v.type))}>{v.type}</Badge></TableCell>
                     <TableCell><Badge className={cn('capitalize', statusColor(v.status))}>{v.status}</Badge></TableCell>
-                    <TableCell>{v.rating != null ? <Stars rating={v.rating} /> : '—'}</TableCell>
+                    <TableCell>{v.rating !== undefined ? <Stars rating={v.rating} /> : '—'}</TableCell>
                     <TableCell>
-                      {v.slaCompliancePercent != null && v.slaCompliancePercent > 0 ? (
+                      {v.slaCompliancePercent !== undefined && v.slaCompliancePercent > 0 ? (
                         <div className="flex items-center gap-2">
                           <div className="h-2 w-16 rounded-full bg-muted overflow-hidden">
                             <div className={cn('h-full rounded-full', v.slaCompliancePercent >= 95 ? 'bg-success' : v.slaCompliancePercent >= 80 ? 'bg-warning' : 'bg-danger')} style={{ width: `${Math.min(v.slaCompliancePercent, 100)}%` }} />
@@ -303,8 +303,8 @@ export default function VendorsPage() {
                         </div>
                       ) : 'N/A'}
                     </TableCell>
-                    <TableCell className="text-sm">{v.onTimeDeliveryPercent != null && v.onTimeDeliveryPercent > 0 ? `${v.onTimeDeliveryPercent.toFixed(1)}%` : 'N/A'}</TableCell>
-                    <TableCell>{v.totalSpend != null ? formatCurrency(v.totalSpend) : '—'}</TableCell>
+                    <TableCell className="text-sm">{v.onTimeDeliveryPercent !== undefined && v.onTimeDeliveryPercent > 0 ? `${v.onTimeDeliveryPercent.toFixed(1)}%` : 'N/A'}</TableCell>
+                    <TableCell>{v.totalSpend !== undefined ? formatCurrency(v.totalSpend) : '—'}</TableCell>
                     <TableCell onClick={e => e.stopPropagation()}>
                       <div className="flex gap-1">
                         <Button size="icon" variant="ghost" aria-label="Edit" onClick={() => openEdit(v)}><Pencil className="h-3.5 w-3.5" /></Button>
