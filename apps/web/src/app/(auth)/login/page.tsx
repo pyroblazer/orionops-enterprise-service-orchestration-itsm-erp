@@ -1,21 +1,17 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { auth } from '@/lib/api';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Package, Eye, EyeOff, ExternalLink, Shield, ArrowRight } from 'lucide-react';
+import { Package, ExternalLink, Shield, ArrowRight, CheckCircle } from 'lucide-react';
 
-export default function LoginPage() {
+function LoginFormContent() {
   const router = useRouter();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+  const searchParams = useSearchParams();
+  const showSignupSuccess = searchParams.get('signup') === 'success';
 
   useEffect(() => {
     if (auth.isAuthenticated()) {
@@ -27,49 +23,8 @@ export default function LoginPage() {
     window.location.href = await auth.getLoginUrl();
   };
 
-  const handleLocalLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
-
-    try {
-      if (email && password) {
-        auth.setTokens('dev-access-token', 'dev-refresh-token');
-        router.push('/dashboard');
-      } else {
-        setError('Please enter your email and password.');
-      }
-    } catch {
-      setError('Login failed. Please check your credentials and try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background p-4">
-      {/* Branded background gradient */}
-      <div
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background: `
-            radial-gradient(ellipse 80% 50% at 50% -20%, hsl(var(--primary) / 0.15), transparent),
-            radial-gradient(ellipse 60% 40% at 80% 100%, hsl(var(--info) / 0.1), transparent)
-          `,
-        }}
-        aria-hidden="true"
-      />
-
-      {/* Subtle grid pattern */}
-      <div
-        className="pointer-events-none absolute inset-0 opacity-[0.03]"
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h40v40H0z' fill='none' stroke='currentColor' stroke-width='0.5'/%3E%3C/svg%3E")`,
-        }}
-        aria-hidden="true"
-      />
-
-      <Card
+    <Card
         className="relative w-full max-w-md rounded-3xl shadow-large transition-all duration-300 hover:shadow-float"
         role="main"
         aria-label="Login form"
@@ -88,79 +43,25 @@ export default function LoginPage() {
             Enterprise Service Orchestration Platform
           </CardDescription>
         </CardHeader>
-        <CardContent className="pt-4">
-          <form onSubmit={handleLocalLogin} className="space-y-4">
-            <Input
-              label="Email"
-              type="email"
-              placeholder="you@company.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              autoComplete="email"
-              required
-              aria-required="true"
-              className="input-modern"
-            />
-            <div className="relative">
-              <Input
-                label="Password"
-                type={showPassword ? 'text' : 'password'}
-                placeholder="Enter your password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                autoComplete="current-password"
-                required
-                aria-required="true"
-                className="input-modern"
-              />
-              <button
-                type="button"
-                className="absolute right-4 top-8 text-muted-foreground hover:text-foreground transition-colors"
-                onClick={() => setShowPassword(!showPassword)}
-                aria-label={showPassword ? 'Hide password' : 'Show password'}
-              >
-                {showPassword ? (
-                  <EyeOff className="h-4 w-4" aria-hidden="true" />
-                ) : (
-                  <Eye className="h-4 w-4" aria-hidden="true" />
-                )}
-              </button>
+        <CardContent className="pt-4 space-y-4">
+          {showSignupSuccess && (
+            <div className="rounded-lg border border-success/30 bg-success/10 p-3 flex items-start gap-3">
+              <CheckCircle className="h-5 w-5 text-success flex-shrink-0 mt-0.5" aria-hidden="true" />
+              <div>
+                <p className="text-sm font-semibold text-success">Account Created</p>
+                <p className="text-xs text-success/80">Welcome to OrionOps. Sign in below to continue.</p>
+              </div>
             </div>
-
-            {error && (
-              <p className="text-sm text-destructive font-medium" role="alert">
-                {error}
-              </p>
-            )}
-
-            <Button
-              type="submit"
-              className="w-full h-11 font-semibold shadow-medium hover:shadow-large transition-all"
-              disabled={loading}
-              aria-busy={loading}
-            >
-              {loading ? 'Signing in...' : 'Sign In'}
-            </Button>
-          </form>
-
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-border/50" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-card px-3 text-muted-foreground font-medium">Or continue with</span>
-            </div>
-          </div>
+          )}
 
           <Button
             type="button"
-            variant="outline"
-            className="w-full h-11 font-semibold transition-all hover:shadow-medium"
+            className="w-full h-11 font-semibold shadow-medium hover:shadow-large transition-all"
             onClick={handleSSOLogin}
             aria-label="Sign in with SSO via Keycloak"
           >
             <ExternalLink className="mr-2 h-4 w-4" aria-hidden="true" />
-            SSO (Keycloak)
+            Sign In with Keycloak
           </Button>
 
           <div className="mt-6 pt-6 border-t border-border/50">
@@ -182,6 +83,13 @@ export default function LoginPage() {
           </div>
         </CardContent>
       </Card>
-    </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="flex min-h-screen items-center justify-center"><div className="text-muted-foreground">Loading...</div></div>}>
+      <LoginFormContent />
+    </Suspense>
   );
 }

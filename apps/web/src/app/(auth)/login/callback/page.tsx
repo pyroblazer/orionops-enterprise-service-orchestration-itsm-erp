@@ -57,6 +57,15 @@ function CallbackHandler() {
         return;
       }
 
+      // Get the redirect destination (set by middleware in a cookie when user was bounced to /login)
+      const getCookieValue = (name: string): string => {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop()?.split(';').shift() || '/dashboard';
+        return '/dashboard';
+      };
+      const redirectDestination = getCookieValue('orionops_redirect_after_auth') || '/dashboard';
+
       try {
         // Exchange authorization code for tokens
         const tokenResponse = await fetch(
@@ -88,9 +97,12 @@ function CallbackHandler() {
         // Clear PKCE values
         sessionStorage.removeItem('orionops_pkce_verifier');
         sessionStorage.removeItem('orionops_oauth_state');
+        // Clear redirect cookie
+        document.cookie = 'orionops_redirect_after_auth=; path=/; max-age=0; SameSite=Lax';
 
-        // Set auth cookie for middleware
-        document.cookie = 'orionops_authenticated=true; path=/; max-age=36000; SameSite=Lax';
+        // Set auth cookie for middleware — use 30-min lifetime to match SSO session timeout
+        // (axios interceptor will refresh tokens and extend this cookie)
+        document.cookie = 'orionops_authenticated=true; path=/; max-age=1800; SameSite=Lax';
 
         // Decode JWT and sync user with backend
         try {
@@ -118,7 +130,8 @@ function CallbackHandler() {
           // Sync failure shouldn't block login — user can retry later
         }
 
-        router.replace('/dashboard');
+        // Redirect to original destination or dashboard
+        router.replace(redirectDestination);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Authentication failed.');
       }

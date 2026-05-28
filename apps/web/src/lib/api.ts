@@ -672,8 +672,8 @@ export interface ReportSummary {
 // HTTP client
 // ---------------------------------------------------------------------------
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://orionops-enterprise-service.onrender.com/api/v1';
-const KEYCLOAK_URL = process.env.NEXT_PUBLIC_KEYCLOAK_URL || 'https://orionops-keycloak.onrender.com';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1';
+const KEYCLOAK_URL = process.env.NEXT_PUBLIC_KEYCLOAK_URL || 'http://localhost:8180';
 const KEYCLOAK_REALM = process.env.NEXT_PUBLIC_KEYCLOAK_REALM || 'orionops';
 const KEYCLOAK_CLIENT_ID = process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_ID || 'orionops-web';
 
@@ -690,6 +690,10 @@ function getRefreshToken(): string | null {
 function setTokens(accessToken: string, refreshToken?: string): void {
   localStorage.setItem('orionops_access_token', accessToken);
   if (refreshToken) localStorage.setItem('orionops_refresh_token', refreshToken);
+  // Update auth cookie when tokens are refreshed (extends the session)
+  if (typeof window !== 'undefined') {
+    document.cookie = 'orionops_authenticated=true; path=/; max-age=1800; SameSite=Lax';
+  }
 }
 
 function clearTokens(): void {
@@ -726,9 +730,14 @@ apiClient.interceptors.response.use(
         return Promise.reject(error);
       }
       try {
+        const params = new URLSearchParams({
+          grant_type: 'refresh_token',
+          refresh_token: refreshToken,
+          client_id: KEYCLOAK_CLIENT_ID,
+        });
         const response = await axios.post(
           `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/token`,
-          { grant_type: 'refresh_token', refresh_token: refreshToken, client_id: KEYCLOAK_CLIENT_ID },
+          params,
           { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
         );
         const { access_token, refresh_token: newRefreshToken } = response.data;
@@ -1188,6 +1197,13 @@ export const auth = {
     return `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/logout`
       + `?client_id=${KEYCLOAK_CLIENT_ID}`
       + `&post_logout_redirect_uri=${encodeURIComponent(redirectUri)}`;
+  },
+  logout: (): void => {
+    clearTokens();
+    if (typeof window !== 'undefined') {
+      document.cookie = 'orionops_authenticated=; path=/; max-age=0; SameSite=Lax';
+      window.location.href = auth.getLogoutUrl();
+    }
   },
 };
 

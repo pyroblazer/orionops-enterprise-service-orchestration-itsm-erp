@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-const PUBLIC_PATHS = ['/', '/login'];
+const PUBLIC_PATHS = ['/', '/login', '/signup'];
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -25,7 +25,15 @@ export function middleware(request: NextRequest) {
   if (!authCookie || authCookie.value !== 'true') {
     const loginUrl = new URL('/login', request.url);
     loginUrl.searchParams.set('from', pathname);
-    return NextResponse.redirect(loginUrl);
+    const response = NextResponse.redirect(loginUrl);
+    // Store the destination path in a response cookie so /login/callback can retrieve it
+    response.cookies.set('orionops_redirect_after_auth', pathname, {
+      path: '/',
+      httpOnly: true,
+      sameSite: 'lax',
+      maxAge: 600, // 10 minutes
+    });
+    return response;
   }
 
   return NextResponse.next();
