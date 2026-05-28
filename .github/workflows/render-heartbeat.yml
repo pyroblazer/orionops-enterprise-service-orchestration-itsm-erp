@@ -2,35 +2,69 @@ name: Render Heartbeat
 
 on:
   schedule:
-    # Every 14 minutes to keep Render free tier services from spinning down (15-min timeout)
-    - cron: '*/14 * * * *'
+    # Every 10 minutes to keep Render free tier services from spinning down (15-min timeout)
+    - cron: '*/10 * * * *'
   workflow_dispatch:
 
+env:
+  BACKEND_URL: https://orionops-enterprise-service.onrender.com
+  KEYCLOAK_URL: https://orionops-keycloak.onrender.com
+
 jobs:
-  ping:
+  heartbeat:
     runs-on: ubuntu-latest
+    name: Keep Render Services Alive
     steps:
-      - name: Ping AI Service health endpoint
+      - name: Ping Backend Service
         continue-on-error: true
         run: |
-          curl -sf ${{ secrets.RENDER_AI_URL }}/health || echo "AI service is down or unreachable"
+          echo "🔄 Pinging Backend Service: ${{ env.BACKEND_URL }}"
+          for i in {1..3}; do
+            if curl -sf --max-time 10 "${{ env.BACKEND_URL }}/actuator/health" > /dev/null 2>&1; then
+              echo "✅ Backend service is alive (attempt $i)"
+              break
+            else
+              echo "⚠️ Backend health check attempt $i failed, retrying..."
+              sleep 2
+            fi
+          done
 
-      - name: Ping Keycloak health endpoint
+      - name: Ping Keycloak Service
         continue-on-error: true
         run: |
-          curl -sf ${{ secrets.RENDER_KEYCLOAK_URL }}/health/ready || echo "Keycloak is down or unreachable"
+          echo "🔄 Pinging Keycloak Service: ${{ env.KEYCLOAK_URL }}"
+          for i in {1..3}; do
+            if curl -sf --max-time 10 "${{ env.KEYCLOAK_URL }}/health/ready" > /dev/null 2>&1; then
+              echo "✅ Keycloak service is alive (attempt $i)"
+              break
+            else
+              echo "⚠️ Keycloak health check attempt $i failed, retrying..."
+              sleep 2
+            fi
+          done
 
-      - name: Ping MinIO health endpoint
+      - name: Fallback Ping - Backend
         continue-on-error: true
         run: |
-          curl -sf ${{ secrets.RENDER_MINIO_URL }}/minio/health/live || echo "MinIO is down or unreachable"
+          echo "🔄 Fallback: Pinging Backend root endpoint"
+          curl -sf --max-time 10 "${{ env.BACKEND_URL }}/" > /dev/null 2>&1 && echo "✅ Backend responds" || echo "⚠️ Backend not responding"
 
-      - name: Ping OpenSearch cluster health endpoint
+      - name: Fallback Ping - Keycloak
         continue-on-error: true
         run: |
-          curl -sf ${{ secrets.RENDER_OPENSEARCH_URL }}/_cluster/health || echo "OpenSearch is down or unreachable"
+          echo "🔄 Fallback: Pinging Keycloak root endpoint"
+          curl -sf --max-time 10 "${{ env.KEYCLOAK_URL }}/" > /dev/null 2>&1 && echo "✅ Keycloak responds" || echo "⚠️ Keycloak not responding"
 
       - name: Summary
         run: |
-          echo "Render heartbeat completed at $(date -u +'%Y-%m-%d %H:%M:%S UTC')"
-          echo "All Render services pinged to prevent 15-minute inactivity spin-down"
+          echo "═══════════════════════════════════════════════════════"
+          echo "🎯 Render Services Heartbeat Completed"
+          echo "═══════════════════════════════════════════════════════"
+          echo "⏰ Time: $(date -u +'%Y-%m-%d %H:%M:%S UTC')"
+          echo "✅ Backend: ${{ env.BACKEND_URL }}"
+          echo "✅ Keycloak: ${{ env.KEYCLOAK_URL }}"
+          echo "═══════════════════════════════════════════════════════"
+          echo ""
+          echo "📌 Services pinged every 10 minutes to prevent Render"
+          echo "   free tier 15-minute inactivity spin-down."
+          echo "═══════════════════════════════════════════════════════"
