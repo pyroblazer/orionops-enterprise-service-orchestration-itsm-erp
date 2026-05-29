@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react';
 
-describe('Incidents Page', () => {
+describe('Predictive Analytics Page', () => {
   it('renders without crashing', () => {
     // Component test
     expect(true).toBe(true);

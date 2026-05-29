@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react';
 
-describe('Incidents Page', () => {
+describe('Cycle Counts Page', () => {
   it('renders without crashing', () => {
     // Component test
     expect(true).toBe(true);

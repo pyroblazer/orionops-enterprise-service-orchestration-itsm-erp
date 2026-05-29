@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react';
 
-describe('Incidents Page', () => {
+describe('API Client Methods', () => {
   it('renders without crashing', () => {
     // Component test
     expect(true).toBe(true);
