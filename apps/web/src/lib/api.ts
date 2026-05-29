@@ -1142,6 +1142,19 @@ async function generatePKCE(): Promise<{ verifier: string; challenge: string }> 
   return { verifier, challenge };
 }
 
+export function decodeJwtPayload(token: string): Record<string, unknown> {
+  try {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(
+      atob(base64).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join('')
+    );
+    return JSON.parse(jsonPayload);
+  } catch {
+    return {};
+  }
+}
+
 export const auth = {
   setTokens,
   clearTokens,
@@ -1204,6 +1217,49 @@ export const auth = {
       document.cookie = 'orionops_authenticated=; path=/; max-age=0; SameSite=Lax';
       window.location.href = auth.getLogoutUrl();
     }
+  },
+  loginWithPassword: async (username: string, password: string): Promise<void> => {
+    const res = await fetch(
+      `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/token`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          grant_type: 'password',
+          client_id: KEYCLOAK_CLIENT_ID,
+          username,
+          password,
+          scope: 'openid profile email',
+        }),
+      }
+    );
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error_description || 'Invalid username or password.');
+    }
+    const { access_token, refresh_token } = await res.json();
+    auth.setTokens(access_token, refresh_token);
+  },
+  register: async (data: {
+    username: string;
+    email: string;
+    password: string;
+    firstName: string;
+    lastName: string;
+  }): Promise<void> => {
+    const res = await fetch(`${API_BASE_URL}/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.message || 'Registration failed.');
+    }
+  },
+  getGoogleLoginUrl: async (): Promise<string> => {
+    const baseUrl = await auth.getLoginUrl();
+    return baseUrl + '&kc_idp_hint=google';
   },
 };
 

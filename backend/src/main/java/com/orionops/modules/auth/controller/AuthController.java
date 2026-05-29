@@ -1,6 +1,7 @@
 package com.orionops.modules.auth.controller;
 
 import com.orionops.common.dto.ApiResponse;
+import com.orionops.modules.auth.dto.RegisterRequest;
 import com.orionops.modules.auth.dto.UserResponse;
 import com.orionops.modules.auth.dto.UserSyncRequest;
 import com.orionops.modules.auth.service.AuthService;
@@ -44,5 +45,21 @@ public class AuthController {
         UserResponse user = authService.syncUser(request);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success(user, "User synced successfully"));
+    }
+
+    @PostMapping("/register")
+    @Operation(summary = "Register new user", description = "Registers a new user account via username and password")
+    public ResponseEntity<ApiResponse<Void>> register(@Valid @RequestBody RegisterRequest request) {
+        try {
+            authService.register(request);
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(ApiResponse.success(null, "User registered successfully. Please sign in."));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(ApiResponse.error(e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("Registration failed: " + e.getMessage()));
+        }
     }
 }

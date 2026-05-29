@@ -1,6 +1,7 @@
 package com.orionops.modules.auth.service;
 
 import com.orionops.common.exception.ResourceNotFoundException;
+import com.orionops.modules.auth.dto.RegisterRequest;
 import com.orionops.modules.auth.dto.UserResponse;
 import com.orionops.modules.auth.dto.UserSyncRequest;
 import com.orionops.modules.auth.entity.User;
@@ -25,6 +26,7 @@ import java.util.UUID;
 public class AuthService {
 
     private final UserRepository userRepository;
+    private final KeycloakService keycloakService;
 
     /**
      * Gets the current authenticated user from the security context.
@@ -113,6 +115,36 @@ public class AuthService {
         }
         // Default tenant for standalone deployments
         return UUID.fromString("00000000-0000-0000-0000-000000000001");
+    }
+
+    /**
+     * Registers a new user in Keycloak and creates a local user record.
+     * The user must be synced separately after registration via the sync-user endpoint.
+     *
+     * @param request the registration request containing user data
+     * @throws IllegalArgumentException if username/email already exists
+     * @throws Exception if registration fails
+     */
+    @Transactional
+    public void register(RegisterRequest request) throws Exception {
+        log.info("Registering new user: username={}, email={}", request.getUsername(), request.getEmail());
+
+        // Register in Keycloak
+        try {
+            keycloakService.registerUser(
+                    request.getUsername(),
+                    request.getEmail(),
+                    request.getPassword(),
+                    request.getFirstName(),
+                    request.getLastName()
+            );
+        } catch (IllegalArgumentException e) {
+            log.warn("Registration failed - user already exists: {}", request.getUsername());
+            throw e;
+        } catch (Exception e) {
+            log.error("Failed to register user in Keycloak", e);
+            throw e;
+        }
     }
 
     private UserResponse mapToResponse(User user) {
