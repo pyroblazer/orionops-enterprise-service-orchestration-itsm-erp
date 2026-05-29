@@ -33,10 +33,10 @@ COMMENT ON COLUMN tenants.domain IS 'Custom domain for tenant access';
 COMMENT ON COLUMN tenants.settings IS 'Tenant-specific configuration as JSONB';
 COMMENT ON COLUMN tenants.deleted_at IS 'Soft delete timestamp; NULL means active';
 
-CREATE INDEX IF NOT EXISTS idx_tenants_slug    ON tenants (slug);
-CREATE INDEX IF NOT EXISTS idx_tenants_domain  ON tenants (domain);
-CREATE INDEX IF NOT EXISTS idx_tenants_status  ON tenants (status);
-CREATE INDEX IF NOT EXISTS idx_tenants_deleted ON tenants (deleted_at) WHERE deleted_at IS NOT NULL;
+CREATE INDEX idx_tenants_slug    ON tenants (slug);
+CREATE INDEX idx_tenants_domain  ON tenants (domain);
+CREATE INDEX idx_tenants_status  ON tenants (status);
+CREATE INDEX idx_tenants_deleted ON tenants (deleted_at) WHERE deleted_at IS NOT NULL;
 
 -- ============================================================================
 -- USERS
@@ -64,12 +64,12 @@ COMMENT ON TABLE users IS 'Platform users belonging to a tenant';
 COMMENT ON COLUMN users.password_hash IS 'Bcrypt or Argon2 hashed password';
 COMMENT ON COLUMN users.deleted_at IS 'Soft delete timestamp; NULL means active';
 
-CREATE INDEX IF NOT EXISTS idx_users_tenant_id    ON users (tenant_id);
-CREATE INDEX IF NOT EXISTS idx_users_email        ON users (email);
-CREATE INDEX IF NOT EXISTS idx_users_status       ON users (status);
-CREATE INDEX IF NOT EXISTS idx_users_department   ON users (department);
-CREATE INDEX IF NOT EXISTS idx_users_deleted      ON users (deleted_at) WHERE deleted_at IS NOT NULL;
-CREATE INDEX IF NOT EXISTS idx_users_name_search  ON users (tenant_id, first_name, last_name);
+CREATE INDEX idx_users_tenant_id    ON users (tenant_id);
+CREATE INDEX idx_users_email        ON users (email);
+CREATE INDEX idx_users_status       ON users (status);
+CREATE INDEX idx_users_department   ON users (department);
+CREATE INDEX idx_users_deleted      ON users (deleted_at) WHERE deleted_at IS NOT NULL;
+CREATE INDEX idx_users_name_search  ON users (tenant_id, first_name, last_name);
 
 -- ============================================================================
 -- ROLES
@@ -89,8 +89,8 @@ CREATE TABLE roles (
 COMMENT ON TABLE roles IS 'Role definitions for RBAC within a tenant';
 COMMENT ON COLUMN roles.is_system IS 'System roles cannot be modified or deleted';
 
-CREATE INDEX IF NOT EXISTS idx_roles_tenant_id  ON roles (tenant_id);
-CREATE INDEX IF NOT EXISTS idx_roles_system     ON roles (is_system) WHERE is_system = true;
+CREATE INDEX idx_roles_tenant_id  ON roles (tenant_id);
+CREATE INDEX idx_roles_system     ON roles (is_system) WHERE is_system = true;
 
 -- ============================================================================
 -- GROUPS
@@ -110,10 +110,10 @@ COMMENT ON TABLE groups IS 'Organizational groups (teams, departments, etc.)';
 COMMENT ON COLUMN groups.group_type IS 'Type of group: team, department, division, etc.';
 COMMENT ON COLUMN groups.parent_id IS 'Parent group for hierarchical structures';
 
-CREATE INDEX IF NOT EXISTS idx_groups_tenant_id  ON groups (tenant_id);
-CREATE INDEX IF NOT EXISTS idx_groups_parent_id  ON groups (parent_id);
-CREATE INDEX IF NOT EXISTS idx_groups_type       ON groups (group_type);
-CREATE INDEX IF NOT EXISTS idx_groups_name       ON groups (tenant_id, name);
+CREATE INDEX idx_groups_tenant_id  ON groups (tenant_id);
+CREATE INDEX idx_groups_parent_id  ON groups (parent_id);
+CREATE INDEX idx_groups_type       ON groups (group_type);
+CREATE INDEX idx_groups_name       ON groups (tenant_id, name);
 
 -- ============================================================================
 -- PERMISSIONS
@@ -133,8 +133,8 @@ COMMENT ON TABLE permissions IS 'Granular permission definitions (resource:actio
 COMMENT ON COLUMN permissions.resource IS 'The resource being accessed (e.g., incidents, users)';
 COMMENT ON COLUMN permissions.action IS 'The action permitted (e.g., create, read, update, delete)';
 
-CREATE INDEX IF NOT EXISTS idx_permissions_resource     ON permissions (resource);
-CREATE INDEX IF NOT EXISTS idx_permissions_action       ON permissions (action);
+CREATE INDEX idx_permissions_resource     ON permissions (resource);
+CREATE INDEX idx_permissions_action       ON permissions (action);
 
 -- ============================================================================
 -- USER_ROLES (junction table)
@@ -148,7 +148,7 @@ CREATE TABLE user_roles (
 
 COMMENT ON TABLE user_roles IS 'Maps users to their assigned roles';
 
-CREATE INDEX IF NOT EXISTS idx_user_roles_role_id ON user_roles (role_id);
+CREATE INDEX idx_user_roles_role_id ON user_roles (role_id);
 
 -- ============================================================================
 -- USER_GROUPS (junction table)
@@ -162,7 +162,7 @@ CREATE TABLE user_groups (
 
 COMMENT ON TABLE user_groups IS 'Maps users to their group memberships';
 
-CREATE INDEX IF NOT EXISTS idx_user_groups_group_id ON user_groups (group_id);
+CREATE INDEX idx_user_groups_group_id ON user_groups (group_id);
 
 -- ============================================================================
 -- ROLE_PERMISSIONS (junction table)
@@ -176,7 +176,7 @@ CREATE TABLE role_permissions (
 
 COMMENT ON TABLE role_permissions IS 'Maps roles to their granted permissions';
 
-CREATE INDEX IF NOT EXISTS idx_role_permissions_permission_id ON role_permissions (permission_id);
+CREATE INDEX idx_role_permissions_permission_id ON role_permissions (permission_id);
 
 -- ============================================================================
 -- AUDIT_EVENTS (immutable append-only log)
@@ -203,12 +203,12 @@ COMMENT ON COLUMN audit_events.new_values IS 'New state of the resource after th
 COMMENT ON COLUMN audit_events.ip_address IS 'IPv4 or IPv6 address of the client';
 
 -- High-performance indexes for audit queries
-CREATE INDEX IF NOT EXISTS idx_audit_events_tenant        ON audit_events (tenant_id);
-CREATE INDEX IF NOT EXISTS idx_audit_events_user          ON audit_events (user_id);
-CREATE INDEX IF NOT EXISTS idx_audit_events_resource      ON audit_events (resource_type, resource_id);
-CREATE INDEX IF NOT EXISTS idx_audit_events_action        ON audit_events (action);
-CREATE INDEX IF NOT EXISTS idx_audit_events_timestamp     ON audit_events (timestamp DESC);
-CREATE INDEX IF NOT EXISTS idx_audit_events_tenant_time   ON audit_events (tenant_id, timestamp DESC);
+CREATE INDEX idx_audit_events_tenant        ON audit_events (tenant_id);
+CREATE INDEX idx_audit_events_user          ON audit_events (user_id);
+CREATE INDEX idx_audit_events_resource      ON audit_events (resource_type, resource_id);
+CREATE INDEX idx_audit_events_action        ON audit_events (action);
+CREATE INDEX idx_audit_events_timestamp     ON audit_events (timestamp DESC);
+CREATE INDEX idx_audit_events_tenant_time   ON audit_events (tenant_id, timestamp DESC);
 
 -- Prevent updates and deletes on audit_events (append-only)
 -- Using a trigger to enforce immutability at the database level
