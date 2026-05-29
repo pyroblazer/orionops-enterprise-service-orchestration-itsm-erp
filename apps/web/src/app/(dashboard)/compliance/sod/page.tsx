@@ -19,11 +19,8 @@ export default function SoDPage() {
   async function fetchRules() {
     try {
       setLoading(true);
-      setRules({
-        'create_expense': 'approve_expense',
-        'create_po': 'approve_po',
-        'create_invoice': 'approve_invoice'
-      });
+      const res = await api.getSoDRules?.() || { data: {} };
+      setRules(res?.data || {});
     } catch (err) {
       console.error('Failed to load SoD rules:', err);
     } finally {

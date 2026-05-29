@@ -20,12 +20,10 @@ export default function LotTrackingPage() {
   async function fetchLots() {
     try {
       setLoading(true);
-      setLots([
-        { id: 'LOT-001', sku: 'SKU-001', lotNumber: 'LOT-2024-001', expiryDate: '2026-08-15', quantity: 500 }
-      ]);
-      setExpiringLots([
-        { id: 'LOT-002', sku: 'SKU-002', expiryDate: '2026-06-20', daysRemaining: 22 }
-      ]);
+      const lotsRes = await api.receiveLot?.({} as any) || { data: [] };
+      const expiringRes = await api.getExpiringLots?.() || { data: [] };
+      setLots(lotsRes?.data || []);
+      setExpiringLots(expiringRes?.data || []);
     } catch (err) {
       console.error('Failed to load lots:', err);
     } finally {

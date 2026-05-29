@@ -22,7 +22,7 @@ export default function RFQManagementPage() {
     try {
       setLoading(true);
       const res = await api.getRFQs?.();
-      setRfqs(res?.data || []);
+      const res = await api.getRFQs?.() || { data: [] }; setRfqs(res?.data || []);;
     } catch (err) {
       console.error('Failed to load RFQs:', err);
     } finally {

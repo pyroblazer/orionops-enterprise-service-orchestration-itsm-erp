@@ -16,20 +16,9 @@ export default function ExecutiveDashboardPage() {
   async function fetchKPIs() {
     try {
       setLoading(true);
-      setKpis({
-        mttr: 4.2,
-        slaCompliance: 94,
-        budgetUtilization: 67,
-        vendorSpend: 1250000,
-        openIncidents: 23,
-        changeSuccess: 98,
-        inventoryValue: 450000,
-        workforceUtilization: 82,
-        overdueInvoices: 5,
-        activeContracts: 12,
-        expiringWarranties: 3,
-        complianceViolations: 1
-      });
+      // In production, fetch from multiple API endpoints
+      // For now, initialize empty state - API will provide aggregated KPI data
+      setKpis({});
     } catch (err) {
       console.error('Failed to load KPIs:', err);
     } finally {

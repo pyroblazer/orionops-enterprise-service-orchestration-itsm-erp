@@ -19,13 +19,12 @@ export default function PredictiveAnalyticsPage() {
   async function fetchData() {
     try {
       setLoading(true);
-      setCashFlow({
-        months: ['Jun', 'Jul', 'Aug', 'Sep'],
-        values: [250000, 280000, 320000, 290000]
-      });
-      setAnomalies([
-        { id: 'ANOM-001', vendor: 'Vendor A', amount: 50000, reason: 'Unusual purchase pattern' }
+      const [cashFlowRes, anomaliesRes] = await Promise.all([
+        api.predictCashFlow?.(),
+        api.detectAnomalies?.()
       ]);
+      setCashFlow(cashFlowRes?.data || null);
+      setAnomalies(anomaliesRes?.data || []);
     } catch (err) {
       console.error('Failed to load predictions:', err);
     } finally {

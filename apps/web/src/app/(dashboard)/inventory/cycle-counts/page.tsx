@@ -19,10 +19,9 @@ export default function CycleCountsPage() {
   async function fetchCycleCounts() {
     try {
       setLoading(true);
-      setCounts([
-        { id: 'CC-001', warehouse: 'WH-1', schedule: 'WEEKLY', lastCount: '2026-05-25', variance: 0 },
-        { id: 'CC-002', warehouse: 'WH-2', schedule: 'MONTHLY', lastCount: '2026-05-01', variance: 12 }
-      ]);
+      // In production, fetch from API: const res = await api.getCycleCountVariances?.() || { data: [] };
+      // For now, set empty array - API will provide data when available
+      setCounts([]);
     } catch (err) {
       console.error('Failed to load cycle counts:', err);
     } finally {

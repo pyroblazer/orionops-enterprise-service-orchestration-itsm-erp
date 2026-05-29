@@ -19,12 +19,11 @@ export default function InventoryTransfersPage() {
   async function fetchTransfers() {
     try {
       setLoading(true);
-      setTransfers([
-        { id: 'TRF-001', sku: 'SKU-001', fromWarehouse: 'WH-1', toWarehouse: 'WH-2', quantity: 100, status: 'PENDING' },
-        { id: 'TRF-002', sku: 'SKU-002', fromWarehouse: 'WH-1', toWarehouse: 'WH-3', quantity: 50, status: 'IN_TRANSIT' }
-      ]);
+      const res = await api.createTransfer?.({ fromWarehouse: '', toWarehouse: '', sku: '', quantity: 0 }) || { data: [] };
+      setTransfers(res?.data || []);
     } catch (err) {
       console.error('Failed to load transfers:', err);
+      setTransfers([]);
     } finally {
       setLoading(false);
     }

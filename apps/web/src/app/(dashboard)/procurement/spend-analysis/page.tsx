@@ -20,7 +20,8 @@ export default function SpendAnalysisPage() {
   async function fetchData() {
     try {
       setLoading(true);
-      setConcentration({ risk: 'MODERATE' });
+      const res = await api.getVendorConcentration?.() || { data: {} };
+      setConcentration(res?.data || {});
     } catch (err) {
       console.error('Failed to load spend analysis:', err);
     } finally {

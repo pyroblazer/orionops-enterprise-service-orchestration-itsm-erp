@@ -23,7 +23,7 @@ export default function BudgetForecastPage() {
         api.getBudgets?.(),
         api.getBudgetAlerts?.(),
       ]);
-      setBudgets(budgetsRes?.data || []);
+      const res = await api.getBudgets?.() || { data: [] }; setBudgets(res?.data || []);;
       setAlerts(alertsRes?.data || []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load forecasts');

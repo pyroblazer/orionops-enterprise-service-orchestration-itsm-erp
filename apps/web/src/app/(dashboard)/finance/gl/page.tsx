@@ -23,13 +23,13 @@ export default function GeneralLedgerPage() {
     try {
       setLoading(true);
       if (tab === 'accounts') {
-        const res = await api.getChartOfAccounts?.();
+        const res = await api.getChartOfAccounts?.() || { data: [] };
         setAccounts(res?.data || []);
       } else if (tab === 'trial') {
-        const res = await api.getTrialBalance?.();
+        const res = await api.getTrialBalance?.() || { data: {} };
         setTrialBalance(res?.data || {});
       } else if (tab === 'income') {
-        const res = await api.getIncomeStatement?.();
+        const res = await api.getIncomeStatement?.() || { data: {} };
         setIncomeStatement(res?.data || {});
       }
     } catch (err) {

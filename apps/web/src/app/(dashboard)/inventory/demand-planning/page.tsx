@@ -18,10 +18,8 @@ export default function DemandPlanningPage() {
   async function fetchData() {
     try {
       setLoading(true);
-      setReorderPoints([
-        { sku: 'SKU-001', reorderPoint: 100, reorderQty: 500 },
-        { sku: 'SKU-002', reorderPoint: 50, reorderQty: 250 }
-      ]);
+      const res = await api.getSuggestedReorderPoint?.("") || { data: [] };
+      setReorderPoints(res?.data || []);
     } catch (err) {
       console.error('Failed to load demand planning:', err);
     } finally {

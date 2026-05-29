@@ -18,10 +18,9 @@ export default function ApprovalAuthoritiesPage() {
   async function fetchAuthorities() {
     try {
       setLoading(true);
-      setAuthorities([
-        { userId: 'USER-001', userName: 'John Smith', activityType: 'APPROVE_EXPENSE', maxAmount: 10000 },
-        { userId: 'USER-002', userName: 'Jane Doe', activityType: 'APPROVE_PO', maxAmount: 50000 }
-      ]);
+      // In production: const res = await api.getApprovalAuthorities?.() || { data: [] };
+      // For now, set empty - API will provide data when available
+      setAuthorities([]);
     } catch (err) {
       console.error('Failed to load authorities:', err);
     } finally {
