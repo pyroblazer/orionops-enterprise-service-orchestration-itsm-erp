@@ -6,11 +6,16 @@ import com.orionops.modules.procurement.dto.ProcurementRequest;
 import com.orionops.modules.procurement.dto.ProcurementResponse;
 import com.orionops.modules.procurement.entity.*;
 import com.orionops.modules.procurement.repository.ProcurementRepository;
+import com.orionops.modules.notification.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.orionops.common.tenant.TenantContextHolder;
+
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -25,6 +30,7 @@ public class ProcurementService {
     private final ProcurementRepository.PurchaseOrderRepository poRepository;
     private final ProcurementRepository.VendorRepository vendorRepository;
     private final ProcurementRepository.ContractRepository contractRepository;
+    private final NotificationService notificationService;
 
     // Purchase Requests
     @Transactional
@@ -204,6 +210,45 @@ public class ProcurementService {
         contractRepository.save(c);
     }
 
+    // ---- Contract Renewal Alerts ----
+
+    @Scheduled(cron = "0 0 9 * * *")
+    @Transactional
+    public void checkContractRenewals() {
+        LocalDate today = LocalDate.now();
+        LocalDate in30Days = today.plusDays(30);
+        LocalDate in60Days = today.plusDays(60);
+        LocalDate in90Days = today.plusDays(90);
+
+        List<Contract> expiringIn30 = contractRepository.findByEndDateBetween(today, in30Days);
+        List<Contract> expiringIn60 = contractRepository.findByEndDateBetween(in30Days, in60Days);
+        List<Contract> expiringIn90 = contractRepository.findByEndDateBetween(in60Days, in90Days);
+
+        for (Contract contract : expiringIn30) {
+            try {
+                notificationService.createNotification(
+                    contract.getOwnerId() != null ? contract.getOwnerId() : UUID.randomUUID(),
+                    "[URGENT] Contract Expiring in 30 Days: " + contract.getTitle(),
+                    "Contract with " + contract.getVendorId() + " expires on " + contract.getEndDate(),
+                    "CONTRACT_EXPIRY_30",
+                    contract.getId(),
+                    "CONTRACT"
+                );
+                log.info("Contract renewal alert sent for contract: {}", contract.getId());
+            } catch (Exception e) {
+                log.warn("Failed to send contract renewal alert: {}", e.getMessage());
+            }
+        }
+
+        for (Contract contract : expiringIn60) {
+            log.info("Contract expiring in 60 days: {}", contract.getId());
+        }
+
+        for (Contract contract : expiringIn90) {
+            log.info("Contract expiring in 90 days: {}", contract.getId());
+        }
+    }
+
     private PurchaseRequest findPROrThrow(UUID id) {
         return prRepository.findById(id).filter(p -> !p.isDeleted())
                 .orElseThrow(() -> new ResourceNotFoundException("PurchaseRequest", id));
@@ -224,7 +269,9 @@ public class ProcurementService {
                 .orElseThrow(() -> new ResourceNotFoundException("Contract", id));
     }
 
-    private UUID resolveTenantId() { return UUID.fromString("00000000-0000-0000-0000-000000000001"); }
+    private UUID resolveTenantId() {
+        return TenantContextHolder.getCurrentTenantId();
+    }
 
     private ProcurementResponse.PRResponse mapPR(PurchaseRequest p) {
         return ProcurementResponse.PRResponse.builder().id(p.getId()).title(p.getTitle())

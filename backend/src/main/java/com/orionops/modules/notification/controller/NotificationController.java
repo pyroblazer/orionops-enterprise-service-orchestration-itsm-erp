@@ -50,8 +50,14 @@ public class NotificationController {
     private UUID resolveCurrentUserId() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null && auth.getPrincipal() instanceof Jwt jwt) {
-            return UUID.nameUUIDFromBytes(jwt.getSubject().getBytes());
+            String subject = jwt.getSubject();
+            try {
+                return UUID.fromString(subject);
+            } catch (IllegalArgumentException e) {
+                // Keycloak subject is a UUID — if parsing fails, fall back to name-based
+                return UUID.nameUUIDFromBytes(subject.getBytes());
+            }
         }
-        return UUID.fromString("00000000-0000-0000-0000-000000000000");
+        throw new IllegalStateException("No authenticated user found in security context");
     }
 }

@@ -12,6 +12,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.orionops.common.tenant.TenantContextHolder;
+
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -57,7 +59,7 @@ public class AuditService {
     }
 
     private UUID resolveTenantId() {
-        return UUID.fromString("00000000-0000-0000-0000-000000000001");
+        return TenantContextHolder.getCurrentTenantId();
     }
 
     private UUID resolveUserId(String performedBy) {

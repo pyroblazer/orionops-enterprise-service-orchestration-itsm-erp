@@ -1104,6 +1104,152 @@ export const api = {
   getReportSummary: (days = 30) =>
     apiClient.get<ApiResponse<ReportSummary>>('/reports/summary', { params: { days } }),
 
+  // ERP Reports
+  getBudgetVariance: () =>
+    apiClient.get<ApiResponse<Record<string, unknown>[]>>('/reports/finance/budget-variance'),
+  getExpenseBreakdown: (period: string) =>
+    apiClient.get<ApiResponse<Record<string, unknown>[]>>('/reports/finance/expense-breakdown', { params: { period } }),
+  getInvoiceAging: () =>
+    apiClient.get<ApiResponse<Record<string, unknown>[]>>('/reports/finance/invoice-aging'),
+  getPOAging: () =>
+    apiClient.get<ApiResponse<Record<string, unknown>[]>>('/reports/procurement/po-aging'),
+  getVendorSpend: () =>
+    apiClient.get<ApiResponse<Record<string, unknown>[]>>('/reports/procurement/vendor-spend'),
+  getInventoryValuation: () =>
+    apiClient.get<ApiResponse<Record<string, unknown>[]>>('/reports/inventory/valuation'),
+  getStockMovements: (period: string) =>
+    apiClient.get<ApiResponse<Record<string, unknown>[]>>('/reports/inventory/stock-movements', { params: { period } }),
+  getWorkforceCapacity: () =>
+    apiClient.get<ApiResponse<Record<string, unknown>[]>>('/reports/workforce/capacity-utilization'),
+  getVendorPerformance: () =>
+    apiClient.get<ApiResponse<Record<string, unknown>[]>>('/reports/vendor/performance-summary'),
+  getBillingChargeback: () =>
+    apiClient.get<ApiResponse<Record<string, unknown>[]>>('/reports/billing/chargeback'),
+
+  // --- Finance Forecast ---
+  getBudgetForecast: (id: string) =>
+    apiClient.get<ApiResponse<Record<string, unknown>>>(`/finance/forecast/budgets/${id}`),
+  getBudgetAlerts: () =>
+    apiClient.get<ApiResponse<Record<string, unknown>[]>>('/finance/forecast/alerts'),
+
+  // --- General Ledger ---
+  getChartOfAccounts: () =>
+    apiClient.get<ApiResponse<Record<string, unknown>[]>>('/finance/gl/accounts'),
+  getTrialBalance: (asOfDate?: string) =>
+    apiClient.get<ApiResponse<Record<string, unknown>>>('/finance/gl/trial-balance', { params: { asOfDate } }),
+  getIncomeStatement: (startDate?: string, endDate?: string) =>
+    apiClient.get<ApiResponse<Record<string, unknown>>>('/finance/gl/income-statement', { params: { startDate, endDate } }),
+  postGLEntry: (data: Record<string, unknown>) =>
+    apiClient.post<ApiResponse<void>>('/finance/gl/post', data),
+  getGLAccountBalance: (code: string, asOfDate?: string) =>
+    apiClient.get<ApiResponse<number>>(`/finance/gl/accounts/${code}/balance`, { params: { asOfDate } }),
+
+  // --- Vendor MDM ---
+  getVendorDuplicates: (id: string) =>
+    apiClient.get<ApiResponse<Record<string, unknown>[]>>(`/vendor-mdm/vendors/${id}/duplicates`),
+  consolidateVendors: (data: Record<string, unknown>) =>
+    apiClient.post<ApiResponse<void>>('/vendor-mdm/vendors/consolidate', data),
+  getVendorQualityScore: (id: string) =>
+    apiClient.get<ApiResponse<number>>(`/vendor-mdm/vendors/${id}/quality-score`),
+  getVendorSLAStatus: (id: string) =>
+    apiClient.get<ApiResponse<Record<string, unknown>>>(`/vendors/${id}/sla-status`),
+
+  // --- RFQ ---
+  getRFQs: () =>
+    apiClient.get<PaginatedResponse<Record<string, unknown>>>('/procurement/rfq'),
+  createRFQ: (data: Record<string, unknown>) =>
+    apiClient.post<ApiResponse<Record<string, unknown>>>('/procurement/rfq', data),
+  sendRFQToVendors: (id: string, data: Record<string, unknown>) =>
+    apiClient.post<ApiResponse<void>>(`/procurement/rfq/${id}/send`, data),
+  recordBid: (id: string, data: Record<string, unknown>) =>
+    apiClient.post<ApiResponse<void>>(`/procurement/rfq/${id}/bids`, data),
+  getRFQScore: (id: string) =>
+    apiClient.get<ApiResponse<Record<string, unknown>[]>>(`/procurement/rfq/${id}/score`),
+  awardRFQ: (id: string, data: Record<string, unknown>) =>
+    apiClient.post<ApiResponse<void>>(`/procurement/rfq/${id}/award`, data),
+
+  // --- 3-Way Matching ---
+  recordGoodsReceipt: (data: Record<string, unknown>) =>
+    apiClient.post<ApiResponse<void>>('/procurement/matching/receipts', data),
+  matchInvoice: (data: Record<string, unknown>) =>
+    apiClient.post<ApiResponse<void>>('/procurement/matching/match', data),
+  getInvoiceVariances: (invoiceId: string) =>
+    apiClient.get<ApiResponse<Record<string, unknown>>>(`/procurement/matching/variances/${invoiceId}`),
+  flagMatchingException: (data: Record<string, unknown>) =>
+    apiClient.post<ApiResponse<void>>('/procurement/matching/flag', data),
+  resolveVariance: (invoiceId: string, data: Record<string, unknown>) =>
+    apiClient.patch<ApiResponse<void>>(`/procurement/matching/resolve/${invoiceId}`, data),
+
+  // --- Spend Analysis ---
+  getSpendByVendor: (from?: string, to?: string) =>
+    apiClient.get<ApiResponse<Record<string, unknown>>>('/procurement/spend/by-vendor', { params: { from, to } }),
+  getSpendByCategory: (from?: string, to?: string) =>
+    apiClient.get<ApiResponse<Record<string, unknown>>>('/procurement/spend/by-category', { params: { from, to } }),
+  getConsolidationOpportunities: () =>
+    apiClient.get<ApiResponse<Record<string, unknown>>>('/procurement/spend/consolidation'),
+  getVendorConcentration: () =>
+    apiClient.get<ApiResponse<Record<string, unknown>>>('/procurement/spend/concentration'),
+
+  // --- Inventory Transfers ---
+  createTransfer: (data: Record<string, unknown>) =>
+    apiClient.post<ApiResponse<Record<string, unknown>>>('/inventory/transfers', data),
+  recordTransitTransfer: (id: string) =>
+    apiClient.patch<ApiResponse<void>>(`/inventory/transfers/${id}/transit`),
+  receiveTransfer: (id: string, data: Record<string, unknown>) =>
+    apiClient.patch<ApiResponse<void>>(`/inventory/transfers/${id}/receive`, data),
+  getBinSuggestion: (sku: string, warehouseId?: string) =>
+    apiClient.get<ApiResponse<Record<string, unknown>>>(`/inventory/transfers/${sku}/bin-suggestion`, { params: { warehouseId } }),
+
+  // --- Cycle Counting ---
+  scheduleCycleCounts: (data: Record<string, unknown>) =>
+    apiClient.post<ApiResponse<void>>('/inventory/cycle-counts/schedule', data),
+  recordCycleCount: (id: string, data: Record<string, unknown>) =>
+    apiClient.post<ApiResponse<void>>(`/inventory/cycle-counts/${id}/record`, data),
+  getCycleCountVariances: (id: string) =>
+    apiClient.get<ApiResponse<Record<string, unknown>>>(`/inventory/cycle-counts/${id}/variances`),
+  investigateCycleVariance: (id: string, data: Record<string, unknown>) =>
+    apiClient.post<ApiResponse<void>>(`/inventory/cycle-counts/${id}/investigate`, data),
+
+  // --- Depreciation ---
+  getDepreciationSchedule: (assetId: string) =>
+    apiClient.get<ApiResponse<Record<string, unknown>>>(`/inventory/assets/${assetId}/depreciation`),
+  getAssetBookValue: (assetId: string, asOfDate?: string) =>
+    apiClient.get<ApiResponse<number>>(`/inventory/assets/${assetId}/book-value`, { params: { asOfDate } }),
+  disposeAsset: (assetId: string, data: Record<string, unknown>) =>
+    apiClient.post<ApiResponse<void>>(`/inventory/assets/${assetId}/dispose`, data),
+
+  // --- SoD ---
+  getSoDRules: () =>
+    apiClient.get<ApiResponse<Record<string, string[]>>>('/compliance/sod/rules'),
+  validateSoDCompliance: (data: Record<string, unknown>) =>
+    apiClient.post<ApiResponse<boolean>>('/compliance/sod/validate', data),
+  checkSoDConflict: (userId?: string, activity?: string) =>
+    apiClient.get<ApiResponse<Record<string, unknown>>>('/compliance/sod/check', { params: { userId, activity } }),
+
+  // --- Approval Authorities ---
+  setApprovalAuthority: (data: Record<string, unknown>) =>
+    apiClient.post<ApiResponse<void>>('/compliance/approval-authorities', data),
+  canUserApprove: (data: Record<string, unknown>) =>
+    apiClient.post<ApiResponse<boolean>>('/compliance/approval-authorities/can-approve', data),
+  getSuggestedApprover: (activityType?: string, amount?: number) =>
+    apiClient.get<ApiResponse<string>>('/compliance/approval-authorities/suggest', { params: { activityType, amount } }),
+
+  // --- Analytics ---
+  predictCashFlow: (months?: number) =>
+    apiClient.get<ApiResponse<Record<string, unknown>>>('/analytics/cash-flow', { params: { months } }),
+  detectAnomalies: () =>
+    apiClient.get<ApiResponse<Record<string, unknown>[]>>('/analytics/anomalies'),
+  predictVendorRisk: (vendorId: string) =>
+    apiClient.get<ApiResponse<Record<string, unknown>>>(`/analytics/vendor-risk/${vendorId}`),
+
+  // --- UoM ---
+  getUOMHierarchy: () =>
+    apiClient.get<ApiResponse<Record<string, unknown>[]>>('/inventory/uom'),
+  convertUOM: (data: Record<string, unknown>) =>
+    apiClient.post<ApiResponse<number>>('/inventory/uom/convert', data),
+  validateUOMCompatibility: (baseUOM?: string, altUOM?: string) =>
+    apiClient.get<ApiResponse<boolean>>('/inventory/uom/compatible', { params: { baseUOM, altUOM } }),
+
   // AI service (routes via Vercel /ai/* serverless, not Spring Boot)
   classifyIncident: (data: { title: string; description: string }): Promise<{ category: string; priority: string; confidence: number }> =>
     fetch('/ai/classify', {

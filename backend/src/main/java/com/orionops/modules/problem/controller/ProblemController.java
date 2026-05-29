@@ -75,6 +75,13 @@ public class ProblemController {
         return ResponseEntity.ok(ApiResponse.success(problemService.setRootCause(id, rootCause), "Root cause set"));
     }
 
+    @PatchMapping("/{id}/known-error")
+    @PreAuthorize("hasAnyRole('ENGINEER', 'MANAGER', 'ADMIN')")
+    public ResponseEntity<ApiResponse<ProblemResponse>> markAsKnownError(
+            @PathVariable UUID id, @RequestParam(required = false) String workaround) {
+        return ResponseEntity.ok(ApiResponse.success(problemService.markAsKnownError(id, workaround), "Marked as known error"));
+    }
+
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<Void>> deleteProblem(@PathVariable UUID id) {

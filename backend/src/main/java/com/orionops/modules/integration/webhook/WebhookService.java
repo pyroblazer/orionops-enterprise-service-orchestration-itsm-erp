@@ -1,6 +1,9 @@
 package com.orionops.modules.integration.webhook;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.orionops.common.tenant.TenantContextHolder;
+import com.orionops.modules.integration.entity.IntegrationEndpoint;
+import com.orionops.modules.integration.repository.IntegrationEndpointRepository;
 import com.orionops.modules.integration.webhook.WebhookDeliveryLog.DeliveryStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +33,9 @@ import java.util.UUID;
  * <p>Provides webhook registration, event-driven delivery with HMAC-SHA256 signature
  * verification, automatic retry with exponential backoff, and dead-letter queue
  * management for permanently failed deliveries.</p>
+ *
+ * <p>Webhook registrations are persisted to the {@code integration_endpoints} table
+ * via {@link IntegrationEndpointRepository}, ensuring they survive restarts.</p>
  */
 @Slf4j
 @Service
@@ -38,9 +44,9 @@ public class WebhookService {
 
     private static final String HMAC_ALGORITHM = "HmacSHA256";
     private static final int MAX_RETRY_COUNT = 5;
-    private static final long[] RETRY_DELAYS_MS = {5000, 15000, 60000, 300000, 900000};
 
     private final WebhookDeliveryLogRepository deliveryLogRepository;
+    private final IntegrationEndpointRepository endpointRepository;
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
 
@@ -48,13 +54,8 @@ public class WebhookService {
     private String defaultSecret;
 
     /**
-     * Webhook endpoint registry (in-memory for this implementation).
-     * In production, this would be persisted to the database via IntegrationEndpoint entity.
-     */
-    private final Map<UUID, WebhookRegistration> webhookRegistry = new java.util.concurrent.ConcurrentHashMap<>();
-
-    /**
      * Registers a new webhook endpoint for event delivery.
+     * Persists the registration to the integration_endpoints table.
      *
      * @param endpoint the URL to deliver events to
      * @param events   array of event types to subscribe to
@@ -63,43 +64,69 @@ public class WebhookService {
      */
     @Transactional
     public WebhookRegistration registerWebhook(String endpoint, String[] events, String secret) {
-        UUID webhookId = UUID.randomUUID();
         String webhookSecret = (secret != null && !secret.isBlank()) ? secret : generateSecret();
 
-        WebhookRegistration registration = WebhookRegistration.builder()
-                .webhookId(webhookId)
-                .endpoint(endpoint)
+        IntegrationEndpoint entity = IntegrationEndpoint.builder()
+                .name("Webhook: " + endpoint)
+                .type(IntegrationEndpoint.IntegrationType.WEBHOOK)
+                .url(endpoint)
+                .method("POST")
+                .authConfig(webhookSecret)           // store the signing secret in authConfig
+                .payloadTemplate(String.join(",", events))  // store subscribed events
+                .status(IntegrationEndpoint.IntegrationStatus.ACTIVE)
+                .verifySsl(true)
+                .timeoutSeconds(30)
+                .build();
+        entity.setTenantId(TenantContextHolder.getCurrentTenantId());
+
+        IntegrationEndpoint saved = endpointRepository.save(entity);
+
+        log.info("Webhook registered: id={}, endpoint={}, events={}", saved.getId(), endpoint, String.join(",", events));
+
+        return WebhookRegistration.builder()
+                .webhookId(saved.getId())
+                .endpoint(saved.getUrl())
                 .events(events)
                 .secret(webhookSecret)
                 .active(true)
-                .createdAt(LocalDateTime.now())
+                .createdAt(saved.getCreatedAt())
                 .build();
-
-        webhookRegistry.put(webhookId, registration);
-        log.info("Webhook registered: id={}, endpoint={}, events={}", webhookId, endpoint, String.join(",", events));
-
-        return registration;
     }
 
     /**
      * Triggers a webhook event delivery to all registered endpoints subscribed to the event type.
+     * Loads active webhook endpoints from the database.
      *
      * @param eventType the event type that occurred
      * @param payload   the event payload as a Map
      */
+    @Transactional(readOnly = true)
     public void triggerWebhook(String eventType, Map<String, Object> payload) {
-        for (Map.Entry<UUID, WebhookRegistration> entry : webhookRegistry.entrySet()) {
-            WebhookRegistration registration = entry.getValue();
-            if (!registration.isActive()) {
+        UUID tenantId = TenantContextHolder.getCurrentTenantId();
+        List<IntegrationEndpoint> endpoints = endpointRepository
+                .findByTenantIdAndStatusAndDeletedAtIsNull(tenantId, IntegrationEndpoint.IntegrationStatus.ACTIVE);
+
+        for (IntegrationEndpoint ep : endpoints) {
+            if (ep.getType() != IntegrationEndpoint.IntegrationType.WEBHOOK) {
                 continue;
             }
-            if (!isSubscribed(registration.getEvents(), eventType)) {
+            String[] subscribedEvents = parseEvents(ep.getPayloadTemplate());
+            if (!isSubscribed(subscribedEvents, eventType)) {
                 continue;
             }
             try {
-                deliverWebhook(entry.getKey(), registration, eventType, payload);
+                WebhookRegistration registration = WebhookRegistration.builder()
+                        .webhookId(ep.getId())
+                        .endpoint(ep.getUrl())
+                        .events(subscribedEvents)
+                        .secret(ep.getAuthConfig())
+                        .active(true)
+                        .createdAt(ep.getCreatedAt())
+                        .build();
+
+                deliverWebhook(ep.getId(), registration, eventType, payload);
             } catch (Exception e) {
-                log.error("Failed to trigger webhook {}: {}", entry.getKey(), e.getMessage());
+                log.error("Failed to trigger webhook {}: {}", ep.getId(), e.getMessage());
             }
         }
     }
@@ -115,7 +142,7 @@ public class WebhookService {
                 .status(DeliveryStatus.PENDING)
                 .retryCount(0)
                 .build();
-        deliveryLog.setTenantId(resolveTenantId());
+        deliveryLog.setTenantId(TenantContextHolder.getCurrentTenantId());
 
         try {
             String jsonPayload = objectMapper.writeValueAsString(payload);
@@ -165,6 +192,7 @@ public class WebhookService {
     /**
      * Retries failed webhook deliveries from the dead-letter queue.
      * Scheduled to run every 5 minutes.
+     * Loads registration details from the database so retries work across restarts.
      */
     @Scheduled(fixedDelayString = "${orionops.webhook.retry-interval:300000}")
     @Transactional
@@ -179,12 +207,22 @@ public class WebhookService {
         log.info("Retrying {} failed webhook deliveries", failedDeliveries.size());
 
         for (WebhookDeliveryLog delivery : failedDeliveries) {
-            WebhookRegistration registration = webhookRegistry.get(delivery.getWebhookId());
-            if (registration == null || !registration.isActive()) {
+            // Load endpoint from database instead of in-memory map
+            IntegrationEndpoint endpoint = endpointRepository.findById(delivery.getWebhookId()).orElse(null);
+            if (endpoint == null || endpoint.isDeleted() || endpoint.getStatus() != IntegrationEndpoint.IntegrationStatus.ACTIVE) {
                 delivery.setStatus(DeliveryStatus.DEAD_LETTER);
                 deliveryLogRepository.save(delivery);
                 continue;
             }
+
+            WebhookRegistration registration = WebhookRegistration.builder()
+                    .webhookId(endpoint.getId())
+                    .endpoint(endpoint.getUrl())
+                    .events(parseEvents(endpoint.getPayloadTemplate()))
+                    .secret(endpoint.getAuthConfig())
+                    .active(true)
+                    .createdAt(endpoint.getCreatedAt())
+                    .build();
 
             try {
                 delivery.setRetryCount(delivery.getRetryCount() + 1);
@@ -249,9 +287,8 @@ public class WebhookService {
         }
     }
 
-    /**
-     * Generates an HMAC-SHA256 signature for the given payload.
-     */
+    // ---- Private helpers ----
+
     private String generateSignature(String payload, String secret) {
         try {
             Mac mac = Mac.getInstance(HMAC_ALGORITHM);
@@ -264,9 +301,6 @@ public class WebhookService {
         }
     }
 
-    /**
-     * Generates a random webhook secret for new registrations.
-     */
     private String generateSecret() {
         return "whsec_" + UUID.randomUUID().toString().replace("-", "");
     }
@@ -283,13 +317,19 @@ public class WebhookService {
         return false;
     }
 
+    /**
+     * Parses the comma-separated events string stored in payloadTemplate.
+     */
+    private String[] parseEvents(String eventsCsv) {
+        if (eventsCsv == null || eventsCsv.isBlank()) {
+            return new String[0];
+        }
+        return eventsCsv.split("\\s*,\\s*");
+    }
+
     private String truncate(String value, int maxLength) {
         if (value == null) return null;
         return value.length() > maxLength ? value.substring(0, maxLength) + "...[truncated]" : value;
-    }
-
-    private UUID resolveTenantId() {
-        return UUID.fromString("00000000-0000-0000-0000-000000000001");
     }
 
     /**

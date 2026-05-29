@@ -1,10 +1,15 @@
 package com.orionops.modules.integration.consumers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.orionops.modules.auth.entity.User;
+import com.orionops.modules.auth.repository.UserRepository;
+import com.orionops.modules.cmdb.entity.Service;
+import com.orionops.modules.cmdb.repository.ServiceRepository;
 import com.orionops.modules.sla.event.SLABreachEvent;
 import com.orionops.modules.sla.event.SLACreatedEvent;
 import com.orionops.modules.integration.chat.SlackIntegrationService;
 import com.orionops.modules.integration.email.EmailService;
+import com.orionops.modules.notification.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -30,6 +35,9 @@ public class SLAEventConsumer {
 
     private final EmailService emailService;
     private final SlackIntegrationService slackIntegrationService;
+    private final NotificationService notificationService;
+    private final ServiceRepository serviceRepository;
+    private final UserRepository userRepository;
     private final ObjectMapper objectMapper;
 
     /**
@@ -93,8 +101,27 @@ public class SLAEventConsumer {
         );
         log.info("Urgent SLA breach email sent for instance {}", event.getSlaInstanceId());
 
-        // Push notification to service owner and management
-        log.info("Push notification sent for SLA breach on instance {}", event.getSlaInstanceId());
+        // Create in-app notification for service owner
+        try {
+            serviceRepository.findById(event.getTargetEntityId()).ifPresent(svc -> {
+                if (svc.getOwner() != null) {
+                    java.util.UUID ownerUserId = resolveOwnerUserId(svc);
+                    if (ownerUserId != null) {
+                        notificationService.createNotification(
+                                ownerUserId,
+                                "[URGENT] SLA Breach Detected - " + event.getBreachType(),
+                                "SLA breach on " + event.getTargetType() + " " + event.getTargetEntityId()
+                                        + ". Instance: " + event.getSlaInstanceId(),
+                                "SLA_BREACH",
+                                event.getSlaInstanceId(),
+                                "SLA"
+                        );
+                    }
+                }
+            });
+        } catch (Exception e) {
+            log.warn("Failed to create SLA breach notification: {}", e.getMessage());
+        }
 
         // Post alert to Slack
         try {
@@ -160,14 +187,43 @@ public class SLAEventConsumer {
 
     /**
      * Resolves the email address for the service owner of a target entity.
-     * In a production system, this would query the service owner from the CMDB.
+     * Looks up the CMDB Service by ID, then resolves the owner user's email.
      *
-     * @param targetEntityId the target entity's UUID
+     * @param targetEntityId the target entity's UUID (typically a Service ID)
      * @return the service owner's email address
      */
     private String resolveServiceOwnerEmail(java.util.UUID targetEntityId) {
-        // Placeholder: in production, this would look up the service owner
-        // from the Service/ConfigurationItem entity
-        return "service-owner-" + targetEntityId + "@orionops.io";
+        return serviceRepository.findById(targetEntityId)
+                .filter(s -> s.getOwner() != null)
+                .flatMap(s -> {
+                    try {
+                        java.util.UUID ownerId = java.util.UUID.fromString(s.getOwner());
+                        return userRepository.findById(ownerId).map(User::getEmail);
+                    } catch (IllegalArgumentException e) {
+                        return userRepository.findByUsername(s.getOwner())
+                                .map(User::getEmail);
+                    }
+                })
+                .orElseGet(() -> {
+                    log.warn("Service owner email not found for targetEntityId={}, using fallback", targetEntityId);
+                    return "service-owner-" + targetEntityId + "@orionops.io";
+                });
+    }
+
+    /**
+     * Resolves the owner user ID from a CMDB Service entity.
+     * The owner field is a String that may contain a UUID or a username.
+     *
+     * @param service the CMDB service entity
+     * @return the owner's user UUID, or null if not resolvable
+     */
+    private java.util.UUID resolveOwnerUserId(Service service) {
+        try {
+            return java.util.UUID.fromString(service.getOwner());
+        } catch (IllegalArgumentException e) {
+            return userRepository.findByUsername(service.getOwner())
+                    .map(User::getId)
+                    .orElse(null);
+        }
     }
 }

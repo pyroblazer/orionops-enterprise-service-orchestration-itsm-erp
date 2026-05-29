@@ -45,6 +45,35 @@ public class NotificationService {
         log.info("All notifications marked as read for user: {}", userId);
     }
 
+    /**
+     * Creates a new in-app notification for a user.
+     *
+     * @param userId        the recipient user ID
+     * @param title         notification title
+     * @param message       notification body
+     * @param type          notification type (e.g. INCIDENT, SLA, CHANGE)
+     * @param referenceId   optional reference to the related entity
+     * @param referenceType optional type of the referenced entity
+     * @return the created notification response
+     */
+    @Transactional
+    public NotificationResponse createNotification(UUID userId, String title, String message,
+                                                    String type, UUID referenceId, String referenceType) {
+        Notification notification = Notification.builder()
+                .userId(userId)
+                .title(title)
+                .message(message)
+                .type(type)
+                .referenceId(referenceId)
+                .referenceType(referenceType)
+                .build();
+        notification.setTenantId(com.orionops.common.tenant.TenantContextHolder.getCurrentTenantId());
+
+        Notification saved = notificationRepository.save(notification);
+        log.info("Notification created: id={}, userId={}, type={}", saved.getId(), userId, type);
+        return mapToResponse(saved);
+    }
+
     private NotificationResponse mapToResponse(Notification n) {
         return NotificationResponse.builder()
                 .id(n.getId()).userId(n.getUserId()).title(n.getTitle())

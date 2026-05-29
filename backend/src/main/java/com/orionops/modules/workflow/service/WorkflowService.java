@@ -17,6 +17,8 @@ import org.flowable.task.api.Task;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.orionops.common.tenant.TenantContextHolder;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -142,7 +144,7 @@ public class WorkflowService {
     }
 
     private UUID resolveTenantId() {
-        return UUID.fromString("00000000-0000-0000-0000-000000000001");
+        return TenantContextHolder.getCurrentTenantId();
     }
 
     private WorkflowDefinitionResponse mapDefinitionToResponse(WorkflowDefinition d) {

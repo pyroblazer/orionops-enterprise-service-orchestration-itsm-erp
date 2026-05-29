@@ -69,11 +69,15 @@ public class Problem extends BaseEntity {
     @Column
     private LocalDateTime closedAt;
 
+    @Builder.Default
+    @Column(nullable = false)
+    private boolean knownError = false;
+
     public enum ProblemPriority {
         CRITICAL, HIGH, MEDIUM, LOW
     }
 
     public enum ProblemStatus {
-        OPEN, UNDER_INVESTIGATION, ROOT_CAUSE_IDENTIFIED, RESOLVED, CLOSED
+        OPEN, UNDER_INVESTIGATION, ROOT_CAUSE_IDENTIFIED, KNOWN_ERROR, RESOLVED, CLOSED
     }
 }

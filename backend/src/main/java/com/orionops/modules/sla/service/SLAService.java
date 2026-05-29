@@ -21,6 +21,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.orionops.common.tenant.TenantContextHolder;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -106,29 +108,40 @@ public class SLAService {
     @Transactional
     public void checkSLABreaches() {
         LocalDateTime now = LocalDateTime.now();
-        List<SLAInstance> activeInstances = instanceRepository.findByTenantIdAndStatusAndDeletedAtIsNull(
-                resolveTenantId(), SLAInstance.SLAStatus.ACTIVE, PageRequest.of(0, 100)).getContent();
+        UUID tenantId = resolveTenantId();
+        int pageSize = 100;
+        int pageNum = 0;
+        boolean hasMore = true;
 
-        for (SLAInstance instance : activeInstances) {
-            boolean updated = false;
-            if (now.isAfter(instance.getResolutionTarget()) && instance.getStatus() != SLAInstance.SLAStatus.BREACHED) {
-                instance.setStatus(SLAInstance.SLAStatus.BREACHED);
-                instance.setBreachedAt(now);
-                updated = true;
-                eventPublisher.publish(SLABreachEvent.builder()
-                        .aggregateId(instance.getId())
-                        .slaInstanceId(instance.getId())
-                        .targetEntityId(instance.getTargetEntityId())
-                        .targetType(instance.getTargetType())
-                        .breachType("RESOLUTION")
-                        .build());
-            } else if (now.isAfter(instance.getResponseTarget().minusHours(1)) && instance.getRespondedAt() == null) {
-                instance.setStatus(SLAInstance.SLAStatus.AT_RISK);
-                updated = true;
+        while (hasMore) {
+            Page<SLAInstance> page = instanceRepository.findByTenantIdAndStatusAndDeletedAtIsNull(
+                    tenantId, SLAInstance.SLAStatus.ACTIVE, PageRequest.of(pageNum, pageSize));
+            List<SLAInstance> activeInstances = page.getContent();
+
+            for (SLAInstance instance : activeInstances) {
+                boolean updated = false;
+                if (now.isAfter(instance.getResolutionTarget()) && instance.getStatus() != SLAInstance.SLAStatus.BREACHED) {
+                    instance.setStatus(SLAInstance.SLAStatus.BREACHED);
+                    instance.setBreachedAt(now);
+                    updated = true;
+                    eventPublisher.publish(SLABreachEvent.builder()
+                            .aggregateId(instance.getId())
+                            .slaInstanceId(instance.getId())
+                            .targetEntityId(instance.getTargetEntityId())
+                            .targetType(instance.getTargetType())
+                            .breachType("RESOLUTION")
+                            .build());
+                } else if (now.isAfter(instance.getResponseTarget().minusHours(1)) && instance.getRespondedAt() == null) {
+                    instance.setStatus(SLAInstance.SLAStatus.AT_RISK);
+                    updated = true;
+                }
+                if (updated) {
+                    instanceRepository.save(instance);
+                }
             }
-            if (updated) {
-                instanceRepository.save(instance);
-            }
+
+            hasMore = page.hasNext();
+            pageNum++;
         }
     }
 
@@ -186,7 +199,7 @@ public class SLAService {
     }
 
     private UUID resolveTenantId() {
-        return UUID.fromString("00000000-0000-0000-0000-000000000001");
+        return TenantContextHolder.getCurrentTenantId();
     }
 
     private SLADefinitionResponse mapDefinitionToResponse(SLADefinition d) {

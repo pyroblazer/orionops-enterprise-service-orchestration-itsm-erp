@@ -14,9 +14,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.orionops.common.tenant.TenantContextHolder;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
@@ -178,7 +182,73 @@ public class BillingService {
         costModelRepository.save(cm);
     }
 
-    private UUID resolveTenantId() { return UUID.fromString("00000000-0000-0000-0000-000000000001"); }
+    // ---- Chargeback Computation ----
+
+    @Transactional
+    public List<BillingDTO.BillingRecordResponse> computeChargebacks(UUID tenantId, YearMonth period) {
+        List<ServiceUsage> usages = usageRepository.findByPeriod(
+            tenantId,
+            period.atDay(1).atStartOfDay(),
+            period.atEndOfMonth().atTime(23, 59, 59)
+        );
+
+        List<BillingRecord> chargebackRecords = new ArrayList<>();
+        usages.stream()
+            .collect(Collectors.groupingBy(u -> u.getTenantEntityId()))
+            .forEach((costCenterId, costCenterUsages) -> {
+                BigDecimal chargeAmount = costCenterUsages.stream()
+                    .map(ServiceUsage::getTotalCost)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+                BillingRecord record = BillingRecord.builder()
+                    .invoiceNumber("CHARGEBACK-" + period + "-" + costCenterId)
+                    .amount(chargeAmount)
+                    .costCenterId(costCenterId)
+                    .periodStart(period.atDay(1).atStartOfDay())
+                    .periodEnd(period.atEndOfMonth().atTime(23, 59, 59))
+                    .generatedAt(LocalDateTime.now())
+                    .build();
+                record.setTenantId(tenantId);
+                chargebackRecords.add(billingRepository.save(record));
+            });
+
+        return chargebackRecords.stream().map(this::mapBillingRecord).collect(Collectors.toList());
+    }
+
+    @Transactional
+    public BillingDTO.BillingRecordResponse generateInvoiceFromRecords(UUID tenantId, YearMonth period) {
+        List<BillingRecord> records = billingRepository.findByCostCenterAndPeriod(tenantId, period.atDay(1).atStartOfDay(), period.atEndOfMonth().atTime(23, 59, 59));
+
+        BigDecimal totalAmount = records.stream()
+            .map(BillingRecord::getAmount)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        String invoiceNumber = "INV-" + period + "-" + System.currentTimeMillis();
+
+        BillingRecord invoice = BillingRecord.builder()
+            .invoiceNumber(invoiceNumber)
+            .amount(totalAmount)
+            .periodStart(period.atDay(1).atStartOfDay())
+            .periodEnd(period.atEndOfMonth().atTime(23, 59, 59))
+            .generatedAt(LocalDateTime.now())
+            .status(BillingRecord.BillingStatus.DRAFT)
+            .build();
+        invoice.setTenantId(tenantId);
+
+        return mapBillingRecord(billingRepository.save(invoice));
+    }
+
+    @Transactional
+    public void applyBulkUsage(List<BillingDTO.UsageRequest> usages) {
+        UUID tenantId = resolveTenantId();
+        for (BillingDTO.UsageRequest req : usages) {
+            recordUsage(req);
+        }
+    }
+
+    private UUID resolveTenantId() {
+        return TenantContextHolder.getCurrentTenantId();
+    }
 
     private ServiceUsage findUsageOrThrow(UUID id) {
         return usageRepository.findById(id).filter(u -> !u.isDeleted())

@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import com.orionops.common.tenant.TenantContextHolder;
+
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
@@ -96,7 +98,7 @@ public class IntegrationService {
     }
 
     private UUID resolveTenantId() {
-        return UUID.fromString("00000000-0000-0000-0000-000000000001");
+        return TenantContextHolder.getCurrentTenantId();
     }
 
     private IntegrationResponse mapToResponse(IntegrationEndpoint e) {

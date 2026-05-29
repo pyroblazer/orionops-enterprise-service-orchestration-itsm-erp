@@ -5,15 +5,21 @@ import com.orionops.modules.vendor.dto.VendorDTO;
 import com.orionops.modules.vendor.entity.Vendor;
 import com.orionops.modules.vendor.entity.VendorPerformance;
 import com.orionops.modules.vendor.repository.VendorRepository;
+import com.orionops.modules.notification.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import com.orionops.common.tenant.TenantContextHolder;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -24,6 +30,7 @@ public class VendorService {
 
     private final VendorRepository.VendorEntityRepository vendorRepository;
     private final VendorRepository.VendorPerformanceRepository performanceRepository;
+    private final NotificationService notificationService;
 
     @Transactional
     public VendorDTO.VendorResponse createVendor(VendorDTO.VendorRequest req) {
@@ -86,6 +93,77 @@ public class VendorService {
         vendorRepository.save(v);
     }
 
+    // ---- Vendor SLA Tracking & Alerts ----
+
+    @Scheduled(cron = "0 0 9 * * 1")
+    @Transactional
+    public void checkVendorSLACompliance() {
+        UUID tenantId = resolveTenantId();
+        List<Vendor> vendors = vendorRepository.findByTenantIdAndDeletedAtIsNull(tenantId);
+
+        for (Vendor vendor : vendors) {
+            List<VendorPerformance> performances = performanceRepository.findByVendorIdAndDeletedAtIsNull(vendor.getId());
+            if (!performances.isEmpty()) {
+                VendorPerformance latest = performances.stream()
+                    .max((p1, p2) -> p1.getEvaluationDate().compareTo(p2.getEvaluationDate()))
+                    .get();
+
+                BigDecimal threshold = BigDecimal.valueOf(4.0);
+                if (latest.getOverallScore().compareTo(threshold) < 0) {
+                    try {
+                        notificationService.createNotification(
+                            UUID.randomUUID(),
+                            "Vendor SLA Compliance Alert: " + vendor.getName(),
+                            "Vendor " + vendor.getName() + " compliance score (" + latest.getOverallScore() +
+                                ") is below threshold (" + threshold + ")",
+                            "VENDOR_SLA_ALERT",
+                            vendor.getId(),
+                            "VENDOR"
+                        );
+                        log.info("Vendor SLA compliance alert sent for vendor: {}", vendor.getId());
+                    } catch (Exception e) {
+                        log.warn("Failed to send vendor SLA alert: {}", e.getMessage());
+                    }
+                }
+            }
+        }
+    }
+
+    @Transactional(readOnly = true)
+    public Map<String, Object> getVendorSLAStatus(UUID vendorId) {
+        Vendor vendor = findVendorOrThrow(vendorId);
+        List<VendorPerformance> performances = performanceRepository.findByVendorIdAndDeletedAtIsNull(vendorId);
+
+        if (performances.isEmpty()) {
+            return Map.of(
+                "vendorId", vendorId,
+                "vendorName", vendor.getName(),
+                "complianceStatus", "NO_DATA"
+            );
+        }
+
+        VendorPerformance latest = performances.stream()
+            .max((p1, p2) -> p1.getEvaluationDate().compareTo(p2.getEvaluationDate()))
+            .get();
+
+        BigDecimal avgScore = BigDecimal.valueOf(
+            performances.stream()
+                .mapToDouble(p -> p.getOverallScore() != null ? p.getOverallScore().doubleValue() : 0)
+                .average()
+                .orElse(0)
+        );
+
+        return Map.of(
+            "vendorId", vendorId,
+            "vendorName", vendor.getName(),
+            "latestScore", latest.getOverallScore(),
+            "averageScore", avgScore,
+            "trend", "STABLE",
+            "lastEvaluation", latest.getEvaluationDate(),
+            "evaluationCount", performances.size()
+        );
+    }
+
     private Vendor findVendorOrThrow(UUID id) {
         return vendorRepository.findById(id).filter(v -> !v.isDeleted())
                 .orElseThrow(() -> new ResourceNotFoundException("Vendor", id));
@@ -100,7 +178,9 @@ public class VendorService {
         return count > 0 ? total.divide(BigDecimal.valueOf(count), 2, RoundingMode.HALF_UP) : BigDecimal.ZERO;
     }
 
-    private UUID resolveTenantId() { return UUID.fromString("00000000-0000-0000-0000-000000000001"); }
+    private UUID resolveTenantId() {
+        return TenantContextHolder.getCurrentTenantId();
+    }
 
     private VendorDTO.VendorResponse mapVendor(Vendor v) {
         return VendorDTO.VendorResponse.builder().id(v.getId()).name(v.getName())

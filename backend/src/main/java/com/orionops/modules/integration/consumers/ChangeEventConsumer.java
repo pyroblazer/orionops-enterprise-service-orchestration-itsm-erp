@@ -1,10 +1,15 @@
 package com.orionops.modules.integration.consumers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.orionops.modules.auth.entity.User;
+import com.orionops.modules.auth.repository.UserRepository;
+import com.orionops.modules.change.entity.ChangeRequest;
+import com.orionops.modules.change.repository.ChangeRequestRepository;
 import com.orionops.modules.change.event.ChangeApprovedEvent;
 import com.orionops.modules.change.event.ChangeImplementedEvent;
 import com.orionops.modules.change.event.ChangeRejectedEvent;
 import com.orionops.modules.integration.email.EmailService;
+import com.orionops.modules.notification.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -30,6 +35,9 @@ import java.util.Map;
 public class ChangeEventConsumer {
 
     private final EmailService emailService;
+    private final NotificationService notificationService;
+    private final UserRepository userRepository;
+    private final ChangeRequestRepository changeRequestRepository;
     private final ObjectMapper objectMapper;
 
     /**
@@ -90,10 +98,23 @@ public class ChangeEventConsumer {
         );
         log.info("Change approval notification sent for change {}", event.getChangeId());
 
-        // Schedule implementation window notification
-        // In a production system, this would schedule a delayed notification
-        // to remind the implementation team when the planned start time approaches
-        log.info("Implementation reminder scheduled for change {}", event.getChangeId());
+        // Create in-app notification for the assignee (implementation team)
+        try {
+            changeRequestRepository.findById(event.getChangeId()).ifPresent(cr -> {
+                if (cr.getAssigneeId() != null) {
+                    notificationService.createNotification(
+                            cr.getAssigneeId(),
+                            "Change Request Approved - Ready for Implementation",
+                            "Change " + event.getChangeId() + " has been approved by " + event.getApprovedBy(),
+                            "CHANGE",
+                            event.getChangeId(),
+                            "CHANGE"
+                    );
+                }
+            });
+        } catch (Exception e) {
+            log.warn("Failed to create approval notification for change {}: {}", event.getChangeId(), e.getMessage());
+        }
     }
 
     /**
@@ -124,6 +145,24 @@ public class ChangeEventConsumer {
                 null
         );
         log.info("Change rejection notification sent for change {}", event.getChangeId());
+
+        // Create in-app notification for the requester
+        try {
+            changeRequestRepository.findById(event.getChangeId()).ifPresent(cr -> {
+                if (cr.getRequesterId() != null) {
+                    notificationService.createNotification(
+                            cr.getRequesterId(),
+                            "Change Request Rejected",
+                            "Change " + event.getChangeId() + " was rejected. Reason: " + event.getRejectionReason(),
+                            "CHANGE",
+                            event.getChangeId(),
+                            "CHANGE"
+                    );
+                }
+            });
+        } catch (Exception e) {
+            log.warn("Failed to create rejection notification for change {}: {}", event.getChangeId(), e.getMessage());
+        }
     }
 
     /**
@@ -156,12 +195,24 @@ public class ChangeEventConsumer {
         );
         log.info("Change implementation notification sent for change {}", event.getChangeId());
 
-        // Update CMDB status for affected CIs
-        // In a production system, this would:
-        // 1. Look up the change request to find affected CIs
-        // 2. Update CI status (e.g., from MAINTENANCE back to ACTIVE)
-        // 3. Record the change in the CI's audit history
-        log.info("CMDB status update triggered for change {}", event.getChangeId());
+        // Create in-app notification for the requester/approver
+        try {
+            changeRequestRepository.findById(event.getChangeId()).ifPresent(cr -> {
+                UUID notifyUserId = cr.getRequesterId() != null ? cr.getRequesterId() : cr.getApproverId();
+                if (notifyUserId != null) {
+                    notificationService.createNotification(
+                            notifyUserId,
+                            "Change Implementation Complete",
+                            "Change " + event.getChangeId() + " has been implemented by " + event.getImplementedBy(),
+                            "CHANGE",
+                            event.getChangeId(),
+                            "CHANGE"
+                    );
+                }
+            });
+        } catch (Exception e) {
+            log.warn("Failed to create implementation notification for change {}: {}", event.getChangeId(), e.getMessage());
+        }
     }
 
     // ---- Private helpers ----
@@ -183,25 +234,43 @@ public class ChangeEventConsumer {
 
     /**
      * Resolves the implementation team email for a change request.
-     * In a production system, this would look up the assigned implementer.
+     * Looks up the assigned implementer from the change request.
      */
     private String resolveImplementationTeamEmail(java.util.UUID changeId) {
-        return "implementation-team@orionops.io";
+        return changeRequestRepository.findById(changeId)
+                .filter(cr -> cr.getAssigneeId() != null)
+                .flatMap(cr -> userRepository.findById(cr.getAssigneeId()).map(User::getEmail))
+                .orElseGet(() -> {
+                    log.warn("Implementation team email not found for changeId={}, using fallback", changeId);
+                    return "implementation-team@orionops.io";
+                });
     }
 
     /**
      * Resolves the requester email for a change request.
-     * In a production system, this would look up the requester from the change.
+     * Looks up the requester from the change request.
      */
     private String resolveRequesterEmail(java.util.UUID changeId) {
-        return "requester-" + changeId + "@orionops.io";
+        return changeRequestRepository.findById(changeId)
+                .filter(cr -> cr.getRequesterId() != null)
+                .flatMap(cr -> userRepository.findById(cr.getRequesterId()).map(User::getEmail))
+                .orElseGet(() -> {
+                    log.warn("Requester email not found for changeId={}, using fallback", changeId);
+                    return "requester-" + changeId + "@orionops.io";
+                });
     }
 
     /**
      * Resolves the stakeholders email distribution list for a change request.
-     * In a production system, this would look up affected parties from the change.
+     * Looks up the approver (primary stakeholder) from the change request.
      */
     private String resolveStakeholdersEmail(java.util.UUID changeId) {
-        return "stakeholders-" + changeId + "@orionops.io";
+        return changeRequestRepository.findById(changeId)
+                .filter(cr -> cr.getApproverId() != null)
+                .flatMap(cr -> userRepository.findById(cr.getApproverId()).map(User::getEmail))
+                .orElseGet(() -> {
+                    log.warn("Stakeholder email not found for changeId={}, using fallback", changeId);
+                    return "stakeholders-" + changeId + "@orionops.io";
+                });
     }
 }

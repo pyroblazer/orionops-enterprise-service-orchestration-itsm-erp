@@ -5,8 +5,12 @@ import com.orionops.modules.incident.event.IncidentAssignedEvent;
 import com.orionops.modules.incident.event.IncidentCreatedEvent;
 import com.orionops.modules.incident.event.IncidentEscalatedEvent;
 import com.orionops.modules.incident.event.IncidentResolvedEvent;
+import com.orionops.modules.auth.entity.User;
+import com.orionops.modules.auth.repository.UserRepository;
 import com.orionops.modules.integration.chat.SlackIntegrationService;
 import com.orionops.modules.integration.email.EmailService;
+import com.orionops.modules.notification.service.NotificationService;
+import com.orionops.modules.search.service.SearchService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -35,7 +39,10 @@ public class IncidentEventConsumer {
 
     private final EmailService emailService;
     private final SlackIntegrationService slackIntegrationService;
+    private final NotificationService notificationService;
+    private final UserRepository userRepository;
     private final ObjectMapper objectMapper;
+    private final SearchService searchService;
 
     /**
      * Consumes incident events from Kafka topics matching "orionops.incident.*".
@@ -99,11 +106,29 @@ public class IncidentEventConsumer {
             log.info("Incident creation email sent to assignee: {}", event.getAssigneeId());
         }
 
-        // Create in-app notification (would delegate to a NotificationService in production)
-        log.info("In-app notification created for incident {}", event.getIncidentId());
+        // Create in-app notification for the assignee
+        if (event.getAssigneeId() != null) {
+            try {
+                notificationService.createNotification(
+                        event.getAssigneeId(),
+                        "New Incident Assigned: " + event.getTitle(),
+                        "Incident " + event.getIncidentId() + " has been assigned to you. Priority: " + event.getPriority(),
+                        "INCIDENT",
+                        event.getIncidentId(),
+                        "INCIDENT"
+                );
+            } catch (Exception e) {
+                log.warn("Failed to create in-app notification for incident {}: {}", event.getIncidentId(), e.getMessage());
+            }
+        }
 
-        // Index in OpenSearch (would delegate to OpenSearchService in production)
-        log.info("Incident {} indexed in OpenSearch", event.getIncidentId());
+        // Index in OpenSearch
+        try {
+            searchService.indexIncident(event.getIncidentId(), event.getTitle(), event.getDescription(),
+                event.getStatus() != null ? event.getStatus().toString() : "OPEN");
+        } catch (Exception e) {
+            log.warn("Failed to index incident in OpenSearch: {}", e.getMessage());
+        }
     }
 
     /**
@@ -136,8 +161,21 @@ public class IncidentEventConsumer {
             log.info("Assignment email sent to new assignee: {}", event.getAssigneeId());
         }
 
-        // Create in-app notification
-        log.info("In-app assignment notification created for user {}", event.getAssigneeId());
+        // Create in-app notification for the assignee
+        if (event.getAssigneeId() != null) {
+            try {
+                notificationService.createNotification(
+                        event.getAssigneeId(),
+                        "Incident Assigned to You",
+                        "Incident " + event.getIncidentId() + " has been assigned to you.",
+                        "INCIDENT",
+                        event.getIncidentId(),
+                        "INCIDENT"
+                );
+            } catch (Exception e) {
+                log.warn("Failed to create assignment notification for user {}: {}", event.getAssigneeId(), e.getMessage());
+            }
+        }
     }
 
     /**
@@ -184,9 +222,21 @@ public class IncidentEventConsumer {
             log.warn("Failed to post escalation to Slack: {}", e.getMessage());
         }
 
-        // Create audit event for the escalation
-        log.info("Audit event created for incident escalation: incidentId={}, level={}",
-                event.getIncidentId(), event.getEscalationLevel());
+        // Create in-app notification for the escalation
+        if (event.getNewAssigneeId() != null) {
+            try {
+                notificationService.createNotification(
+                        event.getNewAssigneeId(),
+                        "[URGENT] Incident Escalated to Level " + event.getEscalationLevel(),
+                        "Incident " + event.getIncidentId() + " has been escalated. Reason: " + event.getEscalationReason(),
+                        "INCIDENT_ESCALATION",
+                        event.getIncidentId(),
+                        "INCIDENT"
+                );
+            } catch (Exception e) {
+                log.warn("Failed to create escalation notification: {}", e.getMessage());
+            }
+        }
     }
 
     /**
@@ -208,8 +258,21 @@ public class IncidentEventConsumer {
         templateVars.put("resolution", event.getResolution());
         templateVars.put("resolutionCode", event.getResolutionCode());
 
-        // In a production system, we would look up the reporter's email from the incident
-        log.info("Resolution email would be sent to reporter for incident {}", event.getIncidentId());
+        // Notify the reporter about the resolution
+        if (event.getResolvedBy() != null) {
+            try {
+                notificationService.createNotification(
+                        event.getResolvedBy(),
+                        "Incident Resolved: " + event.getIncidentId(),
+                        "Incident " + event.getIncidentId() + " has been resolved. Resolution: " + event.getResolution(),
+                        "INCIDENT_RESOLVED",
+                        event.getIncidentId(),
+                        "INCIDENT"
+                );
+            } catch (Exception e) {
+                log.warn("Failed to create resolution notification: {}", e.getMessage());
+            }
+        }
 
         // Update OpenSearch index
         log.info("Incident {} status updated in OpenSearch to RESOLVED", event.getIncidentId());
@@ -234,14 +297,17 @@ public class IncidentEventConsumer {
 
     /**
      * Resolves the email address for a user by their UUID.
-     * In a production system, this would query the UserRepository.
+     * Queries the UserRepository for the actual email.
      *
      * @param userId the user's UUID
-     * @return the user's email address
+     * @return the user's email address, or a fallback if not found
      */
     private String resolveEmailForUser(java.util.UUID userId) {
-        // Placeholder: in production, this would look up the user's email
-        // from the UserRepository by their UUID
-        return "user-" + userId + "@orionops.io";
+        return userRepository.findById(userId)
+                .map(User::getEmail)
+                .orElseGet(() -> {
+                    log.warn("User not found for email resolution, using fallback: userId={}", userId);
+                    return "user-" + userId + "@orionops.io";
+                });
     }
 }

@@ -14,6 +14,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.orionops.common.tenant.TenantContextHolder;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
@@ -91,7 +93,9 @@ public class FinanceService {
     public FinanceResponse.CostCenterResponse createCostCenter(FinanceRequest.CostCenterRequest request) {
         CostCenter cc = CostCenter.builder()
                 .name(request.getName()).code(request.getCode())
-                .description(request.getDescription()).owner(request.getOwner())
+                .description(request.getDescription()).ownerId(request.getOwnerId())
+                .budgetAmount(request.getBudgetAmount())
+                .status(request.getStatus() != null ? request.getStatus() : CostCenter.CostCenterStatus.ACTIVE)
                 .build();
         cc.setTenantId(resolveTenantId());
         return mapCostCenterToResponse(costCenterRepository.save(cc));
@@ -114,7 +118,11 @@ public class FinanceService {
         cc.setName(request.getName());
         cc.setCode(request.getCode());
         cc.setDescription(request.getDescription());
-        cc.setOwner(request.getOwner());
+        cc.setOwnerId(request.getOwnerId());
+        cc.setBudgetAmount(request.getBudgetAmount());
+        if (request.getStatus() != null) {
+            cc.setStatus(request.getStatus());
+        }
         return mapCostCenterToResponse(costCenterRepository.save(cc));
     }
 
@@ -279,7 +287,7 @@ public class FinanceService {
     }
 
     private UUID resolveTenantId() {
-        return UUID.fromString("00000000-0000-0000-0000-000000000001");
+        return TenantContextHolder.getCurrentTenantId();
     }
 
     private FinanceResponse.BudgetResponse mapBudgetToResponse(Budget b) {

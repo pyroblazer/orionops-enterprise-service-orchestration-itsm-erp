@@ -15,6 +15,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.orionops.common.tenant.TenantContextHolder;
+
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -88,6 +90,17 @@ public class ProblemService {
     }
 
     @Transactional
+    public ProblemResponse markAsKnownError(UUID id, String workaround) {
+        Problem problem = findProblemOrThrow(id);
+        problem.setKnownError(true);
+        if (workaround != null && !workaround.isBlank()) {
+            problem.setWorkaround(workaround);
+        }
+        problem.setStatus(Problem.ProblemStatus.KNOWN_ERROR);
+        return mapToResponse(problemRepository.save(problem));
+    }
+
+    @Transactional
     public void deleteProblem(UUID id) {
         Problem problem = findProblemOrThrow(id);
         problem.softDelete();
@@ -101,7 +114,7 @@ public class ProblemService {
     }
 
     private UUID resolveTenantId() {
-        return UUID.fromString("00000000-0000-0000-0000-000000000001");
+        return TenantContextHolder.getCurrentTenantId();
     }
 
     private ProblemResponse mapToResponse(Problem p) {

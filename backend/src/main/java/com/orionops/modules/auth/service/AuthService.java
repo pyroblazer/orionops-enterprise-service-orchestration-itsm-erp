@@ -1,6 +1,7 @@
 package com.orionops.modules.auth.service;
 
 import com.orionops.common.exception.ResourceNotFoundException;
+import com.orionops.common.tenant.TenantContextHolder;
 import com.orionops.modules.auth.dto.RegisterRequest;
 import com.orionops.modules.auth.dto.UserResponse;
 import com.orionops.modules.auth.dto.UserSyncRequest;
@@ -106,15 +107,7 @@ public class AuthService {
      * Falls back to extracting from JWT claims.
      */
     private UUID resolveTenantId() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.getPrincipal() instanceof Jwt jwt) {
-            String tenantIdStr = jwt.getClaimAsString("tenant_id");
-            if (tenantIdStr != null) {
-                return UUID.fromString(tenantIdStr);
-            }
-        }
-        // Default tenant for standalone deployments
-        return UUID.fromString("00000000-0000-0000-0000-000000000001");
+        return TenantContextHolder.getCurrentTenantId();
     }
 
     /**

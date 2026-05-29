@@ -11,7 +11,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.orionops.common.tenant.TenantContextHolder;
+
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -156,7 +160,58 @@ public class WorkforceService {
                 .build();
     }
 
-    private UUID resolveTenantId() { return UUID.fromString("00000000-0000-0000-0000-000000000001"); }
+    // ---- Capacity Intelligence ----
+
+    @Transactional(readOnly = true)
+    public Map<String, Object> getCapacityUtilization(UUID tenantId, LocalDate from, LocalDate to) {
+        List<CapacityPlan> plans = capacityPlanRepository.findByTenantIdAndDeletedAtIsNull(tenantId);
+        int totalCapacity = plans.stream().mapToInt(p -> p.getTotalCapacity() != null ? p.getTotalCapacity() : 0).sum();
+        int allocatedCapacity = plans.stream().mapToInt(p -> p.getAllocatedCapacity() != null ? p.getAllocatedCapacity() : 0).sum();
+
+        double utilizationPct = totalCapacity > 0 ? (allocatedCapacity * 100.0 / totalCapacity) : 0;
+
+        return Map.of(
+            "totalCapacity", totalCapacity,
+            "allocatedCapacity", allocatedCapacity,
+            "availableCapacity", totalCapacity - allocatedCapacity,
+            "utilizationPercentage", utilizationPct,
+            "period", from + " to " + to
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public List<WorkforceDTO.EmployeeResponse> findAvailableEmployeesWithSkill(UUID skillId, LocalDate date) {
+        return employeeRepository.findBySkillAndAvailability(resolveTenantId(), skillId, date)
+                .stream().map(this::mapEmployee).collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public WorkforceDTO.EmployeeResponse suggestAssignee(UUID incidentId) {
+        List<Employee> candidates = employeeRepository.findAvailableEmployees(resolveTenantId());
+        if (candidates.isEmpty()) {
+            return null;
+        }
+        return mapEmployee(candidates.get(0));
+    }
+
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> getOverloadedTeams(UUID tenantId) {
+        List<CapacityPlan> plans = capacityPlanRepository.findByTenantIdAndDeletedAtIsNull(tenantId);
+        return plans.stream()
+                .filter(p -> p.getTotalCapacity() != null && p.getAllocatedCapacity() != null &&
+                           p.getAllocatedCapacity() > p.getTotalCapacity())
+                .map(p -> Map.of(
+                    "department", p.getDepartment() != null ? p.getDepartment() : "Unknown",
+                    "allocatedCapacity", p.getAllocatedCapacity(),
+                    "totalCapacity", p.getTotalCapacity(),
+                    "overallocationPct", (p.getAllocatedCapacity() - p.getTotalCapacity()) * 100.0 / p.getTotalCapacity()
+                ))
+                .collect(Collectors.toList());
+    }
+
+    private UUID resolveTenantId() {
+        return TenantContextHolder.getCurrentTenantId();
+    }
 
     private Employee findEmployeeOrThrow(UUID id) {
         return employeeRepository.findById(id).filter(e -> !e.isDeleted())
