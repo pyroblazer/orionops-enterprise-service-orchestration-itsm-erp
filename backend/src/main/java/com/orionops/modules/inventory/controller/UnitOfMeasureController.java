@@ -23,8 +23,8 @@ public class UnitOfMeasureController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('INVENTORY_VIEWER', 'ADMIN')")
-    public ResponseEntity<List<Map<String, Object>>> getUOMHierarchy() {
-        List<Map<String, Object>> hierarchy = uomService.getUOMHierarchy();
+    public ResponseEntity<Map<String, List<String>>> getUOMHierarchy() {
+        Map<String, List<String>> hierarchy = uomService.getUOMHierarchy();
         return ResponseEntity.ok(hierarchy);
     }
 

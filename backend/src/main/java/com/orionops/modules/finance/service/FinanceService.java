@@ -306,7 +306,7 @@ public class FinanceService {
     private FinanceResponse.CostCenterResponse mapCostCenterToResponse(CostCenter c) {
         return FinanceResponse.CostCenterResponse.builder()
                 .id(c.getId()).name(c.getName()).code(c.getCode())
-                .description(c.getDescription()).owner(c.getOwner()).active(c.isActive())
+                .description(c.getDescription()).ownerId(c.getOwnerId()).active(c.isActive())
                 .createdAt(c.getCreatedAt()).build();
     }
 

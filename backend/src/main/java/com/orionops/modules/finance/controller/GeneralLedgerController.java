@@ -10,8 +10,11 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @Slf4j
 @RestController
@@ -33,7 +36,8 @@ public class GeneralLedgerController {
     @PreAuthorize("hasAnyRole('FINANCE_VIEWER', 'FINANCE_MANAGER', 'ADMIN')")
     public ResponseEntity<Map<String, Object>> getTrialBalance(
             @RequestParam(required = false) String asOfDate) {
-        Map<String, Object> trialBalance = glService.getTrialBalance(TenantContextHolder.getCurrentTenantId(), asOfDate);
+        LocalDate date = asOfDate != null ? LocalDate.parse(asOfDate) : LocalDate.now();
+        Map<String, Object> trialBalance = glService.getTrialBalance(TenantContextHolder.getCurrentTenantId(), date);
         return ResponseEntity.ok(trialBalance);
     }
 
@@ -42,7 +46,9 @@ public class GeneralLedgerController {
     public ResponseEntity<Map<String, Object>> getIncomeStatement(
             @RequestParam(required = false) String startDate,
             @RequestParam(required = false) String endDate) {
-        Map<String, Object> statement = glService.generateIncomeStatement(TenantContextHolder.getCurrentTenantId(), startDate, endDate);
+        LocalDate start = startDate != null ? LocalDate.parse(startDate) : LocalDate.now().minusMonths(1);
+        LocalDate end = endDate != null ? LocalDate.parse(endDate) : LocalDate.now();
+        Map<String, Object> statement = glService.generateIncomeStatement(TenantContextHolder.getCurrentTenantId(), start, end);
         return ResponseEntity.ok(statement);
     }
 
@@ -52,9 +58,10 @@ public class GeneralLedgerController {
         String glAccountCode = (String) body.get("glAccountCode");
         BigDecimal amount = new BigDecimal(body.get("amount").toString());
         String reference = (String) body.get("reference");
-        String date = (String) body.get("date");
+        String dateStr = (String) body.get("date");
+        LocalDate date = dateStr != null ? LocalDate.parse(dateStr) : LocalDate.now();
 
-        glService.postToGLAccount(glAccountCode, amount, reference, date);
+        glService.postToGLAccount(TenantContextHolder.getCurrentTenantId(), amount, glAccountCode, reference, date);
         return ResponseEntity.ok().build();
     }
 
@@ -63,7 +70,8 @@ public class GeneralLedgerController {
     public ResponseEntity<BigDecimal> getAccountBalance(
             @PathVariable String code,
             @RequestParam(required = false) String asOfDate) {
-        BigDecimal balance = glService.getAccountBalance(code, asOfDate);
+        LocalDate date = asOfDate != null ? LocalDate.parse(asOfDate) : LocalDate.now();
+        BigDecimal balance = glService.getAccountBalance(code, date);
         return ResponseEntity.ok(balance);
     }
 }

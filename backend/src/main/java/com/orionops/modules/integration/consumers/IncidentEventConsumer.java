@@ -124,8 +124,8 @@ public class IncidentEventConsumer {
 
         // Index in OpenSearch
         try {
-            searchService.indexIncident(event.getIncidentId(), event.getTitle(), event.getDescription(),
-                event.getStatus() != null ? event.getStatus().toString() : "OPEN");
+            searchService.indexIncident(event.getIncidentId(), event.getTitle(), event.getCategory(),
+                "OPEN");
         } catch (Exception e) {
             log.warn("Failed to index incident in OpenSearch: {}", e.getMessage());
         }

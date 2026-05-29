@@ -5,8 +5,10 @@ import com.orionops.modules.procurement.entity.PurchaseOrder;
 import com.orionops.modules.procurement.entity.PurchaseRequest;
 import com.orionops.modules.procurement.entity.Vendor;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -31,5 +33,7 @@ public class ProcurementRepository {
     public interface ContractRepository extends JpaRepository<Contract, UUID> {
         List<Contract> findByTenantIdAndDeletedAtIsNull(UUID tenantId);
         List<Contract> findByVendorIdAndDeletedAtIsNull(UUID vendorId);
+        @Query("SELECT c FROM Contract c WHERE DATE(c.endDate) BETWEEN :startDate AND :endDate AND c.deletedAt IS NULL")
+        List<Contract> findByEndDateBetween(LocalDate startDate, LocalDate endDate);
     }
 }

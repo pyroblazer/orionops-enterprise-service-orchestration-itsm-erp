@@ -49,5 +49,8 @@ public class BillingRecord extends BaseEntity {
     @Column
     private LocalDateTime paidAt;
 
-    public enum BillingStatus { PENDING, PAID, OVERDUE, CANCELLED }
+    @Column
+    private java.util.UUID costCenterId;
+
+    public enum BillingStatus { DRAFT, PENDING, PAID, OVERDUE, CANCELLED }
 }

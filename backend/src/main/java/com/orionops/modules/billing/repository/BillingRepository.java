@@ -23,6 +23,8 @@ public class BillingRepository {
     @Repository
     public interface BillingRecordRepository extends JpaRepository<BillingRecord, UUID> {
         List<BillingRecord> findByTenantIdAndDeletedAtIsNull(UUID tenantId);
+        @Query("SELECT br FROM BillingRecord br WHERE br.costCenterId = :costCenterId AND br.periodStart >= :start AND br.periodEnd <= :end")
+        List<BillingRecord> findByCostCenterAndPeriod(UUID costCenterId, LocalDateTime start, LocalDateTime end);
     }
 
     @Repository

@@ -82,10 +82,10 @@ public class SegregationOfDutiesService {
         return false;
     }
 
-    public static Map<String, Object> getSoDRules() {
-        Map<String, Object> rules = new HashMap<>();
+    public static Map<String, List<String>> getSoDRules() {
+        Map<String, List<String>> rules = new HashMap<>();
         for (Map.Entry<String, Set<String>> entry : CONFLICTING_ACTIVITIES.entrySet()) {
-            rules.put(entry.getKey(), entry.getValue());
+            rules.put(entry.getKey(), List.copyOf(entry.getValue()));
         }
         return rules;
     }

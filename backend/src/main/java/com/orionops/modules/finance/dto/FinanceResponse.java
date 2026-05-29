@@ -40,7 +40,7 @@ public class FinanceResponse {
         private String name;
         private String code;
         private String description;
-        private String owner;
+        private UUID ownerId;
         private boolean active;
         private LocalDateTime createdAt;
     }

@@ -50,6 +50,9 @@ public class Contract extends BaseEntity {
     @Column(columnDefinition = "TEXT")
     private String terms;
 
+    @Column
+    private UUID ownerId;
+
     public enum ContractStatus {
         DRAFT, ACTIVE, EXPIRED, TERMINATED
     }

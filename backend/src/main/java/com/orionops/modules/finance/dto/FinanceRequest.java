@@ -43,7 +43,9 @@ public class FinanceRequest {
         private String name;
         private String code;
         private String description;
-        private String owner;
+        private UUID ownerId;
+        private BigDecimal budgetAmount;
+        private CostCenter.CostCenterStatus status;
     }
 
     @Data
