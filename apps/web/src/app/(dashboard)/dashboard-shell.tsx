@@ -27,7 +27,8 @@ import {
   Eye,
   Menu,
 } from 'lucide-react';
-import { auth } from '@/lib/api';
+import { SearchModal } from '@/components/search/search-modal';
+import { auth, api } from '@/lib/api';
 import { useNotifications, useMarkAllNotificationsRead } from '@/lib/hooks';
 import { useTheme, type Theme } from '@/lib/hooks';
 import { cn } from '@/lib/utils';
@@ -41,11 +42,27 @@ export function DashboardShell({
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [shortcutsVisible, setShortcutsVisible] = useState(false);
+  const [searchModalOpen, setSearchModalOpen] = useState(false);
+  const [currentUser, setCurrentUser] = useState<any>(null);
   const { theme: currentTheme, setTheme } = useTheme();
 
   const { data: notifications } = useNotifications();
   const markAllRead = useMarkAllNotificationsRead();
   const unreadCount = notifications?.filter((n) => !n.read).length ?? 0;
+
+  useEffect(() => {
+    const loadCurrentUser = async () => {
+      try {
+        const res = await api.getCurrentUser?.();
+        if (res?.data) {
+          setCurrentUser(res.data);
+        }
+      } catch (err) {
+        console.error('Failed to load current user:', err);
+      }
+    };
+    loadCurrentUser();
+  }, []);
 
   const handleToggleSidebar = useCallback(() => {
     setSidebarCollapsed((prev) => !prev);
@@ -74,6 +91,7 @@ export function DashboardShell({
             break;
           case 'k':
             e.preventDefault();
+            setSearchModalOpen(true);
             break;
           case '/':
             e.preventDefault();
@@ -225,9 +243,9 @@ export function DashboardShell({
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuLabel>
                   <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium">OrionOps User</p>
+                    <p className="text-sm font-medium">{currentUser?.name || 'OrionOps User'}</p>
                     <p className="text-xs text-muted-foreground">
-                      user@orionops.com
+                      {currentUser?.email || 'user@orionops.com'}
                     </p>
                   </div>
                 </DropdownMenuLabel>
@@ -300,6 +318,11 @@ export function DashboardShell({
             </div>
           </div>
         )}
+
+        <SearchModal
+          isOpen={searchModalOpen}
+          onClose={() => setSearchModalOpen(false)}
+        />
       </div>
   );
 }
