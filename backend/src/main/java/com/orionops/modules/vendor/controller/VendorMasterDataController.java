@@ -5,7 +5,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.preauthorize.PreAuthorize;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -40,8 +40,8 @@ public class VendorMasterDataController {
 
     @GetMapping("/vendors/{id}/quality-score")
     @PreAuthorize("hasAnyRole('PROCUREMENT_VIEWER', 'PROCUREMENT_MANAGER', 'ADMIN')")
-    public ResponseEntity<Integer> getVendorQualityScore(@PathVariable UUID id) {
-        int score = vendorMdmService.calculateDataQualityScore(id);
+    public ResponseEntity<Map<String, Object>> getVendorQualityScore(@PathVariable UUID id) {
+        Map<String, Object> score = vendorMdmService.calculateDataQualityScore(id);
         return ResponseEntity.ok(score);
     }
 
@@ -50,7 +50,11 @@ public class VendorMasterDataController {
     public ResponseEntity<Void> auditVendorChange(
             @PathVariable UUID id,
             @RequestBody Map<String, Object> body) {
-        vendorMdmService.auditVendorChange(id, body);
+        String fieldName = (String) body.get("fieldName");
+        Object oldValue = body.get("oldValue");
+        Object newValue = body.get("newValue");
+        UUID changedBy = UUID.fromString((String) body.get("changedBy"));
+        vendorMdmService.auditVendorChange(id, fieldName, oldValue, newValue, changedBy);
         return ResponseEntity.ok().build();
     }
 }

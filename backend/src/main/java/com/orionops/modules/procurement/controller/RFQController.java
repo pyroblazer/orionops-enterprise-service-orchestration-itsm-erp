@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.preauthorize.PreAuthorize;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,7 +25,8 @@ public class RFQController {
     @PostMapping
     @PreAuthorize("hasAnyRole('PROCUREMENT_MANAGER', 'ADMIN')")
     public ResponseEntity<Map<String, Object>> createRFQ(@RequestBody Map<String, Object> body) {
-        Map<String, Object> rfq = rfqService.createRFQ(body);
+        UUID requisitionId = UUID.fromString((String) body.get("requisitionId"));
+        Map<String, Object> rfq = rfqService.createRFQ(requisitionId, body);
         return ResponseEntity.status(HttpStatus.CREATED).body(rfq);
     }
 
@@ -41,14 +42,15 @@ public class RFQController {
     @PostMapping("/{id}/bids")
     @PreAuthorize("hasAnyRole('PROCUREMENT_MANAGER', 'VENDOR', 'ADMIN')")
     public ResponseEntity<Void> recordBid(@PathVariable UUID id, @RequestBody Map<String, Object> body) {
-        rfqService.recordBidResponse(id, body);
+        UUID vendorId = UUID.fromString((String) body.get("vendorId"));
+        rfqService.recordBidResponse(id, vendorId, body);
         return ResponseEntity.ok().build();
     }
 
     @GetMapping("/{id}/score")
     @PreAuthorize("hasAnyRole('PROCUREMENT_VIEWER', 'PROCUREMENT_MANAGER', 'ADMIN')")
-    public ResponseEntity<List<Map<String, Object>>> scoreAndRankBids(@PathVariable UUID id) {
-        List<Map<String, Object>> bids = rfqService.scoreAndRankBids(id);
+    public ResponseEntity<Map<String, Object>> scoreAndRankBids(@PathVariable UUID id) {
+        Map<String, Object> bids = rfqService.scoreAndRankBids(id);
         return ResponseEntity.ok(bids);
     }
 

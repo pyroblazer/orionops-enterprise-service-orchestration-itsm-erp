@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -21,6 +22,10 @@ public class WorkforceRepository {
                 "JOIN skills s ON es.skill_id = s.id WHERE s.name IN (:skills) AND e.tenant_id = :tenantId " +
                 "AND e.deleted_at IS NULL", nativeQuery = true)
         List<Employee> findBySkills(@Param("tenantId") UUID tenantId, @Param("skills") List<String> skills);
+
+        List<Employee> findAvailableEmployees(UUID tenantId);
+
+        List<Employee> findBySkillAndAvailability(UUID tenantId, UUID skillId, LocalDate date);
     }
 
     @Repository

@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.orionops.common.tenant.TenantContextHolder;
 
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -200,12 +201,14 @@ public class WorkforceService {
         return plans.stream()
                 .filter(p -> p.getTotalCapacity() != null && p.getAllocatedCapacity() != null &&
                            p.getAllocatedCapacity() > p.getTotalCapacity())
-                .map(p -> Map.of(
-                    "department", p.getDepartment() != null ? p.getDepartment() : "Unknown",
-                    "allocatedCapacity", p.getAllocatedCapacity(),
-                    "totalCapacity", p.getTotalCapacity(),
-                    "overallocationPct", (p.getAllocatedCapacity() - p.getTotalCapacity()) * 100.0 / p.getTotalCapacity()
-                ))
+                .map(p -> {
+                    Map<String, Object> result = new HashMap<>();
+                    result.put("department", p.getDepartment() != null ? p.getDepartment() : "Unknown");
+                    result.put("allocatedCapacity", p.getAllocatedCapacity());
+                    result.put("totalCapacity", p.getTotalCapacity());
+                    result.put("overallocationPct", (p.getAllocatedCapacity() - p.getTotalCapacity()) * 100.0 / p.getTotalCapacity());
+                    return result;
+                })
                 .collect(Collectors.toList());
     }
 

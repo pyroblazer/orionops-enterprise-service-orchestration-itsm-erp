@@ -15,7 +15,6 @@ import java.util.UUID;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class GeneralLedgerService {
 
     // In-memory GL structure (production would use JPA entities)
