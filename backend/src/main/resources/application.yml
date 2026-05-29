@@ -7,6 +7,12 @@ server:
   servlet:
     context-path: /api
   shutdown: graceful
+  tomcat:
+    threads:
+      max: 20
+      min-spare: 5
+    max-connections: 100
+    accept-count: 10
 
 spring:
   application:
@@ -19,12 +25,13 @@ spring:
     password: ${POSTGRES_PASSWORD:orionops_dev}
     driver-class-name: org.postgresql.Driver
     hikari:
-      maximum-pool-size: 20
-      minimum-idle: 5
+      maximum-pool-size: 10
+      minimum-idle: 2
       idle-timeout: 300000
       connection-timeout: 20000
       max-lifetime: 1200000
       pool-name: OrionOpsHikariPool
+      leak-detection-threshold: 15000
 
   # --- JPA / Hibernate ---
   jpa:
@@ -49,10 +56,10 @@ spring:
       timeout: 5000
       lettuce:
         pool:
-          max-active: 16
-          max-idle: 8
-          min-idle: 4
-          max-wait: 3000
+          max-active: 8
+          max-idle: 4
+          min-idle: 2
+          max-wait: 2000
 
   # --- Kafka ---
   kafka:
@@ -97,8 +104,8 @@ spring:
   # --- Servlet Multipart ---
   servlet:
     multipart:
-      max-file-size: 50MB
-      max-request-size: 100MB
+      max-file-size: 25MB
+      max-request-size: 50MB
 
 # ---------------------------------------------------------------------------
 # Flowable BPMN Engine
@@ -106,8 +113,17 @@ spring:
 flowable:
   database-schema-update: false
   async-executor-activate: true
+  async-executor-core-pool-size: 4
+  async-executor-max-pool-size: 8
+  async-executor-queue-size: 100
+  async-executor-max-timer-jobs-per-acquisition: 10
+  async-executor-max-async-jobs-per-acquisition: 10
+  async-executor-wait-time-in-millis: 5000
+  async-executor-lock-wait-time-in-millis: 5000
   process-definition-location-prefix: classpath*:/processes/
-  history-level: full
+  history-level: audit
+  async-history-enabled: false
+  enable-safe-xml: true
 
 # ---------------------------------------------------------------------------
 # OpenSearch
@@ -215,13 +231,14 @@ management:
 # ---------------------------------------------------------------------------
 logging:
   level:
-    root: INFO
-    com.orionops: DEBUG
-    org.springframework.security: DEBUG
+    root: WARN
+    com.orionops: INFO
+    org.springframework.security: WARN
     org.hibernate.SQL: WARN
-    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
-    org.flowable: INFO
+    org.flowable: WARN
     org.apache.kafka: WARN
-    org.springframework.kafka: INFO
+    org.springframework.kafka: WARN
     io.opensearch: WARN
     io.minio: WARN
+  charset:
+    console: UTF-8

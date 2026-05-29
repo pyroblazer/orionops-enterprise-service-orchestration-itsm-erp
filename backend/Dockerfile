@@ -26,4 +26,4 @@ USER orionops
 
 EXPOSE 8080
 
-ENTRYPOINT ["sh", "-c", "java ${JAVA_OPTS} -Dspring.datasource.url=jdbc:postgresql://ep-patient-star-aozxgghu-pooler.c-2.ap-southeast-1.aws.neon.tech/neondb?sslmode=require -Dspring.datasource.username=neondb_owner -jar app.jar"]
+ENTRYPOINT ["sh", "-c", "java -Xmx350m -Xms128m -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:+ParallelRefProcEnabled -XX:+UnlockDiagnosticVMOptions -XX:G1SummarizeRSetStatsPeriod=1 -Djdk.attach.allowAttachSelf=false ${JAVA_OPTS} -Dspring.datasource.url=jdbc:postgresql://ep-patient-star-aozxgghu-pooler.c-2.ap-southeast-1.aws.neon.tech/neondb?sslmode=require -Dspring.datasource.username=neondb_owner -jar app.jar"]
