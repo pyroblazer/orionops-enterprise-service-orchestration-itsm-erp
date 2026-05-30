@@ -1403,10 +1403,6 @@ export const auth = {
       throw new Error(err.message || 'Registration failed.');
     }
   },
-  getGoogleLoginUrl: async (): Promise<string> => {
-    const baseUrl = await auth.getLoginUrl();
-    return baseUrl + '&kc_idp_hint=google';
-  },
 };
 
 export default apiClient;

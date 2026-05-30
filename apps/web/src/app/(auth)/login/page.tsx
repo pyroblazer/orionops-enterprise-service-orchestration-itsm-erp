@@ -70,10 +70,6 @@ function LoginFormContent() {
     window.location.href = await auth.getLoginUrl();
   };
 
-  const handleGoogleLogin = async () => {
-    window.location.href = await auth.getGoogleLoginUrl();
-  };
-
   return (
     <Card
         className="relative w-full max-w-md rounded-3xl shadow-large transition-all duration-300 hover:shadow-float"
@@ -162,18 +158,6 @@ function LoginFormContent() {
           >
             <ExternalLink className="mr-2 h-4 w-4" aria-hidden="true" />
             Keycloak
-          </Button>
-
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full h-11 font-semibold shadow-medium hover:shadow-large transition-all"
-            onClick={handleGoogleLogin}
-            disabled={loading}
-            aria-label="Sign in with Google"
-          >
-            <ExternalLink className="mr-2 h-4 w-4" aria-hidden="true" />
-            Google
           </Button>
 
           <div className="mt-6 pt-6 border-t border-border/50">

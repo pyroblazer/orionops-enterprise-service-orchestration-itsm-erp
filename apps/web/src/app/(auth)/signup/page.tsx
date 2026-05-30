@@ -93,10 +93,6 @@ export default function SignupPage() {
     window.location.href = await auth.getSignupUrl();
   };
 
-  const handleGoogleSignup = async () => {
-    window.location.href = await auth.getGoogleLoginUrl();
-  };
-
   return (
     <Card
         className="relative w-full max-w-md rounded-3xl shadow-large transition-all duration-300 hover:shadow-float"
@@ -222,18 +218,6 @@ export default function SignupPage() {
           >
             <ExternalLink className="mr-2 h-4 w-4" aria-hidden="true" />
             Keycloak
-          </Button>
-
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full h-11 font-semibold shadow-medium hover:shadow-large transition-all"
-            onClick={handleGoogleSignup}
-            disabled={loading}
-            aria-label="Sign up with Google"
-          >
-            <ExternalLink className="mr-2 h-4 w-4" aria-hidden="true" />
-            Google
           </Button>
 
           <p className="text-center text-sm text-muted-foreground">

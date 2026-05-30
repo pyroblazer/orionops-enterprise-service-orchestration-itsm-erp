@@ -1,6 +1,8 @@
 # ---- Stage 1: Build ----
-# Render cache bust: v2
 FROM maven:3.9-eclipse-temurin-21 AS build
+
+# Force cache invalidation for source changes
+ARG CACHEBUST=1
 
 WORKDIR /app
 
@@ -8,10 +10,12 @@ WORKDIR /app
 COPY pom.xml .
 RUN mvn dependency:go-offline -B
 
-# Copy source and build
+# Copy source and build — always fresh due to CACHEBUST arg above
 COPY src ./src
 RUN mvn package -DskipTests -Dmaven.test.skip=true -B \
-    && rm -rf target/original-*.jar
+    && rm -rf target/original-*.jar \
+    && echo "Built JAR contents:" \
+    && jar tf target/*.jar | grep "db/migration" | sort
 
 # ---- Stage 2: Runtime ----
 FROM eclipse-temurin:21-jre-alpine
