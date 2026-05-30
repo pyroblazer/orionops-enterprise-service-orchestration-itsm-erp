@@ -111,13 +111,13 @@ spring:
 # Flowable BPMN Engine
 # ---------------------------------------------------------------------------
 flowable:
-  database-schema-update: false
+  database-schema-update: true
   async-executor-activate: true
-  async-executor-core-pool-size: 4
-  async-executor-max-pool-size: 8
-  async-executor-queue-size: 100
-  async-executor-max-timer-jobs-per-acquisition: 10
-  async-executor-max-async-jobs-per-acquisition: 10
+  async-executor-core-pool-size: 2
+  async-executor-max-pool-size: 4
+  async-executor-queue-size: 50
+  async-executor-max-timer-jobs-per-acquisition: 5
+  async-executor-max-async-jobs-per-acquisition: 5
   async-executor-wait-time-in-millis: 5000
   async-executor-lock-wait-time-in-millis: 5000
   process-definition-location-prefix: classpath*:/processes/
