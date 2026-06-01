@@ -36,7 +36,6 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @SpringBootTest(properties = {
     "spring.kafka.enabled=false",
-    "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration,org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration",
     "flowable.database-schema-update=true"
 })
 @Testcontainers(disabledWithoutDocker = true)

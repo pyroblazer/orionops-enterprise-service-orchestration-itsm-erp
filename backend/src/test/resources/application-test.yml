@@ -8,6 +8,7 @@ spring:
       ddl-auto: create-drop
     show-sql: true
   kafka:
+    enabled: false
     bootstrap-servers: localhost:9092
     consumer:
       group-id: test-group
@@ -31,8 +32,6 @@ spring:
     properties:
       mail.smtp.auth: true
       mail.smtp.starttls.enable: true
-  kafka:
-    enabled: false
   autoconfigure:
     exclude:
       - org.flowable.spring.boot.eventregistry.EventRegistryAutoConfiguration
