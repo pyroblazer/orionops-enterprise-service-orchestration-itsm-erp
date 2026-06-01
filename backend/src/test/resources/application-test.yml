@@ -31,10 +31,14 @@ spring:
     properties:
       mail.smtp.auth: true
       mail.smtp.starttls.enable: true
+  kafka:
+    enabled: false
   autoconfigure:
     exclude:
       - org.flowable.spring.boot.eventregistry.EventRegistryAutoConfiguration
       - org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
 
 flowable:
   async-executor-activate: false
@@ -47,6 +51,9 @@ keycloak:
   credentials:
     secret: test-secret
   bearer-only: true
+  resourceserver:
+    jwt:
+      jwk-set-uri: http://localhost:8081/auth/realms/orionops-test/protocol/openid-connect/certs
 
 opa:
   url: http://localhost:8181
@@ -59,6 +66,9 @@ stripe:
 opensearch:
   host: localhost
   port: 9200
+  protocol: http
+  username: admin
+  password: admin
 
 minio:
   endpoint: http://localhost:9000

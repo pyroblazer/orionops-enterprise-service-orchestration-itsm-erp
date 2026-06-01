@@ -324,6 +324,9 @@
                 <configuration>
                     <groups>${test.includedGroups}</groups>
                     <excludedGroups>${test.excludedGroups}</excludedGroups>
+                    <argLine>-Xmx512m -XX:MaxMetaspaceSize=200m -XX:+UseG1GC -XX:MaxGCPauseMillis=200</argLine>
+                    <forkCount>1</forkCount>
+                    <reuseForks>false</reuseForks>
                 </configuration>
             </plugin>
         </plugins>

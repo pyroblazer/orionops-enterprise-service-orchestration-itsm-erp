@@ -59,6 +59,8 @@ jobs:
         run: mvn compile -B -q
 
       - name: Run unit tests
+        env:
+          MAVEN_OPTS: "-Xmx512m -XX:MaxMetaspaceSize=200m -XX:+UseG1GC"
         run: mvn test -B -Dtest.excludedGroups=docker -Dspring.profiles.active=test
 
       - name: Upload unit test results
@@ -153,6 +155,7 @@ jobs:
           SPRING_DATA_REDIS_HOST: localhost
           SPRING_DATA_REDIS_PORT: "6379"
           SPRING_KAFKA_BOOTSTRAP_SERVERS: localhost:9092
+          MAVEN_OPTS: "-Xmx512m -XX:MaxMetaspaceSize=200m -XX:+UseG1GC"
         run: mvn verify -B -Dtest.includedGroups=docker -Dtest="*IT" -Dspring.profiles.active=test
 
       - name: Upload integration test results
@@ -190,6 +193,8 @@ jobs:
         run: mvn compile -B -q
 
       - name: Run workflow simulation tests
+        env:
+          MAVEN_OPTS: "-Xmx512m -XX:MaxMetaspaceSize=200m -XX:+UseG1GC"
         run: mvn test -B -Dtest.includedGroups=docker -Dtest="*WorkflowTest" -Dspring.profiles.active=test
 
       - name: Upload workflow test results
