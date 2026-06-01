@@ -8,6 +8,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
 import java.util.Map;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -19,25 +20,37 @@ class SpendAnalysisServiceTest {
 
     @Test
     void testGetSpendByVendor() {
-        Map<String, Object> spend = spendService.getSpendByVendor();
+        UUID tenantId = UUID.randomUUID();
+        String from = LocalDate.now().minusMonths(1).toString();
+        String to = LocalDate.now().toString();
+        Map<String, Object> spend = spendService.getSpendByVendor(tenantId, from, to);
         assertNotNull(spend);
     }
 
     @Test
     void testGetSpendByVendor_WithDates() {
-        Map<String, Object> spend = spendService.getSpendByVendor(LocalDate.now().minusMonths(1), LocalDate.now());
+        UUID tenantId = UUID.randomUUID();
+        String from = LocalDate.now().minusMonths(1).toString();
+        String to = LocalDate.now().toString();
+        Map<String, Object> spend = spendService.getSpendByVendor(tenantId, from, to);
         assertNotNull(spend);
     }
 
     @Test
     void testGetSpendByCategory() {
-        Map<String, Object> spend = spendService.getSpendByCategory();
+        UUID tenantId = UUID.randomUUID();
+        String from = LocalDate.now().minusMonths(1).toString();
+        String to = LocalDate.now().toString();
+        Map<String, Object> spend = spendService.getSpendByCategory(tenantId, from, to);
         assertNotNull(spend);
     }
 
     @Test
     void testGetSpendByCategory_WithDates() {
-        Map<String, Object> spend = spendService.getSpendByCategory(LocalDate.now().minusMonths(1), LocalDate.now());
+        UUID tenantId = UUID.randomUUID();
+        String from = LocalDate.now().minusMonths(1).toString();
+        String to = LocalDate.now().toString();
+        Map<String, Object> spend = spendService.getSpendByCategory(tenantId, from, to);
         assertNotNull(spend);
     }
 

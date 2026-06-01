@@ -8,6 +8,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -19,33 +20,39 @@ class ComplianceRuleEngineTest {
 
     @Test
     void testEvaluateRules_ApprovalSLA() {
-        assertDoesNotThrow(() -> ruleEngine.evaluateRules(Map.of("type", "approval_sla")));
+        UUID documentId = UUID.randomUUID();
+        assertDoesNotThrow(() -> ruleEngine.evaluateRules("approval_sla", documentId));
     }
 
     @Test
     void testEvaluateRules_DataRetention() {
-        assertDoesNotThrow(() -> ruleEngine.evaluateRules(Map.of("type", "data_retention")));
+        UUID documentId = UUID.randomUUID();
+        assertDoesNotThrow(() -> ruleEngine.evaluateRules("data_retention", documentId));
     }
 
     @Test
     void testFlagComplianceViolations() {
-        assertDoesNotThrow(() -> ruleEngine.flagComplianceViolations());
+        UUID documentId = UUID.randomUUID();
+        assertDoesNotThrow(() -> ruleEngine.flagComplianceViolations("invoice", documentId));
     }
 
     @Test
     void testGetOpenViolations() {
-        List<Map<String, Object>> violations = ruleEngine.getOpenViolations();
+        UUID tenantId = UUID.randomUUID();
+        List<Map<String, Object>> violations = ruleEngine.getOpenViolations(tenantId);
         assertNotNull(violations);
     }
 
     @Test
     void testGetOpenViolations_EmptyList() {
-        List<Map<String, Object>> violations = ruleEngine.getOpenViolations();
+        UUID tenantId = UUID.randomUUID();
+        List<Map<String, Object>> violations = ruleEngine.getOpenViolations(tenantId);
         assertTrue(violations.isEmpty() || !violations.isEmpty()); // Flexible
     }
 
     @Test
     void testEvaluateRules_NullInput() {
-        assertDoesNotThrow(() -> ruleEngine.evaluateRules(null));
+        UUID documentId = UUID.randomUUID();
+        assertDoesNotThrow(() -> ruleEngine.evaluateRules(null, documentId));
     }
 }

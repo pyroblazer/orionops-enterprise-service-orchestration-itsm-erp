@@ -19,14 +19,18 @@ class TenantIsolationServiceTest {
 
     @Test
     void testVerifyTenantIsolation() {
-        boolean isolated = tenantService.verifyTenantIsolation();
-        assertTrue(isolated || !isolated); // Flexible
+        UUID tenantA = UUID.randomUUID();
+        UUID tenantB = UUID.randomUUID();
+        Map<String, Object> result = tenantService.verifyTenantIsolation(tenantA, tenantB);
+        assertNotNull(result);
     }
 
     @Test
     void testVerifyTenantIsolation_ResultStructure() {
-        boolean isolated = tenantService.verifyTenantIsolation();
-        assertTrue(isolated instanceof Boolean);
+        UUID tenantA = UUID.randomUUID();
+        UUID tenantB = UUID.randomUUID();
+        Map<String, Object> result = tenantService.verifyTenantIsolation(tenantA, tenantB);
+        assertTrue(result.containsKey("fullyIsolated") || result.isEmpty());
     }
 
     @Test

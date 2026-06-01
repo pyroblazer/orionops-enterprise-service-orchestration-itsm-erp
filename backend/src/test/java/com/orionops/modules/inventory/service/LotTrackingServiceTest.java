@@ -22,31 +22,32 @@ class LotTrackingServiceTest {
 
     @Test
     void testReceiveLot() {
-        assertDoesNotThrow(() -> lotService.receiveLot(Map.of(
-            "sku", "SKU-001",
-            "lotNumber", "LOT-2024-001",
-            "quantity", "100",
-            "expiryDate", LocalDate.now().plusMonths(6).toString()
-        )));
+        assertDoesNotThrow(() -> lotService.receiveLot(
+            "SKU-001",
+            "LOT-2024-001",
+            LocalDate.now().minusMonths(1).toString(),
+            LocalDate.now().plusMonths(6).toString(),
+            BigDecimal.valueOf(100),
+            UUID.randomUUID()
+        ));
     }
 
     @Test
     void testAllocateLotToOrder() {
-        UUID lotId = UUID.randomUUID();
         UUID orderId = UUID.randomUUID();
-        assertDoesNotThrow(() -> lotService.allocateLotToOrder(lotId, orderId, BigDecimal.valueOf(50)));
+        assertDoesNotThrow(() -> lotService.allocateLotToOrder(orderId, "SKU-001", BigDecimal.valueOf(50)));
     }
 
     @Test
     void testFlagExpiringLots() {
-        List<Map<String, Object>> expiringLots = lotService.flagExpiringLots();
+        List<Map<String, Object>> expiringLots = lotService.flagExpiringLots(UUID.randomUUID());
         assertNotNull(expiringLots);
         assertTrue(expiringLots.isEmpty() || !expiringLots.isEmpty());
     }
 
     @Test
     void testFlagExpiringLots_WithDays() {
-        List<Map<String, Object>> expiringLots = lotService.flagExpiringLots(30);
+        List<Map<String, Object>> expiringLots = lotService.flagExpiringLots(UUID.randomUUID());
         assertNotNull(expiringLots);
     }
 

@@ -10,8 +10,11 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.security.test.context.support.WithMockUser;
 
+import java.time.LocalDate;
 import java.util.Map;
+import java.util.UUID;
 
+import static org.mockito.ArgumentMatchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.mockito.Mockito.*;
@@ -34,7 +37,7 @@ class GeneralLedgerControllerContractTest {
             "LIABILITY", java.util.List.of()
         );
 
-        when(glService.getChartOfAccounts()).thenReturn(coa);
+        when(glService.getChartOfAccounts(any(UUID.class))).thenReturn(java.util.List.of(coa));
 
         mockMvc.perform(get("/api/v1/finance/gl/accounts"))
             .andExpect(status().isOk())
@@ -50,7 +53,7 @@ class GeneralLedgerControllerContractTest {
             "balanced", true
         );
 
-        when(glService.getTrialBalance()).thenReturn(tb);
+        when(glService.getTrialBalance(any(UUID.class), any(LocalDate.class))).thenReturn(tb);
 
         mockMvc.perform(get("/api/v1/finance/gl/trial-balance"))
             .andExpect(status().isOk())
@@ -66,7 +69,7 @@ class GeneralLedgerControllerContractTest {
             "netIncome", 400000
         );
 
-        when(glService.generateIncomeStatement()).thenReturn(is);
+        when(glService.generateIncomeStatement(any(UUID.class), any(LocalDate.class), any(LocalDate.class))).thenReturn(is);
 
         mockMvc.perform(get("/api/v1/finance/gl/income-statement"))
             .andExpect(status().isOk())
@@ -87,7 +90,7 @@ class GeneralLedgerControllerContractTest {
     @Test
     @WithMockUser(roles = "VIEWER")
     void testGetAccountBalance_ReturnsOK() throws Exception {
-        when(glService.getAccountBalance("1000")).thenReturn(java.math.BigDecimal.valueOf(50000));
+        when(glService.getAccountBalance(eq("1000"), any(LocalDate.class))).thenReturn(java.math.BigDecimal.valueOf(50000));
 
         mockMvc.perform(get("/api/v1/finance/gl/accounts/{code}/balance", "1000"))
             .andExpect(status().isOk());

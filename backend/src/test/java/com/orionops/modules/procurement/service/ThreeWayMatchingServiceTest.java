@@ -19,7 +19,8 @@ class ThreeWayMatchingServiceTest {
 
     @Test
     void testRecordGoodsReceipt() {
-        assertDoesNotThrow(() -> matchingService.recordGoodsReceipt(Map.of("poId", UUID.randomUUID().toString())));
+        UUID poId = UUID.randomUUID();
+        assertDoesNotThrow(() -> matchingService.recordGoodsReceipt(poId, Map.of("quantity", 10)));
     }
 
     @Test

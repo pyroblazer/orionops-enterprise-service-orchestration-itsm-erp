@@ -20,24 +20,18 @@ class InventoryTransferServiceTest {
 
     @Test
     void testCreateTransfer() {
-        Map<String, Object> transfer = transferService.createTransfer(Map.of(
-            "fromWarehouse", UUID.randomUUID().toString(),
-            "toWarehouse", UUID.randomUUID().toString(),
-            "sku", "SKU-001",
-            "quantity", "100"
-        ));
+        UUID fromWarehouse = UUID.randomUUID();
+        UUID toWarehouse = UUID.randomUUID();
+        Map<String, Object> transfer = transferService.createTransfer(fromWarehouse, toWarehouse, "SKU-001", BigDecimal.valueOf(100));
         assertNotNull(transfer);
         assertTrue(transfer.containsKey("status") || transfer.containsKey("id"));
     }
 
     @Test
     void testCreateTransfer_HasPendingStatus() {
-        Map<String, Object> transfer = transferService.createTransfer(Map.of(
-            "fromWarehouse", UUID.randomUUID().toString(),
-            "toWarehouse", UUID.randomUUID().toString(),
-            "sku", "SKU-001",
-            "quantity", "100"
-        ));
+        UUID fromWarehouse = UUID.randomUUID();
+        UUID toWarehouse = UUID.randomUUID();
+        Map<String, Object> transfer = transferService.createTransfer(fromWarehouse, toWarehouse, "SKU-001", BigDecimal.valueOf(100));
         Object status = transfer.get("status");
         assertTrue(status == null || status.toString().equals("PENDING"));
     }
@@ -56,13 +50,14 @@ class InventoryTransferServiceTest {
 
     @Test
     void testGetBinSuggestion() {
-        String suggestion = transferService.getBinSuggestion("SKU-001");
+        Map<String, Object> suggestion = transferService.getBinSuggestion("SKU-001", UUID.randomUUID());
         assertNotNull(suggestion);
     }
 
     @Test
     void testGetBinSuggestion_WithWarehouse() {
-        String suggestion = transferService.getBinSuggestion("SKU-001", UUID.randomUUID());
+        UUID warehouseId = UUID.randomUUID();
+        Map<String, Object> suggestion = transferService.getBinSuggestion("SKU-001", warehouseId);
         assertNotNull(suggestion);
     }
 }

@@ -16,6 +16,7 @@ import java.util.UUID;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
@@ -33,7 +34,7 @@ class RFQControllerContractTest {
         String payload = "{\"requisitionId\":\"" + UUID.randomUUID() + "\",\"title\":\"Test RFQ\"}";
         Map<String, Object> rfq = Map.of("id", UUID.randomUUID().toString(), "status", "DRAFT");
 
-        when(rfqService.createRFQ(any())).thenReturn(rfq);
+        when(rfqService.createRFQ(any(UUID.class), any(Map.class))).thenReturn(rfq);
 
         mockMvc.perform(post("/api/v1/procurement/rfq")
             .contentType(MediaType.APPLICATION_JSON)
@@ -48,7 +49,7 @@ class RFQControllerContractTest {
         UUID rfqId = UUID.randomUUID();
         String payload = "{\"vendorIds\":[\"" + UUID.randomUUID() + "\"]}";
 
-        when(rfqService.sendRFQToVendors(eq(rfqId), any())).thenReturn(Map.of("status", "SENT"));
+        doNothing().when(rfqService).sendRFQToVendors(eq(rfqId), any());
 
         mockMvc.perform(post("/api/v1/procurement/rfq/{id}/send", rfqId)
             .contentType(MediaType.APPLICATION_JSON)

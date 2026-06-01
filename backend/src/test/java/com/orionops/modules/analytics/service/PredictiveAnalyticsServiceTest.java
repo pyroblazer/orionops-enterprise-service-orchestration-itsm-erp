@@ -20,13 +20,15 @@ class PredictiveAnalyticsServiceTest {
 
     @Test
     void testPredictCashFlow() {
-        Map<String, Object> prediction = analyticsService.predictCashFlow();
+        UUID tenantId = UUID.randomUUID();
+        Map<String, Object> prediction = analyticsService.predictCashFlow(tenantId, 6);
         assertNotNull(prediction);
     }
 
     @Test
     void testPredictCashFlow_WithMonths() {
-        Map<String, Object> prediction = analyticsService.predictCashFlow(3);
+        UUID tenantId = UUID.randomUUID();
+        Map<String, Object> prediction = analyticsService.predictCashFlow(tenantId, 3);
         assertNotNull(prediction);
         assertTrue(prediction.containsKey("period") || prediction.isEmpty());
     }

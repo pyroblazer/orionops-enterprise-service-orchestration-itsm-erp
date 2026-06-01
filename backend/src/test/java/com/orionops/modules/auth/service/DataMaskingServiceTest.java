@@ -55,13 +55,13 @@ class DataMaskingServiceTest {
 
     @Test
     void testMaskField_SSN() {
-        String masked = maskingService.maskField("123-45-6789", "SSN");
+        Object masked = maskingService.maskField("123-45-6789", "SSN");
         assertNotNull(masked);
     }
 
     @Test
     void testMaskField_InvalidType() {
-        String masked = maskingService.maskField("sensitive_data", "UNKNOWN");
+        Object masked = maskingService.maskField("sensitive_data", "UNKNOWN");
         assertTrue(masked != null);
     }
 }

@@ -6,6 +6,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -19,14 +20,14 @@ class SegregationOfDutiesServiceTest {
 
     @Test
     void testGetSoDRules() {
-        Map<String, String[]> rules = sodService.getSoDRules();
+        Map<String, List<String>> rules = sodService.getSoDRules();
         assertNotNull(rules);
         assertTrue(rules.size() >= 0);
     }
 
     @Test
     void testGetSoDRules_HasExpectedRules() {
-        Map<String, String[]> rules = sodService.getSoDRules();
+        Map<String, List<String>> rules = sodService.getSoDRules();
         assertTrue(rules.isEmpty() || rules.containsKey("create_expense") || rules.size() > 0);
     }
 

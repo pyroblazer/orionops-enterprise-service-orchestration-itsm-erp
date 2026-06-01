@@ -21,14 +21,16 @@ class RFQServiceTest {
 
     @Test
     void testCreateRFQ() {
-        Map<String, Object> rfq = rfqService.createRFQ(Map.of("requisitionId", UUID.randomUUID().toString(), "title", "Test RFQ"));
+        UUID requisitionId = UUID.randomUUID();
+        Map<String, Object> rfq = rfqService.createRFQ(requisitionId, Map.of("title", "Test RFQ"));
         assertNotNull(rfq);
         assertTrue(rfq.containsKey("id") || rfq.containsKey("status"));
     }
 
     @Test
     void testCreateRFQ_HasDraftStatus() {
-        Map<String, Object> rfq = rfqService.createRFQ(Map.of("requisitionId", UUID.randomUUID().toString(), "title", "Test RFQ"));
+        UUID requisitionId = UUID.randomUUID();
+        Map<String, Object> rfq = rfqService.createRFQ(requisitionId, Map.of("title", "Test RFQ"));
         Object status = rfq.get("status");
         assertTrue(status == null || status.toString().equals("DRAFT"));
     }
@@ -44,7 +46,7 @@ class RFQServiceTest {
     void testRecordBidResponse() {
         UUID rfqId = UUID.randomUUID();
         UUID vendorId = UUID.randomUUID();
-        assertDoesNotThrow(() -> rfqService.recordBidResponse(rfqId, Map.of("vendorId", vendorId.toString(), "price", "1000")));
+        assertDoesNotThrow(() -> rfqService.recordBidResponse(rfqId, vendorId, Map.of("price", "1000")));
     }
 
     @Test

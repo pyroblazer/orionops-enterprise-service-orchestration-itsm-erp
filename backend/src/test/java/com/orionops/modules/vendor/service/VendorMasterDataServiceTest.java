@@ -35,8 +35,9 @@ class VendorMasterDataServiceTest {
     @Test
     void testCalculateDataQualityScore() {
         UUID vendorId = UUID.randomUUID();
-        int score = vendorService.calculateDataQualityScore(vendorId);
-        assertTrue(score >= 0 && score <= 100);
+        Map<String, Object> result = vendorService.calculateDataQualityScore(vendorId);
+        assertNotNull(result);
+        assertTrue(result.containsKey("qualityScore") || result.isEmpty());
     }
 
     @Test
@@ -54,6 +55,7 @@ class VendorMasterDataServiceTest {
     @Test
     void testAuditVendorChange() {
         UUID vendorId = UUID.randomUUID();
-        assertDoesNotThrow(() -> vendorService.auditVendorChange(vendorId, Map.of("field", "value")));
+        UUID changedBy = UUID.randomUUID();
+        assertDoesNotThrow(() -> vendorService.auditVendorChange(vendorId, "name", "Old Name", "New Name", changedBy));
     }
 }

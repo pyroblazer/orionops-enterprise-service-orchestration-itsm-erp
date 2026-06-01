@@ -51,7 +51,7 @@ class FinanceForecastControllerContractTest {
             "alerts", java.util.List.of()
         );
 
-        when(forecastService.getBudgetAlerts()).thenReturn((java.util.List<Map<String, Object>>) alerts.get("alerts"));
+        when(forecastService.getBudgetAlerts(any(UUID.class))).thenReturn((java.util.List<Map<String, Object>>) alerts.get("alerts"));
 
         mockMvc.perform(get("/api/v1/finance/forecast/alerts"))
             .andExpect(status().isOk());

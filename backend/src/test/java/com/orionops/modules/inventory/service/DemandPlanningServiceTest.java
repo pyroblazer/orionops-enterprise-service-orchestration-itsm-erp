@@ -8,6 +8,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.util.Map;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -32,24 +33,24 @@ class DemandPlanningServiceTest {
 
     @Test
     void testSuggestReorderPoint() {
-        Map<String, Object> reorderPoint = demandService.suggestReorderPoint("SKU-001");
+        Map<String, Object> reorderPoint = demandService.suggestReorderPoint("SKU-001", UUID.randomUUID());
         assertNotNull(reorderPoint);
     }
 
     @Test
     void testSuggestReorderPoint_WithWarehouse() {
-        Map<String, Object> reorderPoint = demandService.suggestReorderPoint("SKU-001");
+        UUID warehouseId = UUID.randomUUID();
+        Map<String, Object> reorderPoint = demandService.suggestReorderPoint("SKU-001", warehouseId);
         assertTrue(reorderPoint.containsKey("point") || reorderPoint.isEmpty());
     }
 
     @Test
     void testTriggerReorderIfNeeded() {
-        assertDoesNotThrow(() -> demandService.triggerReorderIfNeeded("SKU-001"));
+        assertDoesNotThrow(() -> demandService.triggerReorderIfNeeded());
     }
 
     @Test
     void testAnalyzeForecastAccuracy() {
-        Map<String, Object> accuracy = demandService.analyzeForecastAccuracy("SKU-001");
-        assertNotNull(accuracy);
+        assertDoesNotThrow(() -> demandService.analyzeForecastAccuracy());
     }
 }

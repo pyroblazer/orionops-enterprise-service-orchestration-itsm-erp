@@ -20,10 +20,9 @@ class CycleCountServiceTest {
 
     @Test
     void testScheduleCycleCounts() {
-        assertDoesNotThrow(() -> cycleService.scheduleCycleCounts(Map.of(
-            "warehouseId", UUID.randomUUID().toString(),
-            "schedule", "WEEKLY"
-        )));
+        UUID warehouseId = UUID.randomUUID();
+        Map<String, Object> schedule = Map.of("schedule", "WEEKLY");
+        assertDoesNotThrow(() -> cycleService.scheduleCycleCounts(warehouseId, schedule));
     }
 
     @Test
@@ -49,6 +48,7 @@ class CycleCountServiceTest {
     @Test
     void testInvestigateVariance() {
         UUID countId = UUID.randomUUID();
-        assertDoesNotThrow(() -> cycleService.investigateVariance(countId, Map.of("reason", "Inventory loss")));
+        UUID updatedQty = UUID.randomUUID();
+        assertDoesNotThrow(() -> cycleService.investigateVariance(countId, "Inventory loss", updatedQty));
     }
 }
