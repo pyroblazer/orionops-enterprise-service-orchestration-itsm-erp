@@ -79,3 +79,7 @@ logging:
   level:
     com.orionops: DEBUG
     org.springframework: WARN
+
+app:
+  auth:
+    jwt-secret: test-secret-key-that-is-at-least-256-bits-long-for-hmac-sha
