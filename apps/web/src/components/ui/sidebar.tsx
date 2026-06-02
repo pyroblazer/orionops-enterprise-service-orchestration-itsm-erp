@@ -14,6 +14,7 @@ import {
   FileText,
   FlaskConical,
   GitBranch,
+  HelpCircle,
   LayoutDashboard,
   Megaphone,
   Package,
@@ -90,9 +91,10 @@ const navSections: NavSection[] = [
 interface SidebarProps {
   collapsed: boolean;
   onToggle: () => void;
+  onTutorialStart?: () => void;
 }
 
-export function Sidebar({ collapsed, onToggle }: SidebarProps) {
+export function Sidebar({ collapsed, onToggle, onTutorialStart }: SidebarProps) {
   const pathname = usePathname();
 
   return (
@@ -202,9 +204,32 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
       {/* Keyboard shortcuts hint */}
       {!collapsed && (
         <div className="border-t p-3" style={{ borderColor: 'hsl(var(--sidebar-border))' }}>
-          <p className="text-2xs text-muted-foreground">
-            Press <kbd className="rounded border bg-muted px-1 text-xs font-mono">Ctrl+B</kbd> to toggle sidebar
-          </p>
+          <div className="flex items-center justify-between">
+            <p className="text-2xs text-muted-foreground">
+              Press <kbd className="rounded border bg-muted px-1 text-xs font-mono">Ctrl+B</kbd> to toggle
+            </p>
+            {onTutorialStart && (
+              <button
+                onClick={onTutorialStart}
+                className="flex items-center gap-1 text-2xs text-primary hover:text-primary/80 font-medium transition-colors"
+                title="Restart interactive tutorial"
+              >
+                <HelpCircle className="h-3 w-3" />
+                Help
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+      {collapsed && onTutorialStart && (
+        <div className="border-t p-2" style={{ borderColor: 'hsl(var(--sidebar-border))' }}>
+          <button
+            onClick={onTutorialStart}
+            className="flex items-center justify-center w-full p-1 rounded-md text-muted-foreground hover:text-primary hover:bg-accent transition-colors"
+            title="Restart interactive tutorial"
+          >
+            <HelpCircle className="h-4 w-4" />
+          </button>
         </div>
       )}
     </aside>

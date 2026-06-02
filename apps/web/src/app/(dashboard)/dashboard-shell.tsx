@@ -26,8 +26,10 @@ import {
   User,
   Eye,
   Menu,
+  HelpCircle,
 } from 'lucide-react';
 import { SearchModal } from '@/components/search/search-modal';
+import { InteractiveTutorial, useTutorialState } from '@/components/tutorial/interactive-tutorial';
 import { auth, api } from '@/lib/api';
 import { useNotifications, useMarkAllNotificationsRead } from '@/lib/hooks';
 import { useTheme, type Theme } from '@/lib/hooks';
@@ -50,6 +52,7 @@ export function DashboardShell({
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
   const { theme: currentTheme, setTheme } = useTheme();
+  const { showTutorial, startTutorial, handleTutorialClose } = useTutorialState();
 
   const { data: notifications } = useNotifications();
   const markAllRead = useMarkAllNotificationsRead();
@@ -115,7 +118,7 @@ export function DashboardShell({
 
   return (
     <div className="min-h-screen bg-background">
-        <Sidebar collapsed={sidebarCollapsed} onToggle={handleToggleSidebar} />
+        <Sidebar collapsed={sidebarCollapsed} onToggle={handleToggleSidebar} onTutorialStart={startTutorial} />
 
         <div
           className={cn(
@@ -169,6 +172,16 @@ export function DashboardShell({
               ) : (
                 <Sun className="h-4 w-4" aria-hidden="true" />
               )}
+            </Button>
+
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={startTutorial}
+              aria-label="Start interactive tutorial"
+              title="Tutorial & Help"
+            >
+              <HelpCircle className="h-4 w-4" aria-hidden="true" />
             </Button>
 
             <Button
@@ -328,6 +341,8 @@ export function DashboardShell({
           isOpen={searchModalOpen}
           onClose={() => setSearchModalOpen(false)}
         />
+
+        <InteractiveTutorial forceOpen={showTutorial} onClose={handleTutorialClose} />
       </div>
   );
 }
