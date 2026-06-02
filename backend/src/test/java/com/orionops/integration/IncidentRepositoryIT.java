@@ -1,20 +1,9 @@
 package com.orionops.integration;
 
 import com.orionops.OrionOpsApplication;
-import com.orionops.common.tenant.TenantResolutionFilter;
-import com.orionops.config.CachingConfig;
-import com.orionops.config.KafkaConfig;
-import com.orionops.config.MinioConfig;
-import com.orionops.config.OpenApiConfig;
-import com.orionops.config.OpenSearchConfig;
-import com.orionops.config.RedisConfig;
-import com.orionops.config.RestClientConfig;
-import com.orionops.config.SecurityConfig;
+import com.orionops.common.auditing.AuditorAwareImpl;
 import com.orionops.modules.incident.entity.Incident;
 import com.orionops.modules.incident.repository.IncidentRepository;
-import com.orionops.modules.integration.connector.ConnectorConfig;
-import com.orionops.modules.integration.email.EmailConfig;
-import com.orionops.modules.integration.entra.EntraIdConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
@@ -28,11 +17,13 @@ import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfi
 import org.springframework.boot.autoconfigure.security.servlet.SecurityFilterAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.FilterType;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -57,19 +48,10 @@ import static org.assertj.core.api.Assertions.assertThat;
     RedisRepositoriesAutoConfiguration.class,
     KafkaAutoConfiguration.class
 })
-@ComponentScan(
-    basePackageClasses = OrionOpsApplication.class,
-    excludeFilters = @ComponentScan.Filter(
-        type = FilterType.ASSIGNABLE_TYPE,
-        classes = {
-            SecurityConfig.class, RedisConfig.class, OpenSearchConfig.class,
-            MinioConfig.class, KafkaConfig.class, OpenApiConfig.class,
-            RestClientConfig.class, CachingConfig.class,
-            TenantResolutionFilter.class,
-            ConnectorConfig.class, EntraIdConfig.class, EmailConfig.class
-        }
-    )
-)
+@Import(AuditorAwareImpl.class)
+@EnableJpaAuditing
+@EntityScan(basePackageClasses = OrionOpsApplication.class)
+@EnableJpaRepositories(basePackageClasses = OrionOpsApplication.class)
 @Testcontainers(disabledWithoutDocker = true)
 @ActiveProfiles("test")
 @Tag("docker")
