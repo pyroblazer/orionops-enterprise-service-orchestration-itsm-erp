@@ -17,7 +17,7 @@ import static org.mockito.ArgumentMatchers.*;
 @ExtendWith(MockitoExtension.class)
 class GeneralLedgerServiceTest {
 
-    @Mock
+    @InjectMocks
     private GeneralLedgerService glService;
 
     @Test
@@ -29,13 +29,13 @@ class GeneralLedgerServiceTest {
     @Test
     void testPostToGLAccount_ValidCode() {
         BigDecimal amount = BigDecimal.valueOf(1000);
-        assertDoesNotThrow(() -> glService.postToGLAccount(UUID.randomUUID(), amount, "1000", "TEST", LocalDate.now()));
+        assertDoesNotThrow(() -> glService.postToGLAccount(UUID.randomUUID(), amount, "1010", "TEST", LocalDate.now()));
     }
 
     @Test
     void testPostToGLAccount_InvalidCode() {
         BigDecimal amount = BigDecimal.valueOf(1000);
-        assertDoesNotThrow(() -> glService.postToGLAccount(UUID.randomUUID(), amount, "INVALID", "TEST", LocalDate.now()));
+        assertThrows(RuntimeException.class, () -> glService.postToGLAccount(UUID.randomUUID(), amount, "INVALID", "TEST", LocalDate.now()));
     }
 
     @Test
@@ -54,7 +54,7 @@ class GeneralLedgerServiceTest {
     void testGetTrialBalance() {
         Map<String, Object> tb = glService.getTrialBalance(UUID.randomUUID(), LocalDate.now());
         assertNotNull(tb);
-        assertTrue(tb.containsKey("debits") || tb.containsKey("credits"));
+        assertTrue(tb.containsKey("totalDebits") || tb.containsKey("totalCredits"));
     }
 
     @Test

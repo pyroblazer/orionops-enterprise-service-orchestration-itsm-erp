@@ -47,9 +47,9 @@ public class InventoryTransferService {
 
     @Scheduled(cron = "0 0 2 * * *")
     @Transactional
-    public void rebalanceInventory(UUID tenantId) {
+    public void rebalanceInventory() {
         // Detect overstocks and shortages, suggest transfers
-        log.info("Inventory rebalancing completed for tenant {}", tenantId);
+        log.info("Inventory rebalancing completed");
     }
 
     @Transactional(readOnly = true)

@@ -23,9 +23,12 @@ public class WorkforceRepository {
                 "AND e.deleted_at IS NULL", nativeQuery = true)
         List<Employee> findBySkills(@Param("tenantId") UUID tenantId, @Param("skills") List<String> skills);
 
-        List<Employee> findAvailableEmployees(UUID tenantId);
+        @Query(value = "SELECT e.* FROM employees e WHERE e.tenant_id = :tenantId AND e.employment_status = 'ACTIVE' AND e.deleted_at IS NULL", nativeQuery = true)
+        List<Employee> findAvailableEmployees(@Param("tenantId") UUID tenantId);
 
-        List<Employee> findBySkillAndAvailability(UUID tenantId, UUID skillId, LocalDate date);
+        @Query(value = "SELECT DISTINCT e.* FROM employees e JOIN employee_skills es ON e.id = es.employee_id " +
+                "WHERE es.skill_id = :skillId AND e.tenant_id = :tenantId AND e.employment_status = 'ACTIVE' AND e.deleted_at IS NULL", nativeQuery = true)
+        List<Employee> findBySkillAndAvailability(@Param("tenantId") UUID tenantId, @Param("skillId") UUID skillId, @Param("date") LocalDate date);
     }
 
     @Repository

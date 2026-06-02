@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @ExtendWith(MockitoExtension.class)
 class UnitOfMeasureServiceTest {
 
-    @Mock
+    @InjectMocks
     private UnitOfMeasureService uomService;
 
     @Test

@@ -87,12 +87,14 @@ public class RFQService {
         }).sorted((a, b) -> ((BigDecimal) b.get("totalScore")).compareTo((BigDecimal) a.get("totalScore")))
             .collect(Collectors.toList());
 
-        return Map.of(
-            "rfqId", rfqId,
-            "bidCount", scoredBids.size(),
-            "bids", scoredBids,
-            "winningBid", scoredBids.isEmpty() ? null : scoredBids.get(0)
-        );
+        Map<String, Object> result = new HashMap<>();
+        result.put("rfqId", rfqId);
+        result.put("bidCount", scoredBids.size());
+        result.put("bids", scoredBids);
+        if (!scoredBids.isEmpty()) {
+            result.put("winningBid", scoredBids.get(0));
+        }
+        return result;
     }
 
     @Transactional

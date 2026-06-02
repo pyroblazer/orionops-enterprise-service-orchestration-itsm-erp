@@ -33,6 +33,9 @@ public class UnitOfMeasureService {
     }
 
     public BigDecimal convertQuantity(BigDecimal quantity, String fromUOM, String toUOM) {
+        if (quantity == null || fromUOM == null || toUOM == null) {
+            return quantity;
+        }
         String conversionKey = fromUOM.toLowerCase() + "_to_" + toUOM.toLowerCase();
         BigDecimal factor = conversions.get(conversionKey);
 
