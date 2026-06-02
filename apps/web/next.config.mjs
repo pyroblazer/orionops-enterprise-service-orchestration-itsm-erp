@@ -24,6 +24,14 @@ const nextConfig = {
       },
     ],
   },
+  async rewrites() {
+    return [
+      {
+        source: '/api/keycloak/:path*',
+        destination: `${process.env.KEYCLOAK_PROXY_URL || process.env.NEXT_PUBLIC_KEYCLOAK_URL || 'http://localhost:8180'}/:path*`,
+      },
+    ];
+  },
   async headers() {
     return [
       {
