@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:tc:postgresql:16:///orionops_test
+    url: jdbc:postgresql://localhost:5432/orionops_test
     username: test
     password: test
   jpa:
