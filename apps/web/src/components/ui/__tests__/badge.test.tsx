@@ -40,11 +40,11 @@ describe('Badge', () => {
     expect(screen.getByRole('status')).toBeInTheDocument();
   });
 
-  it('applies correct base classes (rounded-full, border)', () => {
+  it('applies correct base classes (rounded-full, shadow)', () => {
     render(<Badge>Test</Badge>);
     const badge = screen.getByText('Test');
     expect(badge.className).toContain('rounded-full');
-    expect(badge.className).toContain('border');
+    expect(badge.className).toContain('shadow-soft');
   });
 
   it('applies custom className', () => {

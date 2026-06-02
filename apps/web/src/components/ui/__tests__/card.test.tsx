@@ -18,9 +18,9 @@ describe('Card', () => {
   it('applies default Card classes', () => {
     render(<Card data-testid="card">Test</Card>);
     const card = screen.getByTestId('card');
-    expect(card.className).toContain('rounded-lg');
-    expect(card.className).toContain('border');
+    expect(card.className).toContain('rounded-2xl');
     expect(card.className).toContain('bg-card');
+    expect(card.className).toContain('shadow-soft');
   });
 
   it('renders as a div', () => {

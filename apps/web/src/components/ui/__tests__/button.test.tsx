@@ -33,13 +33,13 @@ describe('Button', () => {
     expect(screen.getByRole('button').className).toContain('h-8');
 
     rerender(<Button size="md">Medium</Button>);
-    expect(screen.getByRole('button').className).toContain('h-9');
-
-    rerender(<Button size="lg">Large</Button>);
     expect(screen.getByRole('button').className).toContain('h-10');
 
+    rerender(<Button size="lg">Large</Button>);
+    expect(screen.getByRole('button').className).toContain('h-11');
+
     rerender(<Button size="icon">Icon</Button>);
-    expect(screen.getByRole('button').className).toContain('h-9');
+    expect(screen.getByRole('button').className).toContain('h-10');
   });
 
   it('handles click events', async () => {

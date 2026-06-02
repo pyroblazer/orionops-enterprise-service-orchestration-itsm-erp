@@ -1,18 +1,12 @@
 import React from 'react';
-import { render } from '@testing-library/react';
+import { render, waitFor } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { http, HttpResponse } from 'msw';
+import { server } from '@/__tests__/mocks/server';
 import DashboardPage from '@/app/(dashboard)/dashboard/page';
 
 expect.extend(toHaveNoViolations as any);
-
-jest.mock('@/lib/hooks', () => ({
-  useIncidents: jest.fn(),
-}));
-
-import { useIncidents } from '@/lib/hooks';
-
-const mockedUseIncidents = useIncidents as jest.MockedFunction<typeof useIncidents>;
 
 function createQueryClient() {
   return new QueryClient({
@@ -31,39 +25,47 @@ function renderWithProviders(ui: React.ReactElement) {
 
 describe('Dashboard Accessibility', () => {
   beforeEach(() => {
-    mockedUseIncidents.mockReturnValue({
-      data: {
-        data: [],
-        total: 0,
-        page: 1,
-        pageSize: 5,
-        totalPages: 1,
-      },
-      isLoading: false,
-      isError: false,
-      error: null,
-      refetch: jest.fn(),
-      isRefetching: false,
-      isFetching: false,
-      isSuccess: true,
-      isPending: false,
-      status: 'success',
-      fetchStatus: 'idle',
-      dataUpdatedAt: Date.now(),
-      errorUpdatedAt: 0,
-      failureCount: 0,
-      failureReason: null,
-      errorUpdateCount: 0,
-      isFetched: true,
-      isFetchedAfterMount: true,
-      isPlaceholderData: false,
-      isStale: false,
-      promise: Promise.resolve({} as any),
-    } as any);
+    server.use(
+      http.get('http://localhost:8080/api/v1/incidents', () =>
+        HttpResponse.json({
+          data: [
+            { id: '1', title: 'Critical API Error', status: 'open', priority: 'critical' },
+          ],
+          total: 5,
+          page: 1,
+          pageSize: 5,
+          totalPages: 1,
+        })
+      ),
+      http.get('http://localhost:8080/api/v1/changes', () =>
+        HttpResponse.json({
+          data: [],
+          total: 2,
+          page: 1,
+          pageSize: 10,
+          totalPages: 1,
+        })
+      ),
+      http.get('http://localhost:8080/api/v1/sla/instances', () =>
+        HttpResponse.json({
+          data: [
+            { id: '1', status: 'met' },
+            { id: '2', status: 'met' },
+          ],
+          total: 2,
+          page: 1,
+          pageSize: 200,
+          totalPages: 1,
+        })
+      )
+    );
   });
 
   it('has no WCAG 2.2 AA violations', async () => {
     const { container } = renderWithProviders(<DashboardPage />);
+    await waitFor(() => {
+      expect(document.querySelector('h1')).toBeInTheDocument();
+    });
     const results = await axe(container, {
       rules: {
         'color-contrast': { enabled: false },
@@ -72,16 +74,20 @@ describe('Dashboard Accessibility', () => {
     expect(results).toHaveNoViolations();
   });
 
-  it('has proper heading structure', () => {
+  it('has proper heading structure', async () => {
     renderWithProviders(<DashboardPage />);
-    const h1 = document.querySelector('h1');
-    expect(h1).toBeInTheDocument();
-    expect(h1?.textContent).toBe('Dashboard');
+    await waitFor(() => {
+      const h1 = document.querySelector('h1');
+      expect(h1).toBeInTheDocument();
+      expect(h1?.textContent).toBe('Dashboard');
+    });
   });
 
-  it('summary cards are rendered as card containers', () => {
+  it('summary cards are rendered as card containers', async () => {
     renderWithProviders(<DashboardPage />);
-    const cards = document.querySelectorAll('.rounded-lg.border.bg-card');
-    expect(cards.length).toBeGreaterThan(0);
+    await waitFor(() => {
+      const cards = document.querySelectorAll('.rounded-2xl.bg-card');
+      expect(cards.length).toBeGreaterThan(0);
+    });
   });
 });

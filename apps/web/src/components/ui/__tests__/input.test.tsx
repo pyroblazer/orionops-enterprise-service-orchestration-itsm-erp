@@ -79,7 +79,7 @@ describe('Input', () => {
   it('applies error border styles when error is present', () => {
     render(<Input label="Test" error="Error" />);
     const input = screen.getByLabelText('Test');
-    expect(input.className).toContain('border-danger');
+    expect(input.className).toContain('focus:ring-danger');
   });
 
   it('uses generated id to link label and input', () => {
