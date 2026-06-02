@@ -52,16 +52,20 @@ describe('General Ledger Page', () => {
   it('displays tab navigation', async () => {
     render(<GeneralLedgerPage />);
     await waitFor(() => {
-      expect(screen.getByText('Chart of Accounts')).toBeInTheDocument();
-      expect(screen.getByText('Trial Balance')).toBeInTheDocument();
-      expect(screen.getByText('Income Statement')).toBeInTheDocument();
+      const chartTabs = screen.getAllByText('Chart of Accounts');
+      const trialTabs = screen.getAllByText('Trial Balance');
+      const incomeTabs = screen.getAllByText('Income Statement');
+      expect(chartTabs.length).toBeGreaterThan(0);
+      expect(trialTabs.length).toBeGreaterThan(0);
+      expect(incomeTabs.length).toBeGreaterThan(0);
     });
   });
 
   it('loads chart of accounts on mount', async () => {
     render(<GeneralLedgerPage />);
     await waitFor(() => {
-      expect(screen.getByText(/Assets|1000/i)).toBeInTheDocument();
+      const matches = screen.getAllByText(/Assets|1000/i);
+      expect(matches.length).toBeGreaterThan(0);
     });
   });
 

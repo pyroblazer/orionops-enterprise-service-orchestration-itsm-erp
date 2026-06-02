@@ -41,7 +41,7 @@ describe('Budget Forecast Page', () => {
   it('displays budget forecast cards', async () => {
     render(<BudgetForecastPage />);
     await waitFor(() => {
-      expect(screen.getByText(/Q1 Budget|Q2 Budget/i)).toBeInTheDocument();
+      expect(screen.getAllByText(/Q1 Budget|Q2 Budget/i)).toHaveLength(2);
     });
   });
 
