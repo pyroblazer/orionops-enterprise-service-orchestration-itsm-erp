@@ -1,59 +1,78 @@
 package com.orionops.modules.inventory.service;
 
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatNoException;
 
+/**
+ * Unit tests for {@link LotTrackingService}.
+ * Stateless service — tests verify real method behavior.
+ */
 @ExtendWith(MockitoExtension.class)
+@DisplayName("LotTrackingService")
 class LotTrackingServiceTest {
 
-    @Mock
+    @InjectMocks
     private LotTrackingService lotService;
 
-    @Test
-    void testReceiveLot() {
-        assertDoesNotThrow(() -> lotService.receiveLot(
-            "SKU-001",
-            "LOT-2024-001",
-            LocalDate.now().minusMonths(1).toString(),
-            LocalDate.now().plusMonths(6).toString(),
-            BigDecimal.valueOf(100),
-            UUID.randomUUID()
-        ));
+    @Nested
+    @DisplayName("receiveLot")
+    class ReceiveLotTests {
+
+        @Test
+        @DisplayName("should execute without error")
+        void shouldExecute_withoutError() {
+            assertThatNoException().isThrownBy(() ->
+                    lotService.receiveLot("SKU-001", "LOT-001", "2024-01-01", "2025-01-01",
+                            java.math.BigDecimal.valueOf(100), UUID.randomUUID()));
+        }
     }
 
-    @Test
-    void testAllocateLotToOrder() {
-        UUID orderId = UUID.randomUUID();
-        assertDoesNotThrow(() -> lotService.allocateLotToOrder(orderId, "SKU-001", BigDecimal.valueOf(50)));
+    @Nested
+    @DisplayName("allocateLotToOrder")
+    class AllocateLotToOrderTests {
+
+        @Test
+        @DisplayName("should execute without error")
+        void shouldExecute_withoutError() {
+            assertThatNoException().isThrownBy(() ->
+                    lotService.allocateLotToOrder(UUID.randomUUID(), "SKU-001", java.math.BigDecimal.valueOf(50)));
+        }
     }
 
-    @Test
-    void testFlagExpiringLots() {
-        List<Map<String, Object>> expiringLots = lotService.flagExpiringLots(UUID.randomUUID());
-        assertNotNull(expiringLots);
-        assertTrue(expiringLots.isEmpty() || !expiringLots.isEmpty());
+    @Nested
+    @DisplayName("flagExpiringLots")
+    class FlagExpiringLotsTests {
+
+        @Test
+        @DisplayName("should return empty list by default")
+        void shouldReturn_emptyList() {
+            List<Map<String, Object>> expiring = lotService.flagExpiringLots(UUID.randomUUID());
+
+            assertThat(expiring).isNotNull();
+            assertThat(expiring).isEmpty();
+        }
     }
 
-    @Test
-    void testFlagExpiringLots_WithDays() {
-        List<Map<String, Object>> expiringLots = lotService.flagExpiringLots(UUID.randomUUID());
-        assertNotNull(expiringLots);
-    }
+    @Nested
+    @DisplayName("quarantineExpiredLot")
+    class QuarantineExpiredLotTests {
 
-    @Test
-    void testQuarantineExpiredLot() {
-        UUID lotId = UUID.randomUUID();
-        assertDoesNotThrow(() -> lotService.quarantineExpiredLot(lotId));
+        @Test
+        @DisplayName("should execute without error")
+        void shouldExecute_withoutError() {
+            assertThatNoException().isThrownBy(() ->
+                    lotService.quarantineExpiredLot(UUID.randomUUID()));
+        }
     }
 }

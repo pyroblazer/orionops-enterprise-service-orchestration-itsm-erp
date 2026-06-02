@@ -1,60 +1,98 @@
 package com.orionops.modules.procurement.service;
 
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.math.BigDecimal;
 import java.util.Map;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatNoException;
 
+/**
+ * Unit tests for {@link ThreeWayMatchingService}.
+ * Stateless service — no mocks needed. Tests verify real method behavior.
+ */
 @ExtendWith(MockitoExtension.class)
+@DisplayName("ThreeWayMatchingService")
 class ThreeWayMatchingServiceTest {
 
-    @Mock
+    @InjectMocks
     private ThreeWayMatchingService matchingService;
 
-    @Test
-    void testRecordGoodsReceipt() {
-        UUID poId = UUID.randomUUID();
-        assertDoesNotThrow(() -> matchingService.recordGoodsReceipt(poId, Map.of("quantity", 10)));
+    @Nested
+    @DisplayName("recordGoodsReceipt")
+    class RecordGoodsReceiptTests {
+
+        @Test
+        @DisplayName("should execute without error")
+        void shouldExecute_withoutError() {
+            assertThatNoException().isThrownBy(() ->
+                    matchingService.recordGoodsReceipt(UUID.randomUUID(), Map.of("quantity", 10)));
+        }
     }
 
-    @Test
-    void testMatchInvoiceToReceiptAndPO() {
-        UUID invoiceId = UUID.randomUUID();
-        UUID poId = UUID.randomUUID();
-        UUID receiptId = UUID.randomUUID();
-        assertDoesNotThrow(() -> matchingService.matchInvoiceToReceiptAndPO(invoiceId, poId, receiptId));
+    @Nested
+    @DisplayName("matchInvoiceToReceiptAndPO")
+    class MatchInvoiceTests {
+
+        @Test
+        @DisplayName("should execute without error")
+        void shouldExecute_withoutError() {
+            assertThatNoException().isThrownBy(() ->
+                    matchingService.matchInvoiceToReceiptAndPO(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID()));
+        }
     }
 
-    @Test
-    void testDetectVariances() {
-        UUID invoiceId = UUID.randomUUID();
-        Map<String, Object> variances = matchingService.detectVariances(invoiceId);
-        assertNotNull(variances);
+    @Nested
+    @DisplayName("detectVariances")
+    class DetectVariancesTests {
+
+        @Test
+        @DisplayName("should return variance map with expected keys")
+        void shouldReturn_varianceMap() {
+            Map<String, Object> variances = matchingService.detectVariances(UUID.randomUUID());
+
+            assertThat(variances).containsKeys("priceVariance", "quantityVariance", "hasVariance");
+        }
+
+        @Test
+        @DisplayName("should report no variance by default")
+        void shouldReturnNoVariance_byDefault() {
+            Map<String, Object> variances = matchingService.detectVariances(UUID.randomUUID());
+
+            assertThat(variances).containsEntry("hasVariance", false);
+            assertThat((BigDecimal) variances.get("priceVariance")).isEqualByComparingTo(BigDecimal.ZERO);
+            assertThat((BigDecimal) variances.get("quantityVariance")).isEqualByComparingTo(BigDecimal.ZERO);
+        }
     }
 
-    @Test
-    void testDetectVariances_NoVariance() {
-        UUID invoiceId = UUID.randomUUID();
-        Map<String, Object> variances = matchingService.detectVariances(invoiceId);
-        Object hasVariance = variances.get("hasVariance");
-        assertTrue(hasVariance == null || hasVariance.equals(false));
+    @Nested
+    @DisplayName("flagMatchingException")
+    class FlagMatchingExceptionTests {
+
+        @Test
+        @DisplayName("should execute without error")
+        void shouldExecute_withoutError() {
+            assertThatNoException().isThrownBy(() ->
+                    matchingService.flagMatchingException(UUID.randomUUID(), "QUANTITY_VARIANCE"));
+        }
     }
 
-    @Test
-    void testFlagMatchingException() {
-        UUID invoiceId = UUID.randomUUID();
-        assertDoesNotThrow(() -> matchingService.flagMatchingException(invoiceId, "QUANTITY_VARIANCE"));
-    }
+    @Nested
+    @DisplayName("resolveVariance")
+    class ResolveVarianceTests {
 
-    @Test
-    void testResolveVariance() {
-        UUID invoiceId = UUID.randomUUID();
-        assertDoesNotThrow(() -> matchingService.resolveVariance(invoiceId, "APPROVED"));
+        @Test
+        @DisplayName("should execute without error")
+        void shouldExecute_withoutError() {
+            assertThatNoException().isThrownBy(() ->
+                    matchingService.resolveVariance(UUID.randomUUID(), "APPROVED"));
+        }
     }
 }
