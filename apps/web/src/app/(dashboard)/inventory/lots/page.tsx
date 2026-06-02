@@ -20,10 +20,12 @@ export default function LotTrackingPage() {
   async function fetchLots() {
     try {
       setLoading(true);
-      const lotsRes = await api.receiveLot?.({} as any) || { data: [] };
-      const expiringRes = await api.getExpiringLots?.() || { data: [] };
-      setLots(lotsRes?.data || []);
-      setExpiringLots(expiringRes?.data || []);
+      const [lotsRes, expiringRes] = await Promise.all([
+        api.getLots(),
+        api.getExpiringLots(),
+      ]);
+      setLots(lotsRes?.data?.data || []);
+      setExpiringLots(expiringRes?.data?.data || []);
     } catch (err) {
       console.error('Failed to load lots:', err);
     } finally {

@@ -11,13 +11,15 @@ export function SearchModal({ isOpen, onClose }: { isOpen: boolean; onClose: () 
     queryKey: ['search', query],
     queryFn: async () => {
       if (!query.trim()) return null;
-      const response = await api.search({
-        query: query.trim(),
-        page: 0,
-        size: 20,
-        entityTypes: ['incident', 'problem', 'change', 'knowledge'],
-      });
-      return response.data.data;
+      const response = await api.search(query.trim());
+      const results = response.data.data;
+      // Flatten grouped results into a single array
+      return [
+        ...(results.incidents?.map((i: any) => ({ ...i, entityType: 'incident' })) || []),
+        ...(results.problems?.map((p: any) => ({ ...p, entityType: 'problem' })) || []),
+        ...(results.changes?.map((c: any) => ({ ...c, entityType: 'change' })) || []),
+        ...(results.knowledgeArticles?.map((k: any) => ({ ...k, entityType: 'knowledge' })) || []),
+      ];
     },
     enabled: !!query.trim(),
   });

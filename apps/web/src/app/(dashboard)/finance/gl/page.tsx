@@ -23,14 +23,14 @@ export default function GeneralLedgerPage() {
     try {
       setLoading(true);
       if (tab === 'accounts') {
-        const res = await api.getChartOfAccounts?.() || { data: [] };
-        setAccounts(res?.data || []);
+        const res = await api.getChartOfAccounts();
+        setAccounts(res?.data?.data || []);
       } else if (tab === 'trial') {
-        const res = await api.getTrialBalance?.() || { data: {} };
-        setTrialBalance(res?.data || {});
+        const res = await api.getTrialBalance();
+        setTrialBalance(res?.data?.data || {});
       } else if (tab === 'income') {
-        const res = await api.getIncomeStatement?.() || { data: {} };
-        setIncomeStatement(res?.data || {});
+        const res = await api.getIncomeStatement();
+        setIncomeStatement(res?.data?.data || {});
       }
     } catch (err) {
       console.error('Failed to load GL data:', err);

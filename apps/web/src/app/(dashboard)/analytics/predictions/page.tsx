@@ -23,8 +23,8 @@ export default function PredictiveAnalyticsPage() {
         api.predictCashFlow?.(),
         api.detectAnomalies?.()
       ]);
-      setCashFlow(cashFlowRes?.data || null);
-      setAnomalies(anomaliesRes?.data || []);
+      setCashFlow(cashFlowRes?.data?.data || null);
+      setAnomalies(anomaliesRes?.data?.data || []);
     } catch (err) {
       console.error('Failed to load predictions:', err);
     } finally {

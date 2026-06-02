@@ -19,8 +19,8 @@ export default function InventoryTransfersPage() {
   async function fetchTransfers() {
     try {
       setLoading(true);
-      const res = await api.createTransfer?.({ fromWarehouse: '', toWarehouse: '', sku: '', quantity: 0 }) || { data: [] };
-      setTransfers(res?.data || []);
+      const res = await api.getTransfers();
+      setTransfers(res?.data?.data || []);
     } catch (err) {
       console.error('Failed to load transfers:', err);
       setTransfers([]);

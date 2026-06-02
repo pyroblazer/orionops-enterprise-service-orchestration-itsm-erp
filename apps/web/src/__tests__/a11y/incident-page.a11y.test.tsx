@@ -4,7 +4,7 @@ import { axe, toHaveNoViolations } from 'jest-axe';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import IncidentsListPage from '@/app/(dashboard)/incidents/page';
 
-expect.extend(toHaveNoViolations);
+expect.extend(toHaveNoViolations as any);
 
 jest.mock('@/lib/hooks', () => ({
   useIncidents: jest.fn(),

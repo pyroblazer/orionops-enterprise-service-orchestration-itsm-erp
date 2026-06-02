@@ -19,12 +19,12 @@ export default function BudgetForecastPage() {
   async function fetchData() {
     try {
       setLoading(true);
-      const [, alertsRes] = await Promise.all([
+      const [budgetsRes, alertsRes] = await Promise.all([
         api.getBudgets?.(),
         api.getBudgetAlerts?.(),
       ]);
-      const res = await api.getBudgets?.() || { data: [] }; setBudgets(res?.data || []);;
-      setAlerts(alertsRes?.data || []);
+      setBudgets((budgetsRes as any)?.data?.data || (budgetsRes as any)?.data?.content || []);
+      setAlerts(alertsRes?.data?.data || []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load forecasts');
     } finally {

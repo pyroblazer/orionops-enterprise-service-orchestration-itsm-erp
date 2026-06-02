@@ -1121,7 +1121,7 @@ export const api = {
     apiClient.get<ApiResponse<Record<string, unknown>[]>>('/reports/inventory/stock-movements', { params: { period } }),
   getWorkforceCapacity: () =>
     apiClient.get<ApiResponse<Record<string, unknown>[]>>('/reports/workforce/capacity-utilization'),
-  getVendorPerformance: () =>
+  getVendorPerformanceReport: () =>
     apiClient.get<ApiResponse<Record<string, unknown>[]>>('/reports/vendor/performance-summary'),
   getBillingChargeback: () =>
     apiClient.get<ApiResponse<Record<string, unknown>[]>>('/reports/billing/chargeback'),
@@ -1190,7 +1190,21 @@ export const api = {
   getVendorConcentration: () =>
     apiClient.get<ApiResponse<Record<string, unknown>>>('/procurement/spend/concentration'),
 
+  // --- Demand Planning ---
+  getSuggestedReorderPoint: (sku?: string) =>
+    apiClient.get<ApiResponse<Record<string, unknown>[]>>('/inventory/demand/reorder-point', { params: { sku } }),
+
+  // --- Lot Tracking ---
+  getLots: () =>
+    apiClient.get<ApiResponse<Record<string, unknown>[]>>('/inventory/lots'),
+  receiveLot: (data: Record<string, unknown>) =>
+    apiClient.post<ApiResponse<Record<string, unknown>>>('/inventory/lots/receive', data),
+  getExpiringLots: () =>
+    apiClient.get<ApiResponse<Record<string, unknown>[]>>('/inventory/lots/expiring'),
+
   // --- Inventory Transfers ---
+  getTransfers: (params?: FilterParams) =>
+    apiClient.get<PaginatedResponse<Record<string, unknown>>>('/inventory/transfers', { params }),
   createTransfer: (data: Record<string, unknown>) =>
     apiClient.post<ApiResponse<Record<string, unknown>>>('/inventory/transfers', data),
   recordTransitTransfer: (id: string) =>
