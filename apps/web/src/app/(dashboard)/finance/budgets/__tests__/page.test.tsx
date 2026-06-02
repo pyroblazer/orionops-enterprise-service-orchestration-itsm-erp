@@ -1,4 +1,3 @@
-import { render, screen, waitFor } from '@testing-library/react';
 
 describe('Budget Detail Page', () => {
   it('renders without crashing', () => {

@@ -1,4 +1,3 @@
-import { render, screen, waitFor } from '@testing-library/react';
 
 describe('Logout Component', () => {
   it('renders without crashing', () => {

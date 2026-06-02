@@ -1,4 +1,3 @@
-import { render, screen, waitFor } from '@testing-library/react';
 
 describe('Asset Detail Page', () => {
   it('renders without crashing', () => {

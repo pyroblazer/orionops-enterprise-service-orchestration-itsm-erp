@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { api } from '@/lib/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -9,10 +8,11 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export default function CostCenterDetailPage({ params }: { params: { id: string } }) {
   const [costCenter, setCostCenter] = useState<any>(null);
-  const [budgets, setBudgets] = useState<any[]>([]);
-  const [expenses, setExpenses] = useState<any[]>([]);
+  const [budgets] = useState<any[]>([]);
+  const [expenses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     fetchData();
   }, [params.id]);

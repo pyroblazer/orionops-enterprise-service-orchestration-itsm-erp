@@ -1,4 +1,3 @@
-import { render, screen, waitFor } from '@testing-library/react';
 
 describe('Predictive Analytics Page', () => {
   it('renders without crashing', () => {

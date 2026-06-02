@@ -1,4 +1,3 @@
-import { render, screen, waitFor } from '@testing-library/react';
 
 describe('Approval Authorities Page', () => {
   it('renders without crashing', () => {

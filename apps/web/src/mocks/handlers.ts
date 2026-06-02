@@ -367,7 +367,7 @@ export const handlers = [
   // ============================================================================
   http.get(`${API_BASE}/search`, ({ request }) => {
     const url = new URL(request.url);
-    const q = url.searchParams.get('q');
+    url.searchParams.get('q'); // consumed by search logic
     return HttpResponse.json({
       data: [
         { id: 'inc-1', type: 'incident', title: 'INC-001: Database issue', url: '/incidents/inc-1' },

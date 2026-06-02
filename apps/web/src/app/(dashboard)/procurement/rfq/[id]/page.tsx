@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { api } from '@/lib/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -10,9 +9,10 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export default function RFQDetailPage({ params }: { params: { id: string } }) {
   const [rfq, setRfq] = useState<any>(null);
-  const [bids, setBids] = useState<any[]>([]);
+  const [bids] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     fetchData();
   }, [params.id]);
@@ -121,7 +121,7 @@ export default function RFQDetailPage({ params }: { params: { id: string } }) {
             <CardTitle>Actions</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
-            <Button onClick={() => console.log('Scoring bids...')}>Score and Rank Bids</Button>
+            <Button onClick={() => { /* Scoring bids */ }}>Score and Rank Bids</Button>
           </CardContent>
         </Card>
       )}

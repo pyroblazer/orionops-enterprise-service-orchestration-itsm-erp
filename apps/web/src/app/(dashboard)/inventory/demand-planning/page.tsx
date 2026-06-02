@@ -8,7 +8,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export default function DemandPlanningPage() {
   const [reorderPoints, setReorderPoints] = useState<any[]>([]);
-  const [forecastData, setForecastData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

@@ -1,4 +1,3 @@
-import { render, screen, waitFor } from '@testing-library/react';
 
 describe('Incidents Page', () => {
   it('renders without crashing', () => {

@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { api } from '@/lib/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -15,6 +14,7 @@ export default function GeneralLedgerPage() {
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<'accounts' | 'trial' | 'income'>('accounts');
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     fetchData();
   }, [tab]);

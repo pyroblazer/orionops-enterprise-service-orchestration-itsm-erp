@@ -19,7 +19,7 @@ export default function BudgetForecastPage() {
   async function fetchData() {
     try {
       setLoading(true);
-      const [budgetsRes, alertsRes] = await Promise.all([
+      const [, alertsRes] = await Promise.all([
         api.getBudgets?.(),
         api.getBudgetAlerts?.(),
       ]);

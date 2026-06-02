@@ -1,4 +1,3 @@
-import { render, screen, waitFor } from '@testing-library/react';
 
 describe('Dashboard Shell Component', () => {
   it('renders without crashing', () => {

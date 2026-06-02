@@ -7,9 +7,6 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function SpendAnalysisPage() {
-  const [spendByVendor, setSpendByVendor] = useState<any>({});
-  const [spendByCategory, setSpendByCategory] = useState<any>({});
-  const [opportunities, setOpportunities] = useState<any>({});
   const [concentration, setConcentration] = useState<any>({});
   const [loading, setLoading] = useState(true);
 
