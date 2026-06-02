@@ -30,13 +30,13 @@ function renderWithProviders(ui: React.ReactElement) {
 
 describe('Dashboard Shell', () => {
   it('renders with children', () => {
-    const { container } = renderWithProviders(<DashboardShell><div>content</div></DashboardShell>);
-    expect(container).toBeInTheDocument();
+    renderWithProviders(<DashboardShell><div>content</div></DashboardShell>);
+    expect(screen.getByText('content')).toBeInTheDocument();
   });
 
   it('renders main content area', () => {
     const testContent = 'Test dashboard content';
-    const { container } = renderWithProviders(<DashboardShell><div>{testContent}</div></DashboardShell>);
+    renderWithProviders(<DashboardShell><div>{testContent}</div></DashboardShell>);
     expect(screen.getByText(testContent)).toBeInTheDocument();
   });
 

@@ -33,7 +33,7 @@ describe('Tabs', () => {
   });
 
   it('renders multiple tab triggers', () => {
-    const { container } = render(
+    render(
       <Tabs defaultValue="first">
         <TabsList>
           <TabsTrigger value="first">Tab1</TabsTrigger>

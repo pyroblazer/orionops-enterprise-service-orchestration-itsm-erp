@@ -33,7 +33,7 @@ describe('DropdownMenu', () => {
   });
 
   it('renders trigger with custom className', () => {
-    const { container } = render(
+    render(
       <DropdownMenu>
         <DropdownMenuTrigger className="custom-trigger">Open</DropdownMenuTrigger>
         <DropdownMenuContent>
@@ -73,7 +73,7 @@ describe('DropdownMenu', () => {
   });
 
   it('renders nested dropdown structure', () => {
-    const { container } = render(
+    render(
       <DropdownMenu>
         <DropdownMenuTrigger>Main</DropdownMenuTrigger>
         <DropdownMenuContent>
@@ -82,6 +82,6 @@ describe('DropdownMenu', () => {
         </DropdownMenuContent>
       </DropdownMenu>
     );
-    expect(container).toBeTruthy();
+    expect(screen.getByText('Main')).toBeInTheDocument();
   });
 });
