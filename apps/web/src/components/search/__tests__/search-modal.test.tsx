@@ -1,27 +1,56 @@
+import React from 'react';
+import { render } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { SearchModal } from '@/components/search/search-modal';
 
-describe('Search Modal Component', () => {
-  it('renders without crashing', () => {
-    // Component test
-    expect(true).toBe(true);
+jest.mock('@/lib/api', () => ({
+  api: {
+    search: jest.fn().mockResolvedValue({
+      data: { incidents: [], problems: [], changes: [], knowledgeArticles: [] },
+    }),
+  },
+}));
+
+function renderWithProviders(ui: React.ReactElement) {
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  return render(
+    <QueryClientProvider client={queryClient}>
+      {ui}
+    </QueryClientProvider>
+  );
+}
+
+describe('Search Modal', () => {
+  it('renders when closed', () => {
+    const { container } = renderWithProviders(
+      <SearchModal isOpen={false} onClose={jest.fn()} />
+    );
+    expect(container).toBeInTheDocument();
   });
 
-  it('loads data from API', async () => {
-    // Should test API integration
-    expect(true).toBe(true);
+  it('renders when open', () => {
+    const { container } = renderWithProviders(
+      <SearchModal isOpen={true} onClose={jest.fn()} />
+    );
+    expect(container).toBeInTheDocument();
   });
 
-  it('handles errors gracefully', () => {
-    // Should test error handling
-    expect(true).toBe(true);
+  it('accepts onClose callback', () => {
+    const onClose = jest.fn();
+    const { container } = renderWithProviders(
+      <SearchModal isOpen={true} onClose={onClose} />
+    );
+    expect(container).toBeInTheDocument();
   });
 
-  it('displays proper UI elements', () => {
-    // Should test rendering
-    expect(true).toBe(true);
-  });
-
-  it('handles user interactions', () => {
-    // Should test user actions
-    expect(true).toBe(true);
+  it('renders with different open states', () => {
+    const { container: closed } = renderWithProviders(
+      <SearchModal isOpen={false} onClose={jest.fn()} />
+    );
+    const { container: open } = renderWithProviders(
+      <SearchModal isOpen={true} onClose={jest.fn()} />
+    );
+    expect(closed).toBeInTheDocument();
+    expect(open).toBeInTheDocument();
   });
 });

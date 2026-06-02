@@ -1,27 +1,31 @@
+import React from 'react';
+import { render } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import CycleCountsPage from '@/app/(dashboard)/inventory/cycle-counts/page';
 
-describe('Cycle Counts Page', () => {
+jest.mock('next/navigation', () => ({
+  useRouter: () => ({ push: jest.fn() }),
+  usePathname: () => '/inventory/cycle-counts',
+}));
+
+function renderWithProviders(ui: React.ReactElement) {
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  return render(
+    <QueryClientProvider client={queryClient}>
+      {ui}
+    </QueryClientProvider>
+  );
+}
+
+describe('Cycle Counting Page', () => {
   it('renders without crashing', () => {
-    // Component test
-    expect(true).toBe(true);
+    const { container } = renderWithProviders(<CycleCountsPage />);
+    expect(container).toBeInTheDocument();
   });
 
-  it('loads data from API', async () => {
-    // Should test API integration
-    expect(true).toBe(true);
-  });
-
-  it('handles errors gracefully', () => {
-    // Should test error handling
-    expect(true).toBe(true);
-  });
-
-  it('displays proper UI elements', () => {
-    // Should test rendering
-    expect(true).toBe(true);
-  });
-
-  it('handles user interactions', () => {
-    // Should test user actions
-    expect(true).toBe(true);
+  it('renders main content', () => {
+    const { container } = renderWithProviders(<CycleCountsPage />);
+    const main = container.querySelector('main');
+    expect(main || container.firstChild).toBeTruthy();
   });
 });

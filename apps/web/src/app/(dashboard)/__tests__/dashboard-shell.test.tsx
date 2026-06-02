@@ -1,27 +1,47 @@
+import React from 'react';
+import { render, screen } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { DashboardShell } from '@/app/(dashboard)/dashboard-shell';
 
-describe('Dashboard Shell Component', () => {
-  it('renders without crashing', () => {
-    // Component test
-    expect(true).toBe(true);
+jest.mock('@/lib/api', () => ({
+  api: { getCurrentUser: jest.fn().mockResolvedValue({ data: { name: 'Test User', email: 'test@example.com' } }) },
+  auth: { clearTokens: jest.fn() },
+}));
+
+jest.mock('@/lib/hooks', () => ({
+  useNotifications: jest.fn(() => ({ data: [] })),
+  useMarkAllNotificationsRead: jest.fn(() => jest.fn()),
+  useTheme: jest.fn(() => ({ theme: 'light', setTheme: jest.fn() })),
+}));
+
+jest.mock('next/navigation', () => ({
+  usePathname: () => '/dashboard',
+  useRouter: () => ({ push: jest.fn() }),
+}));
+
+function renderWithProviders(ui: React.ReactElement) {
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  return render(
+    <QueryClientProvider client={queryClient}>
+      {ui}
+    </QueryClientProvider>
+  );
+}
+
+describe('Dashboard Shell', () => {
+  it('renders with children', () => {
+    const { container } = renderWithProviders(<DashboardShell><div>content</div></DashboardShell>);
+    expect(container).toBeInTheDocument();
   });
 
-  it('loads data from API', async () => {
-    // Should test API integration
-    expect(true).toBe(true);
+  it('renders main content area', () => {
+    const testContent = 'Test dashboard content';
+    const { container } = renderWithProviders(<DashboardShell><div>{testContent}</div></DashboardShell>);
+    expect(screen.getByText(testContent)).toBeInTheDocument();
   });
 
-  it('handles errors gracefully', () => {
-    // Should test error handling
-    expect(true).toBe(true);
-  });
-
-  it('displays proper UI elements', () => {
-    // Should test rendering
-    expect(true).toBe(true);
-  });
-
-  it('handles user interactions', () => {
-    // Should test user actions
-    expect(true).toBe(true);
+  it('accepts children prop', () => {
+    const { container } = renderWithProviders(<DashboardShell><div>test</div></DashboardShell>);
+    expect(screen.getByText('test')).toBeInTheDocument();
   });
 });

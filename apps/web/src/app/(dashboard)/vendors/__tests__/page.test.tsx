@@ -1,27 +1,45 @@
+import React from 'react';
+import { render } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import VendorsPage from '@/app/(dashboard)/vendors/page';
+
+jest.mock('@/lib/api', () => ({
+  api: {
+    getVendors: jest.fn().mockResolvedValue({ data: { data: [] } }),
+  },
+}));
+
+jest.mock('next/navigation', () => ({
+  useRouter: () => ({ push: jest.fn(), replace: jest.fn() }),
+  usePathname: () => '/vendors',
+}));
+
+jest.mock('@/components/ui/select', () => ({
+  Select: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  SelectTrigger: ({ children }: { children: React.ReactNode }) => <button>{children}</button>,
+  SelectValue: () => null,
+  SelectContent: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  SelectItem: ({ children, value }: { children: React.ReactNode; value: string }) => (value ? <div>{children}</div> : null),
+}));
+
+function renderWithProviders(ui: React.ReactElement) {
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  return render(
+    <QueryClientProvider client={queryClient}>
+      {ui}
+    </QueryClientProvider>
+  );
+}
 
 describe('Vendors Page', () => {
   it('renders without crashing', () => {
-    // Component test
-    expect(true).toBe(true);
+    const { container } = renderWithProviders(<VendorsPage />);
+    expect(container).toBeInTheDocument();
   });
 
-  it('loads data from API', async () => {
-    // Should test API integration
-    expect(true).toBe(true);
-  });
-
-  it('handles errors gracefully', () => {
-    // Should test error handling
-    expect(true).toBe(true);
-  });
-
-  it('displays proper UI elements', () => {
-    // Should test rendering
-    expect(true).toBe(true);
-  });
-
-  it('handles user interactions', () => {
-    // Should test user actions
-    expect(true).toBe(true);
+  it('renders main content', () => {
+    const { container } = renderWithProviders(<VendorsPage />);
+    const main = container.querySelector('main');
+    expect(main || container.firstChild).toBeTruthy();
   });
 });
