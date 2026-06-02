@@ -24,7 +24,8 @@ export default function DemandPlanningPage() {
     try {
       setLoading(true);
       const res = await api.getSuggestedReorderPoint?.("");
-      setReorderPoints((res as { data: { data?: ReorderPoint[] } })?.data?.data || []);
+      const reorderData = res?.data?.data as unknown as ReorderPoint[] | undefined;
+      setReorderPoints(reorderData || []);
     } catch (err) {
       console.error('Failed to load demand planning:', err);
     } finally {

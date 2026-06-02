@@ -35,8 +35,10 @@ export default function PredictiveAnalyticsPage() {
         api.predictCashFlow?.(),
         api.detectAnomalies?.()
       ]);
-      setCashFlow(cashFlowRes?.data?.data || null);
-      setAnomalies(anomaliesRes?.data?.data || []);
+      const cashFlowData = cashFlowRes?.data?.data as unknown as CashFlow | undefined;
+      const anomaliesData = anomaliesRes?.data?.data as unknown as Anomaly[] | undefined;
+      setCashFlow(cashFlowData || null);
+      setAnomalies(anomaliesData || []);
     } catch (err) {
       console.error('Failed to load predictions:', err);
     } finally {

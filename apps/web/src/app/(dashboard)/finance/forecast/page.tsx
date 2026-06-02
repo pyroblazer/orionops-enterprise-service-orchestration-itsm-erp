@@ -37,9 +37,10 @@ export default function BudgetForecastPage() {
         api.getBudgets?.(),
         api.getBudgetAlerts?.(),
       ]);
-      const budgetData = (budgetsRes as { data: { data?: BudgetForecast[]; content?: BudgetForecast[] } })?.data?.data || (budgetsRes as { data: { data?: BudgetForecast[]; content?: BudgetForecast[] } })?.data?.content || [];
+      const budgetData = (budgetsRes?.data?.data as unknown as BudgetForecast[] | undefined) || ((budgetsRes?.data as unknown as { content?: BudgetForecast[] })?.content) || [];
+      const alertData = alertsRes?.data?.data as unknown as BudgetAlert[] | undefined;
       setBudgets(budgetData);
-      setAlerts(alertsRes?.data?.data || []);
+      setAlerts(alertData || []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load forecasts');
     } finally {

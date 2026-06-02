@@ -29,7 +29,8 @@ export default function InventoryTransfersPage() {
     try {
       setLoading(true);
       const res = await api.getTransfers();
-      setTransfers(res?.data?.data || []);
+      const transfersData = res?.data?.data as unknown as Transfer[] | undefined;
+      setTransfers(transfersData || []);
     } catch (err) {
       console.error('Failed to load transfers:', err);
       setTransfers([]);

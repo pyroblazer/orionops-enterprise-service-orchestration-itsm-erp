@@ -21,8 +21,9 @@ export default function SoDPage() {
   async function fetchRules() {
     try {
       setLoading(true);
-      const res = await api.getSoDRules?.() || { data: {} };
-      setRules(res?.data || {});
+      const res = await api.getSoDRules?.() || { data: { data: {} } };
+      const rulesData = res?.data?.data as unknown as SoDRules | undefined;
+      setRules(rulesData || {});
     } catch (err) {
       console.error('Failed to load SoD rules:', err);
     } finally {

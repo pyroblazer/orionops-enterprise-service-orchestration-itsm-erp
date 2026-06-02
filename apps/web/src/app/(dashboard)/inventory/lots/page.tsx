@@ -38,8 +38,10 @@ export default function LotTrackingPage() {
         api.getLots(),
         api.getExpiringLots(),
       ]);
-      setLots(lotsRes?.data?.data || []);
-      setExpiringLots(expiringRes?.data?.data || []);
+      const lotsData = lotsRes?.data?.data as unknown as Lot[] | undefined;
+      const expiringData = expiringRes?.data?.data as unknown as ExpiringLot[] | undefined;
+      setLots(lotsData || []);
+      setExpiringLots(expiringData || []);
     } catch (err) {
       console.error('Failed to load lots:', err);
     } finally {

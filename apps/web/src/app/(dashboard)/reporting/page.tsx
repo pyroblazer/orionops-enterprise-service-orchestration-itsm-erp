@@ -215,7 +215,7 @@ export default function ReportingPage() {
                   <Skeleton />
                 ) : (
                   <BarList
-                    items={itsm.data?.volumeByPriority.map((r) => ({ label: r.priority, value: r.cnt })) ?? []}
+                    items={itsm.data?.volumeByPriority.map((r) => ({ label: r.priority, value: r.count })) ?? []}
                   />
                 )}
               </CardContent>
@@ -228,7 +228,7 @@ export default function ReportingPage() {
                   <Skeleton />
                 ) : (
                   <BarList
-                    items={itsm.data?.volumeByStatus.map((r) => ({ label: r.status, value: r.cnt })) ?? []}
+                    items={itsm.data?.volumeByStatus.map((r) => ({ label: r.status, value: r.count })) ?? []}
                   />
                 )}
               </CardContent>
@@ -248,7 +248,7 @@ export default function ReportingPage() {
               ) : (
                 <SimpleTable
                   headers={['name', 'budget_amount', 'spent', 'variance', 'variance_pct']}
-                  rows={finance.data?.budgetVariance ?? []}
+                  rows={(finance.data?.budgetVariance as Record<string, string | number | null>[] | undefined) ?? []}
                 />
               )}
             </CardContent>
@@ -262,8 +262,8 @@ export default function ReportingPage() {
               ) : (
                 <BarList
                   items={(finance.data?.invoiceAging ?? []).map((r) => ({
-                    label: r.aging_bucket,
-                    value: r.count,
+                    label: String(r.aging_bucket ?? ''),
+                    value: Number(r.count ?? 0),
                   }))}
                 />
               )}
@@ -283,7 +283,7 @@ export default function ReportingPage() {
               ) : (
                 <SimpleTable
                   headers={['status', 'age_bucket', 'count']}
-                  rows={procurement.data?.poAging ?? []}
+                  rows={(procurement.data?.poAging as Record<string, string | number | null>[] | undefined) ?? []}
                 />
               )}
             </CardContent>
@@ -297,8 +297,8 @@ export default function ReportingPage() {
               ) : (
                 <BarList
                   items={(procurement.data?.vendorSpend ?? []).slice(0, 10).map((r) => ({
-                    label: r.name,
-                    value: parseFloat(r.ytd_spend ?? 0),
+                    label: String(r.name ?? ''),
+                    value: parseFloat(String(r.ytd_spend ?? 0)),
                   }))}
                 />
               )}
@@ -317,8 +317,8 @@ export default function ReportingPage() {
             ) : (
               <BarList
                 items={(inventory.data?.valuation ?? []).map((r) => ({
-                  label: `Warehouse ${r.warehouse_id}`,
-                  value: parseFloat(r.total_value ?? 0),
+                  label: `Warehouse ${String(r.warehouse_id ?? '')}`,
+                  value: parseFloat(String(r.total_value ?? 0)),
                 }))}
               />
             )}
@@ -336,7 +336,7 @@ export default function ReportingPage() {
             ) : (
               <SimpleTable
                 headers={['team_name', 'allocated_hours', 'available_hours', 'utilization_pct']}
-                rows={workforce.data ?? []}
+                rows={(workforce.data as Record<string, string | number | null>[] | undefined) ?? []}
               />
             )}
           </CardContent>

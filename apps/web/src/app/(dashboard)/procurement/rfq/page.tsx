@@ -29,8 +29,9 @@ export default function RFQManagementPage() {
   async function fetchRFQs() {
     try {
       setLoading(true);
-      const res = await api.getRFQs?.() || { data: { data: [], total: 0, page: 0, pageSize: 0, totalPages: 0 } };
-      setRfqs((res as { data: { data?: RFQ[]; content?: RFQ[] } })?.data?.data || (res as { data: { data?: RFQ[]; content?: RFQ[] } })?.data?.content || []);
+      const res = await api.getRFQs?.();
+      const rfqData = (res?.data?.data as unknown as RFQ[] | undefined) || ((res?.data as unknown as { content?: RFQ[] })?.content);
+      setRfqs(rfqData || []);
     } catch (err) {
       console.error('Failed to load RFQs:', err);
     } finally {

@@ -31,7 +31,10 @@ export function SearchModal({ isOpen, onClose }: { isOpen: boolean; onClose: () 
         ...(results.incidents?.map((i: SearchResultItem) => ({ ...i, entityType: 'incident' as const })) || []),
         ...(results.problems?.map((p: SearchResultItem) => ({ ...p, entityType: 'problem' as const })) || []),
         ...(results.changes?.map((c: SearchResultItem) => ({ ...c, entityType: 'change' as const })) || []),
-        ...(results.knowledgeArticles?.map((k: SearchResultItem) => ({ ...k, entityType: 'knowledge' as const })) || []),
+        ...(results.knowledgeArticles?.map((k: unknown) => {
+          const ka = k as { id?: string; title?: string; description?: string };
+          return { id: ka.id || '', title: ka.title || '', description: ka.description || '', entityType: 'knowledge' as const };
+        }) || []),
       ];
     },
     enabled: !!query.trim(),

@@ -21,8 +21,9 @@ export default function SpendAnalysisPage() {
   async function fetchData() {
     try {
       setLoading(true);
-      const res = await api.getVendorConcentration?.() || { data: {} };
-      setConcentration(res?.data || {});
+      const res = await api.getVendorConcentration?.();
+      const concentrationData = res?.data?.data as unknown as VendorConcentration | undefined;
+      setConcentration(concentrationData || {});
     } catch (err) {
       console.error('Failed to load spend analysis:', err);
     } finally {

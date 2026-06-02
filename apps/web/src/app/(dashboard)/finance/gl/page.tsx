@@ -38,13 +38,16 @@ export default function GeneralLedgerPage() {
       setLoading(true);
       if (tab === 'accounts') {
         const res = await api.getChartOfAccounts();
-        setAccounts(res?.data?.data || []);
+        const accountsData = res?.data?.data as unknown as ChartOfAccount[] | undefined;
+        setAccounts(accountsData || []);
       } else if (tab === 'trial') {
         const res = await api.getTrialBalance();
-        setTrialBalance(res?.data?.data || {});
+        const trialData = res?.data?.data as unknown as TrialBalance | undefined;
+        setTrialBalance(trialData || null);
       } else if (tab === 'income') {
         const res = await api.getIncomeStatement();
-        setIncomeStatement(res?.data?.data || {});
+        const incomeData = res?.data?.data as unknown as IncomeStatement | undefined;
+        setIncomeStatement(incomeData || null);
       }
     } catch (err) {
       console.error('Failed to load GL data:', err);

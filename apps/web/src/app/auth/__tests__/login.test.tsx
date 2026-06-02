@@ -24,7 +24,7 @@ describe('Login Page', () => {
   it('loginWithPassword is callable and returns a promise', async () => {
     const result = auth.loginWithPassword('user', 'pass');
     expect(result).toBeInstanceOf(Promise);
-    const resolved = await result;
+    const resolved = await (result as unknown as Promise<{ access_token: string }>);
     expect(resolved.access_token).toBe('token');
   });
 

@@ -60,7 +60,7 @@ export function DashboardShell({
       try {
         const res = await api.getCurrentUser?.();
         if (res?.data) {
-          setCurrentUser(res.data);
+          setCurrentUser(res.data as unknown as CurrentUser);
         }
       } catch (err) {
         console.error('Failed to load current user:', err);

@@ -45,18 +45,18 @@ export default function ExecutiveDashboardPage() {
   }
 
   const kpiCards = [
-    { label: 'MTTR (hours)', value: kpis.mttr },
-    { label: 'SLA Compliance', value: `${kpis.slaCompliance}%` },
-    { label: 'Budget Utilization', value: `${kpis.budgetUtilization}%` },
-    { label: 'Vendor Spend YTD', value: `$${(kpis.vendorSpend / 1000000).toFixed(1)}M` },
-    { label: 'Open Incidents', value: kpis.openIncidents },
-    { label: 'Change Success Rate', value: `${kpis.changeSuccess}%` },
-    { label: 'Inventory Value', value: `$${(kpis.inventoryValue / 1000).toFixed(0)}K` },
-    { label: 'Workforce Utilization', value: `${kpis.workforceUtilization}%` },
-    { label: 'Overdue Invoices', value: kpis.overdueInvoices },
-    { label: 'Active Contracts', value: kpis.activeContracts },
-    { label: 'Expiring Warranties', value: kpis.expiringWarranties },
-    { label: 'Compliance Violations', value: kpis.complianceViolations }
+    { label: 'MTTR (hours)', value: kpis.mttr ?? 0 },
+    { label: 'SLA Compliance', value: `${kpis.slaCompliance ?? 0}%` },
+    { label: 'Budget Utilization', value: `${kpis.budgetUtilization ?? 0}%` },
+    { label: 'Vendor Spend YTD', value: `$${((kpis.vendorSpend ?? 0) / 1000000).toFixed(1)}M` },
+    { label: 'Open Incidents', value: kpis.openIncidents ?? 0 },
+    { label: 'Change Success Rate', value: `${kpis.changeSuccess ?? 0}%` },
+    { label: 'Inventory Value', value: `$${((kpis.inventoryValue ?? 0) / 1000).toFixed(0)}K` },
+    { label: 'Workforce Utilization', value: `${kpis.workforceUtilization ?? 0}%` },
+    { label: 'Overdue Invoices', value: kpis.overdueInvoices ?? 0 },
+    { label: 'Active Contracts', value: kpis.activeContracts ?? 0 },
+    { label: 'Expiring Warranties', value: kpis.expiringWarranties ?? 0 },
+    { label: 'Compliance Violations', value: kpis.complianceViolations ?? 0 }
   ];
 
   return (
@@ -96,10 +96,10 @@ export default function ExecutiveDashboardPage() {
           <div>
             <div className="flex justify-between mb-2">
               <span className="text-sm font-medium">Budget Tracking</span>
-              <span className="text-sm">{kpis.budgetUtilization}%</span>
+              <span className="text-sm">{kpis.budgetUtilization ?? 0}%</span>
             </div>
             <div className="w-full bg-gray-200 rounded h-3">
-              <div className="bg-blue-600 h-3 rounded" style={{ width: `${kpis.budgetUtilization}%` }}></div>
+              <div className="bg-blue-600 h-3 rounded" style={{ width: `${kpis.budgetUtilization ?? 0}%` }}></div>
             </div>
           </div>
         </CardContent>
