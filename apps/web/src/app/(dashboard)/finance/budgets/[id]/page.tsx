@@ -1,21 +1,33 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
 
+interface Budget {
+  id: string;
+  name: string;
+  total: number;
+  spent: number;
+  period: string;
+  utilization: number;
+}
+
+interface Expense {
+  id: string;
+  date: string;
+  description: string;
+  category: string;
+  amount: number;
+}
+
 export default function BudgetDetailPage({ params }: { params: { id: string } }) {
-  const [budget, setBudget] = useState<any>(null);
-  const [expenses] = useState<any[]>([]);
+  const [budget, setBudget] = useState<Budget | null>(null);
+  const [expenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => {
-    fetchData();
-  }, [params.id]);
-
-  async function fetchData() {
+  const fetchData = useCallback(async () => {
     try {
       setLoading(true);
       // Mock data
@@ -32,7 +44,11 @@ export default function BudgetDetailPage({ params }: { params: { id: string } })
     } finally {
       setLoading(false);
     }
-  }
+  }, [params.id]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   if (loading) {
     return <Skeleton className="h-[500px]" />;
@@ -96,12 +112,12 @@ export default function BudgetDetailPage({ params }: { params: { id: string } })
               </TableRow>
             </TableHeader>
             <TableBody>
-              {expenses.map((exp: any) => (
+              {expenses.map((exp) => (
                 <TableRow key={exp.id}>
                   <TableCell>{exp.date}</TableCell>
                   <TableCell>{exp.description}</TableCell>
                   <TableCell>{exp.category}</TableCell>
-                  <TableCell>${exp.amount?.toLocaleString()}</TableCell>
+                  <TableCell>${exp.amount.toLocaleString()}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

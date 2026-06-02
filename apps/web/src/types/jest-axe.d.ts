@@ -15,8 +15,8 @@ declare module 'jest-axe' {
   }
 
   const axe: (el: HTMLElement, options?: Record<string, unknown>) => Promise<AxeResults>;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const toHaveNoViolations: any;
+  type ToHaveNoViolations = () => void;
+  const toHaveNoViolations: ToHaveNoViolations;
   export { axe, toHaveNoViolations };
 }
 

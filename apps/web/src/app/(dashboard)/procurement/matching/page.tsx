@@ -7,8 +7,16 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
 
+interface MatchingException {
+  id: string;
+  invoiceId: string;
+  variance: number;
+  reason: string;
+  status: string;
+}
+
 export default function ThreeWayMatchingPage() {
-  const [exceptions, setExceptions] = useState<any[]>([]);
+  const [exceptions, setExceptions] = useState<MatchingException[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -94,7 +102,7 @@ export default function ThreeWayMatchingPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {exceptions.map((exc: any) => (
+                {exceptions.map((exc) => (
                   <TableRow key={exc.id}>
                     <TableCell className="font-mono">{exc.invoiceId}</TableCell>
                     <TableCell className="text-red-600">${exc.variance?.toLocaleString()}</TableCell>

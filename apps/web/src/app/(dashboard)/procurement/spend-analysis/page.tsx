@@ -6,8 +6,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 
+interface VendorConcentration {
+  risk?: string;
+}
+
 export default function SpendAnalysisPage() {
-  const [concentration, setConcentration] = useState<any>({});
+  const [concentration, setConcentration] = useState<VendorConcentration>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

@@ -1,23 +1,36 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
 
+interface RFQDetail {
+  id: string;
+  title: string;
+  status: string;
+  requisitionId: string;
+  deadline: string;
+  vendorCount: number;
+}
+
+interface Bid {
+  id: string;
+  vendor: string;
+  price: number;
+  deliveryDays: number;
+  qualityRating: number;
+  score: number;
+}
+
 export default function RFQDetailPage({ params }: { params: { id: string } }) {
-  const [rfq, setRfq] = useState<any>(null);
-  const [bids] = useState<any[]>([]);
+  const [rfq, setRfq] = useState<RFQDetail | null>(null);
+  const [bids] = useState<Bid[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => {
-    fetchData();
-  }, [params.id]);
-
-  async function fetchData() {
+  const fetchData = useCallback(async () => {
     try {
       setLoading(true);
       // Mock data
@@ -34,7 +47,11 @@ export default function RFQDetailPage({ params }: { params: { id: string } }) {
     } finally {
       setLoading(false);
     }
-  }
+  }, [params.id]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   if (loading) {
     return <Skeleton className="h-[500px]" />;
@@ -100,7 +117,7 @@ export default function RFQDetailPage({ params }: { params: { id: string } }) {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {bids.map((bid: any) => (
+                {bids.map((bid) => (
                   <TableRow key={bid.id}>
                     <TableCell>{bid.vendor}</TableCell>
                     <TableCell>${bid.price?.toLocaleString()}</TableCell>

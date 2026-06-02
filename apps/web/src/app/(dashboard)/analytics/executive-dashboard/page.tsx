@@ -4,8 +4,23 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 
+interface KPIs {
+  mttr?: number;
+  slaCompliance?: number;
+  budgetUtilization?: number;
+  vendorSpend?: number;
+  openIncidents?: number;
+  changeSuccess?: number;
+  inventoryValue?: number;
+  workforceUtilization?: number;
+  overdueInvoices?: number;
+  activeContracts?: number;
+  expiringWarranties?: number;
+  complianceViolations?: number;
+}
+
 export default function ExecutiveDashboardPage() {
-  const [kpis, setKpis] = useState<any>({});
+  const [kpis, setKpis] = useState<KPIs>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

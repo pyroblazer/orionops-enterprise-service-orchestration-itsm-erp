@@ -12,7 +12,14 @@ function fmt(val: number | null | undefined, unit: string) {
   return `${val.toFixed(1)} ${unit}`;
 }
 
-function MetricCard({ title, value, sub, loading }: any) {
+interface MetricCardProps {
+  title: string;
+  value: string | number;
+  sub: string;
+  loading: boolean;
+}
+
+function MetricCard({ title, value, sub, loading }: MetricCardProps) {
   return (
     <Card>
       <CardHeader className="pb-2">
@@ -30,21 +37,26 @@ function Skeleton() {
   return <div className="h-64 bg-slate-100 rounded animate-pulse" />;
 }
 
-function SimpleTable({ headers, rows }: any) {
+interface SimpleTableProps {
+  headers: string[];
+  rows: Record<string, string | number | null>[];
+}
+
+function SimpleTable({ headers, rows }: SimpleTableProps) {
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b">
-            {headers.map((h: string, i: number) => (
+            {headers.map((h, i) => (
               <th key={i} className="text-left py-2 px-2 font-semibold">{h}</th>
             ))}
           </tr>
         </thead>
         <tbody>
-          {rows.map((row: Record<string, any>, i: number) => (
+          {rows.map((row, i) => (
             <tr key={i} className="border-b hover:bg-slate-50">
-              {headers.map((h: string, j: number) => (
+              {headers.map((h, j) => (
                 <td key={j} className="py-2 px-2">{row[h] ?? '—'}</td>
               ))}
             </tr>
@@ -55,11 +67,20 @@ function SimpleTable({ headers, rows }: any) {
   );
 }
 
-function BarList({ items }: any) {
-  const maxValue = Math.max(...items.map((i: any) => i.value), 1);
+interface BarListItem {
+  label: string;
+  value: number;
+}
+
+interface BarListProps {
+  items: BarListItem[];
+}
+
+function BarList({ items }: BarListProps) {
+  const maxValue = Math.max(...items.map((i) => i.value), 1);
   return (
     <div className="space-y-2">
-      {items.map((item: any, i: number) => (
+      {items.map((item, i) => (
         <div key={i}>
           <div className="flex justify-between mb-1">
             <span className="text-sm font-medium">{item.label}</span>
@@ -194,7 +215,7 @@ export default function ReportingPage() {
                   <Skeleton />
                 ) : (
                   <BarList
-                    items={itsm.data?.volumeByPriority.map((r: any) => ({ label: r.priority, value: r.cnt })) ?? []}
+                    items={itsm.data?.volumeByPriority.map((r) => ({ label: r.priority, value: r.cnt })) ?? []}
                   />
                 )}
               </CardContent>
@@ -207,7 +228,7 @@ export default function ReportingPage() {
                   <Skeleton />
                 ) : (
                   <BarList
-                    items={itsm.data?.volumeByStatus.map((r: any) => ({ label: r.status, value: r.cnt })) ?? []}
+                    items={itsm.data?.volumeByStatus.map((r) => ({ label: r.status, value: r.cnt })) ?? []}
                   />
                 )}
               </CardContent>
@@ -240,7 +261,7 @@ export default function ReportingPage() {
                 <Skeleton />
               ) : (
                 <BarList
-                  items={(finance.data?.invoiceAging ?? []).map((r: any) => ({
+                  items={(finance.data?.invoiceAging ?? []).map((r) => ({
                     label: r.aging_bucket,
                     value: r.count,
                   }))}
@@ -275,7 +296,7 @@ export default function ReportingPage() {
                 <Skeleton />
               ) : (
                 <BarList
-                  items={(procurement.data?.vendorSpend ?? []).slice(0, 10).map((r: any) => ({
+                  items={(procurement.data?.vendorSpend ?? []).slice(0, 10).map((r) => ({
                     label: r.name,
                     value: parseFloat(r.ytd_spend ?? 0),
                   }))}
@@ -295,7 +316,7 @@ export default function ReportingPage() {
               <Skeleton />
             ) : (
               <BarList
-                items={(inventory.data?.valuation ?? []).map((r: any) => ({
+                items={(inventory.data?.valuation ?? []).map((r) => ({
                   label: `Warehouse ${r.warehouse_id}`,
                   value: parseFloat(r.total_value ?? 0),
                 }))}

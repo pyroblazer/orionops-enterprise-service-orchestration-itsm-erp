@@ -7,8 +7,16 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
 
+interface CycleCount {
+  id: string;
+  warehouse: string;
+  schedule: string;
+  lastCount: string;
+  variance: number;
+}
+
 export default function CycleCountsPage() {
-  const [counts, setCounts] = useState<any[]>([]);
+  const [counts, setCounts] = useState<CycleCount[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -59,7 +67,7 @@ export default function CycleCountsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {counts.map((count: any) => (
+              {counts.map((count) => (
                 <TableRow key={count.id}>
                   <TableCell className="font-mono">{count.id}</TableCell>
                   <TableCell>{count.warehouse}</TableCell>

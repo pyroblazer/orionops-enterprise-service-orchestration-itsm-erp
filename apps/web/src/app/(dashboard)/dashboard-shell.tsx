@@ -33,6 +33,11 @@ import { useNotifications, useMarkAllNotificationsRead } from '@/lib/hooks';
 import { useTheme, type Theme } from '@/lib/hooks';
 import { cn } from '@/lib/utils';
 
+interface CurrentUser {
+  name: string;
+  email: string;
+}
+
 export function DashboardShell({
   children,
 }: {
@@ -43,7 +48,7 @@ export function DashboardShell({
   const [searchQuery, setSearchQuery] = useState('');
   const [shortcutsVisible, setShortcutsVisible] = useState(false);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
-  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
   const { theme: currentTheme, setTheme } = useTheme();
 
   const { data: notifications } = useNotifications();

@@ -6,9 +6,23 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 
+interface BudgetForecast {
+  id: string;
+  name: string;
+  amount: number;
+  projected: number;
+  onTrack: boolean;
+}
+
+interface BudgetAlert {
+  id: string;
+  name: string;
+  utilization: number;
+}
+
 export default function BudgetForecastPage() {
-  const [budgets, setBudgets] = useState<any[]>([]);
-  const [alerts, setAlerts] = useState<any[]>([]);
+  const [budgets, setBudgets] = useState<BudgetForecast[]>([]);
+  const [alerts, setAlerts] = useState<BudgetAlert[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -23,7 +37,8 @@ export default function BudgetForecastPage() {
         api.getBudgets?.(),
         api.getBudgetAlerts?.(),
       ]);
-      setBudgets((budgetsRes as any)?.data?.data || (budgetsRes as any)?.data?.content || []);
+      const budgetData = (budgetsRes as { data: { data?: BudgetForecast[]; content?: BudgetForecast[] } })?.data?.data || (budgetsRes as { data: { data?: BudgetForecast[]; content?: BudgetForecast[] } })?.data?.content || [];
+      setBudgets(budgetData);
       setAlerts(alertsRes?.data?.data || []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load forecasts');
@@ -55,7 +70,7 @@ export default function BudgetForecastPage() {
           </CardHeader>
           <CardContent>
             <div className="grid gap-4">
-              {alerts.map((alert: any) => (
+              {alerts.map((alert) => (
                 <div key={alert.id} className="flex items-center justify-between rounded bg-white p-3">
                   <div>
                     <p className="font-medium">{alert.name}</p>
@@ -74,7 +89,7 @@ export default function BudgetForecastPage() {
       <div>
         <h2 className="mb-4 text-2xl font-bold">Budget Forecasts</h2>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {budgets.map((budget: any) => (
+          {budgets.map((budget) => (
             <Card key={budget.id}>
               <CardHeader>
                 <CardTitle className="text-lg">{budget.name}</CardTitle>

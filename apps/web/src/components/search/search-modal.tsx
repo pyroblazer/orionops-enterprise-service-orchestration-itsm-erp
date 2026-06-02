@@ -4,6 +4,19 @@ import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 
+interface SearchResult {
+  id: string;
+  title: string;
+  description: string;
+  entityType: 'incident' | 'problem' | 'change' | 'knowledge';
+}
+
+interface SearchResultItem {
+  id: string;
+  title: string;
+  description: string;
+}
+
 export function SearchModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const [query, setQuery] = useState('');
 
@@ -15,10 +28,10 @@ export function SearchModal({ isOpen, onClose }: { isOpen: boolean; onClose: () 
       const results = response.data.data;
       // Flatten grouped results into a single array
       return [
-        ...(results.incidents?.map((i: any) => ({ ...i, entityType: 'incident' })) || []),
-        ...(results.problems?.map((p: any) => ({ ...p, entityType: 'problem' })) || []),
-        ...(results.changes?.map((c: any) => ({ ...c, entityType: 'change' })) || []),
-        ...(results.knowledgeArticles?.map((k: any) => ({ ...k, entityType: 'knowledge' })) || []),
+        ...(results.incidents?.map((i: SearchResultItem) => ({ ...i, entityType: 'incident' as const })) || []),
+        ...(results.problems?.map((p: SearchResultItem) => ({ ...p, entityType: 'problem' as const })) || []),
+        ...(results.changes?.map((c: SearchResultItem) => ({ ...c, entityType: 'change' as const })) || []),
+        ...(results.knowledgeArticles?.map((k: SearchResultItem) => ({ ...k, entityType: 'knowledge' as const })) || []),
       ];
     },
     enabled: !!query.trim(),
@@ -61,7 +74,7 @@ export function SearchModal({ isOpen, onClose }: { isOpen: boolean; onClose: () 
             <div className="p-4 text-center text-gray-500">No results found</div>
           )}
 
-          {search.data?.map((result: any) => (
+          {search.data?.map((result: SearchResult) => (
             <a
               key={`${result.entityType}-${result.id}`}
               href={`/${result.entityType}s/${result.id}`}

@@ -41,7 +41,7 @@ describe('Dashboard Shell', () => {
   });
 
   it('accepts children prop', () => {
-    const { container } = renderWithProviders(<DashboardShell><div>test</div></DashboardShell>);
+    renderWithProviders(<DashboardShell><div>test</div></DashboardShell>);
     expect(screen.getByText('test')).toBeInTheDocument();
   });
 });

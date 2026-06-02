@@ -8,8 +8,17 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
 
+interface Transfer {
+  id: string;
+  sku: string;
+  fromWarehouse: string;
+  toWarehouse: string;
+  quantity: number;
+  status: string;
+}
+
 export default function InventoryTransfersPage() {
-  const [transfers, setTransfers] = useState<any[]>([]);
+  const [transfers, setTransfers] = useState<Transfer[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -88,7 +97,7 @@ export default function InventoryTransfersPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {transfers.map((transfer: any) => (
+              {transfers.map((transfer) => (
                 <TableRow key={transfer.id}>
                   <TableCell className="font-mono">{transfer.id}</TableCell>
                   <TableCell>{transfer.sku}</TableCell>

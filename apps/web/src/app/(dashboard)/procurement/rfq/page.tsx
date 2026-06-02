@@ -9,8 +9,16 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
 
+interface RFQ {
+  id: string;
+  title: string;
+  status: string;
+  vendorCount?: number;
+  responseCount?: number;
+}
+
 export default function RFQManagementPage() {
-  const [rfqs, setRfqs] = useState<any[]>([]);
+  const [rfqs, setRfqs] = useState<RFQ[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
 
@@ -22,7 +30,7 @@ export default function RFQManagementPage() {
     try {
       setLoading(true);
       const res = await api.getRFQs?.() || { data: { data: [], total: 0, page: 0, pageSize: 0, totalPages: 0 } };
-      setRfqs((res as any)?.data?.data || (res as any)?.data?.content || []);
+      setRfqs((res as { data: { data?: RFQ[]; content?: RFQ[] } })?.data?.data || (res as { data: { data?: RFQ[]; content?: RFQ[] } })?.data?.content || []);
     } catch (err) {
       console.error('Failed to load RFQs:', err);
     } finally {
@@ -97,7 +105,7 @@ export default function RFQManagementPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {rfqs.map((rfq: any) => (
+                {rfqs.map((rfq) => (
                   <TableRow key={rfq.id}>
                     <TableCell className="font-medium">{rfq.title}</TableCell>
                     <TableCell>

@@ -8,9 +8,23 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
 
+interface Lot {
+  id: string;
+  sku: string;
+  lotNumber: string;
+  quantity: number;
+  expiryDate: string;
+}
+
+interface ExpiringLot {
+  id: string;
+  sku: string;
+  daysRemaining: number;
+}
+
 export default function LotTrackingPage() {
-  const [lots, setLots] = useState<any[]>([]);
-  const [expiringLots, setExpiringLots] = useState<any[]>([]);
+  const [lots, setLots] = useState<Lot[]>([]);
+  const [expiringLots, setExpiringLots] = useState<ExpiringLot[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -54,7 +68,7 @@ export default function LotTrackingPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              {expiringLots.map((lot: any) => (
+              {expiringLots.map((lot) => (
                 <div key={lot.id} className="flex items-center justify-between rounded bg-white p-3">
                   <div>
                     <p className="font-medium">{lot.sku}</p>
@@ -84,7 +98,7 @@ export default function LotTrackingPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {lots.map((lot: any) => (
+              {lots.map((lot) => (
                 <TableRow key={lot.id}>
                   <TableCell>{lot.sku}</TableCell>
                   <TableCell className="font-mono">{lot.lotNumber}</TableCell>

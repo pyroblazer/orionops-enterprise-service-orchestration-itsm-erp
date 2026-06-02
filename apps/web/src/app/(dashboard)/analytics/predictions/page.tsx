@@ -7,9 +7,21 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
 
+interface CashFlow {
+  months: string[];
+  values: number[];
+}
+
+interface Anomaly {
+  id: string;
+  vendor: string;
+  amount: number;
+  reason: string;
+}
+
 export default function PredictiveAnalyticsPage() {
-  const [cashFlow, setCashFlow] = useState<any>(null);
-  const [anomalies, setAnomalies] = useState<any[]>([]);
+  const [cashFlow, setCashFlow] = useState<CashFlow | null>(null);
+  const [anomalies, setAnomalies] = useState<Anomaly[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -82,10 +94,10 @@ export default function PredictiveAnalyticsPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {anomalies.map((anom: any) => (
+                {anomalies.map((anom) => (
                   <TableRow key={anom.id}>
                     <TableCell>{anom.vendor}</TableCell>
-                    <TableCell>${anom.amount?.toLocaleString()}</TableCell>
+                    <TableCell>${anom.amount.toLocaleString()}</TableCell>
                     <TableCell>{anom.reason}</TableCell>
                     <TableCell>
                       <Badge variant="destructive">HIGH</Badge>

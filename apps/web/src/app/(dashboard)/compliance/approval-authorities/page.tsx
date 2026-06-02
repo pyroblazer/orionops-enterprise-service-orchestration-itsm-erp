@@ -6,8 +6,15 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
 
+interface ApprovalAuthority {
+  userId: string;
+  userName: string;
+  activityType: string;
+  maxAmount: number;
+}
+
 export default function ApprovalAuthoritiesPage() {
-  const [authorities, setAuthorities] = useState<any[]>([]);
+  const [authorities, setAuthorities] = useState<ApprovalAuthority[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -56,7 +63,7 @@ export default function ApprovalAuthoritiesPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {authorities.map((auth: any) => (
+              {authorities.map((auth) => (
                 <TableRow key={auth.userId}>
                   <TableCell>{auth.userName}</TableCell>
                   <TableCell className="font-mono">{auth.activityType}</TableCell>

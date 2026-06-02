@@ -14,12 +14,13 @@
     "react/prop-types": "warn",
     "react/no-unescaped-entities": "error",
     "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
-    "@typescript-eslint/no-explicit-any": "warn",
+    "@typescript-eslint/no-explicit-any": "error",
     "@typescript-eslint/no-unused-expressions": ["error", { "allowTernary": true }],
     "no-console": ["warn", { "allow": ["warn", "error"] }],
     "prefer-const": "error",
     "no-var": "error",
-    "eqeqeq": "error"
+    "eqeqeq": "error",
+    "react-hooks/exhaustive-deps": "error"
   },
   "ignorePatterns": [
     "coverage/",

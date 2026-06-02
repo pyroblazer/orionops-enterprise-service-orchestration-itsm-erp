@@ -6,8 +6,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
 
+interface ReorderPoint {
+  sku: string;
+  reorderPoint: number;
+  reorderQty: number;
+}
+
 export default function DemandPlanningPage() {
-  const [reorderPoints, setReorderPoints] = useState<any[]>([]);
+  const [reorderPoints, setReorderPoints] = useState<ReorderPoint[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -18,7 +24,7 @@ export default function DemandPlanningPage() {
     try {
       setLoading(true);
       const res = await api.getSuggestedReorderPoint?.("");
-      setReorderPoints((res as any)?.data?.data || []);
+      setReorderPoints((res as { data: { data?: ReorderPoint[] } })?.data?.data || []);
     } catch (err) {
       console.error('Failed to load demand planning:', err);
     } finally {
@@ -52,7 +58,7 @@ export default function DemandPlanningPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {reorderPoints.map((point: any) => (
+              {reorderPoints.map((point) => (
                 <TableRow key={point.sku}>
                   <TableCell className="font-mono">{point.sku}</TableCell>
                   <TableCell>{point.reorderPoint} units</TableCell>

@@ -8,8 +8,10 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
 
+type SoDRules = Record<string, string>;
+
 export default function SoDPage() {
-  const [rules, setRules] = useState<any>({});
+  const [rules, setRules] = useState<SoDRules>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -53,7 +55,7 @@ export default function SoDPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {Object.entries(rules).map(([activity1, activity2]: any) => (
+              {Object.entries(rules).map(([activity1, activity2]) => (
                 <TableRow key={activity1}>
                   <TableCell className="font-mono">{activity1}</TableCell>
                   <TableCell className="font-mono">{activity2}</TableCell>

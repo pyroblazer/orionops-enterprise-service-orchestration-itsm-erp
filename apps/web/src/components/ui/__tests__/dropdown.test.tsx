@@ -59,7 +59,7 @@ describe('DropdownMenu', () => {
   });
 
   it('renders multiple menu items', () => {
-    const { container } = render(
+    render(
       <DropdownMenu>
         <DropdownMenuTrigger>Menu</DropdownMenuTrigger>
         <DropdownMenuContent>

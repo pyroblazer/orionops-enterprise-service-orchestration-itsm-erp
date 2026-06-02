@@ -1,23 +1,43 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
 
+interface CostCenter {
+  id: string;
+  name: string;
+  code: string;
+  owner: string;
+  budgetAmount: number;
+  status: string;
+}
+
+interface BudgetSummary {
+  id: string;
+  name: string;
+  amount: number;
+  spent: number;
+  utilization: number;
+}
+
+interface ExpenseSummary {
+  id: string;
+  date: string;
+  description: string;
+  amount: number;
+  status: string;
+}
+
 export default function CostCenterDetailPage({ params }: { params: { id: string } }) {
-  const [costCenter, setCostCenter] = useState<any>(null);
-  const [budgets] = useState<any[]>([]);
-  const [expenses] = useState<any[]>([]);
+  const [costCenter, setCostCenter] = useState<CostCenter | null>(null);
+  const [budgets] = useState<BudgetSummary[]>([]);
+  const [expenses] = useState<ExpenseSummary[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => {
-    fetchData();
-  }, [params.id]);
-
-  async function fetchData() {
+  const fetchData = useCallback(async () => {
     try {
       setLoading(true);
       // In real impl: await api.getCostCenter(id)
@@ -35,7 +55,11 @@ export default function CostCenterDetailPage({ params }: { params: { id: string 
     } finally {
       setLoading(false);
     }
-  }
+  }, [params.id]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   if (loading) {
     return <Skeleton className="h-[500px]" />;
@@ -97,11 +121,11 @@ export default function CostCenterDetailPage({ params }: { params: { id: string 
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {budgets.map((budget: any) => (
+                {budgets.map((budget) => (
                   <TableRow key={budget.id}>
                     <TableCell>{budget.name}</TableCell>
-                    <TableCell>${budget.amount?.toLocaleString()}</TableCell>
-                    <TableCell>${budget.spent?.toLocaleString()}</TableCell>
+                    <TableCell>${budget.amount.toLocaleString()}</TableCell>
+                    <TableCell>${budget.spent.toLocaleString()}</TableCell>
                     <TableCell>{budget.utilization}%</TableCell>
                   </TableRow>
                 ))}
@@ -129,11 +153,11 @@ export default function CostCenterDetailPage({ params }: { params: { id: string 
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {expenses.map((exp: any) => (
+                {expenses.map((exp) => (
                   <TableRow key={exp.id}>
                     <TableCell>{exp.date}</TableCell>
                     <TableCell>{exp.description}</TableCell>
-                    <TableCell>${exp.amount?.toLocaleString()}</TableCell>
+                    <TableCell>${exp.amount.toLocaleString()}</TableCell>
                     <TableCell>{exp.status}</TableCell>
                   </TableRow>
                 ))}

@@ -1,25 +1,39 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { api } from '@/lib/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
 
+interface ChartOfAccount {
+  code: string;
+  name: string;
+  type: string;
+  balance: number;
+}
+
+interface TrialBalance {
+  debits: number;
+  credits: number;
+  balanced: boolean;
+}
+
+interface IncomeStatement {
+  revenue: number;
+  expenses: number;
+  netIncome: number;
+}
+
 export default function GeneralLedgerPage() {
-  const [accounts, setAccounts] = useState<any[]>([]);
-  const [trialBalance, setTrialBalance] = useState<any>(null);
-  const [incomeStatement, setIncomeStatement] = useState<any>(null);
+  const [accounts, setAccounts] = useState<ChartOfAccount[]>([]);
+  const [trialBalance, setTrialBalance] = useState<TrialBalance | null>(null);
+  const [incomeStatement, setIncomeStatement] = useState<IncomeStatement | null>(null);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<'accounts' | 'trial' | 'income'>('accounts');
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => {
-    fetchData();
-  }, [tab]);
-
-  async function fetchData() {
+  const fetchData = useCallback(async () => {
     try {
       setLoading(true);
       if (tab === 'accounts') {
@@ -37,7 +51,11 @@ export default function GeneralLedgerPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [tab]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   if (loading) {
     return <Skeleton className="h-[500px]" />;
@@ -87,12 +105,12 @@ export default function GeneralLedgerPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {accounts.map((account: any) => (
+                {accounts.map((account) => (
                   <TableRow key={account.code}>
                     <TableCell className="font-mono">{account.code}</TableCell>
                     <TableCell>{account.name}</TableCell>
                     <TableCell>{account.type}</TableCell>
-                    <TableCell>${account.balance?.toLocaleString()}</TableCell>
+                    <TableCell>${account.balance.toLocaleString()}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
