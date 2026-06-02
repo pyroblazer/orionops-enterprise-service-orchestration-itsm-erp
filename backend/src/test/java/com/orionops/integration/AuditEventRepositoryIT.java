@@ -20,8 +20,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -42,9 +40,7 @@ import static org.assertj.core.api.Assertions.assertThat;
     KafkaAutoConfiguration.class
 })
 @Import(AuditorAwareImpl.class)
-@EnableJpaAuditing
 @EntityScan(basePackageClasses = OrionOpsApplication.class)
-@EnableJpaRepositories(basePackageClasses = OrionOpsApplication.class)
 @Testcontainers(disabledWithoutDocker = true)
 @ActiveProfiles("test")
 @Tag("docker")
@@ -62,8 +58,6 @@ class AuditEventRepositoryIT {
         registry.add("spring.datasource.url", postgres::getJdbcUrl);
         registry.add("spring.datasource.username", postgres::getUsername);
         registry.add("spring.datasource.password", postgres::getPassword);
-        registry.add("spring.jpa.hibernate.ddl-auto", () -> "validate");
-        registry.add("spring.flyway.enabled", () -> "true");
     }
 
     @Autowired
