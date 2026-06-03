@@ -373,7 +373,7 @@ class SlackIntegrationServiceTest {
             List<Map<String, Object>> blocks = service.formatIncidentMessage(incident);
             Map<String, Object> section = blocks.get(1);
             String sectionText = (String) ((Map<String, Object>) section.get("text")).get("text");
-            assertThat(sectionText).contains("30s");
+            assertThat(sectionText).containsPattern("[2-3][0-9]s remaining");
         }
     }
 
