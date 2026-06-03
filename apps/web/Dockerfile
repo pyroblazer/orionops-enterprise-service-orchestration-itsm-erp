@@ -3,12 +3,13 @@ RUN corepack enable && corepack prepare pnpm@9 --activate
 WORKDIR /app
 
 FROM base AS deps
-COPY package.json pnpm-lock.yaml* pnpm-workspace.yaml ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/web/package.json ./apps/web/
-RUN pnpm install --frozen-lockfile --node-linker=hoisted
+RUN pnpm install --frozen-lockfile
 
 FROM base AS builder
 COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/apps/web/node_modules ./apps/web/node_modules
 COPY apps/web ./apps/web
 RUN pnpm --filter @orionops/web build
 
