@@ -29,12 +29,13 @@ export default defineConfig({
     ]),
   ],
   webServer: process.env.CI ? {
-    command: 'node .next/standalone/server.js',
+    command: 'node node_modules/.bin/next start',
     url: 'http://localhost:3000',
     reuseExistingServer: false,
     timeout: 120000,
     env: {
       PORT: '3000',
     },
+    cwd: process.cwd(),
   } : undefined,
 });
