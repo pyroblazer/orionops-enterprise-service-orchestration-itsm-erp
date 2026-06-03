@@ -141,29 +141,44 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build-backend, build-web, build-ai]
     environment: production
-    if: ${{ secrets.KUBE_CONFIG != '' }}
     steps:
+      - name: Check KUBE_CONFIG secret
+        id: check_secret
+        run: |
+          if [ -n "${{ secrets.KUBE_CONFIG }}" ]; then
+            echo "has_config=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_config=false" >> $GITHUB_OUTPUT
+            echo "Skipping deploy: KUBE_CONFIG secret not set"
+          fi
+
       - name: Checkout repository
+        if: steps.check_secret.outputs.has_config == 'true'
         uses: actions/checkout@v4
 
       - name: Set up kubectl
+        if: steps.check_secret.outputs.has_config == 'true'
         uses: azure/setup-kubectl@v3
         with:
           version: "v1.30.0"
 
       - name: Configure kubeconfig
+        if: steps.check_secret.outputs.has_config == 'true'
         run: |
           mkdir -p $HOME/.kube
           echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
           chmod 600 $HOME/.kube/config
 
       - name: Verify cluster access
+        if: steps.check_secret.outputs.has_config == 'true'
         run: kubectl cluster-info
 
       - name: Apply namespace
+        if: steps.check_secret.outputs.has_config == 'true'
         run: kubectl apply -f infra/k8s/namespace.yml
 
       - name: Deploy infrastructure components
+        if: steps.check_secret.outputs.has_config == 'true'
         run: |
           kubectl apply -f infra/k8s/postgres.yml
           kubectl apply -f infra/k8s/redis.yml
@@ -174,24 +189,28 @@ jobs:
           kubectl apply -f infra/k8s/opa.yml
 
       - name: Deploy application services
+        if: steps.check_secret.outputs.has_config == 'true'
         run: |
           kubectl apply -f infra/k8s/backend-deployment.yml
           kubectl apply -f infra/k8s/web-deployment.yml
           kubectl apply -f infra/k8s/ai-deployment.yml
 
       - name: Update image tags
+        if: steps.check_secret.outputs.has_config == 'true'
         run: |
           kubectl set image deployment/orionops-backend backend=ghcr.io/${{ github.repository }}/backend:${{ github.sha }} -n orionops
           kubectl set image deployment/orionops-web web=ghcr.io/${{ github.repository }}/web:${{ github.sha }} -n orionops
           kubectl set image deployment/orionops-ai ai=ghcr.io/${{ github.repository }}/ai:${{ github.sha }} -n orionops
 
       - name: Rollout status
+        if: steps.check_secret.outputs.has_config == 'true'
         run: |
           kubectl rollout status deployment/orionops-backend -n orionops --timeout=300s
           kubectl rollout status deployment/orionops-web -n orionops --timeout=300s
           kubectl rollout status deployment/orionops-ai -n orionops --timeout=300s
 
       - name: Verify deployments
+        if: steps.check_secret.outputs.has_config == 'true'
         run: |
           kubectl get pods -n orionops
           kubectl get services -n orionops
