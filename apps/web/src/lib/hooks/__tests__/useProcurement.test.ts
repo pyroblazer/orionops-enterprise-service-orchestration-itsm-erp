@@ -8,17 +8,17 @@ jest.mock('@/lib/api', () => ({
     getPurchaseRequests: jest.fn().mockResolvedValue({
       data: {
         data: [
-          { id: 'pr1', description: 'Office Supplies', amount: 5000 },
-          { id: 'pr2', description: 'Hardware', amount: 15000 },
+          { id: 'pr1', title: 'Office Supplies', itemDescription: 'Office Supplies', estimatedCost: 5000, quantity: 100, currency: 'USD', priority: 'medium', status: 'draft', requestedBy: 'u1' },
+          { id: 'pr2', title: 'Hardware', itemDescription: 'Hardware', estimatedCost: 15000, quantity: 50, currency: 'USD', priority: 'high', status: 'draft', requestedBy: 'u2' },
         ],
         total: 2,
       },
     }),
     getPurchaseRequest: jest.fn().mockResolvedValue({
-      data: { data: { id: 'pr1', description: 'Office Supplies', amount: 5000 } },
+      data: { data: { id: 'pr1', title: 'Office Supplies', itemDescription: 'Office Supplies', estimatedCost: 5000, quantity: 100, currency: 'USD', priority: 'medium', status: 'draft', requestedBy: 'u1' } },
     }),
     createPurchaseRequest: jest.fn().mockResolvedValue({
-      data: { data: { id: 'pr3', description: 'Software Licenses', amount: 20000 } },
+      data: { data: { id: 'pr3', title: 'Software Licenses', itemDescription: 'Software Licenses', estimatedCost: 20000, quantity: 10, currency: 'USD', priority: 'high', status: 'draft', requestedBy: 'u3' } },
     }),
     getPurchaseOrders: jest.fn().mockResolvedValue({
       data: {
@@ -58,7 +58,7 @@ describe('usePurchaseRequests Hook', () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(result.current.data?.data).toHaveLength(2);
-    expect(result.current.data?.data?.[0]?.description).toBe('Office Supplies');
+    expect(result.current.data?.data?.[0]?.itemDescription).toBe('Office Supplies');
   });
 });
 
@@ -87,7 +87,7 @@ describe('useCreatePurchaseRequest Hook', () => {
       wrapper: createWrapper(),
     });
 
-    result.current.mutate({ description: 'Software Licenses', amount: 20000 });
+    result.current.mutate({ title: 'Software Licenses', itemDescription: 'Software Licenses', estimatedCost: 20000, quantity: 10 });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(result.current.data?.id).toBe('pr3');

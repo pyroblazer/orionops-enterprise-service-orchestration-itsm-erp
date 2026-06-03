@@ -8,23 +8,23 @@ jest.mock('@/lib/api', () => ({
     getVendors: jest.fn().mockResolvedValue({
       data: {
         data: [
-          { id: '1', name: 'Vendor A', category: 'Software' },
-          { id: '2', name: 'Vendor B', category: 'Hardware' },
+          { id: '1', name: 'Vendor A', type: 'software', status: 'active' },
+          { id: '2', name: 'Vendor B', type: 'hardware', status: 'active' },
         ],
         total: 2,
       },
     }),
     getVendor: jest.fn().mockResolvedValue({
-      data: { data: { id: '1', name: 'Vendor A', category: 'Software' } },
+      data: { data: { id: '1', name: 'Vendor A', type: 'software', status: 'active' } },
     }),
     createVendor: jest.fn().mockResolvedValue({
-      data: { data: { id: '3', name: 'Vendor C', category: 'Services' } },
+      data: { data: { id: '3', name: 'Vendor C', type: 'services', status: 'active' } },
     }),
     updateVendor: jest.fn().mockResolvedValue({
-      data: { data: { id: '1', name: 'Updated Vendor A', category: 'Software' } },
+      data: { data: { id: '1', name: 'Updated Vendor A', type: 'software', status: 'active' } },
     }),
     getVendorPerformance: jest.fn().mockResolvedValue({
-      data: { data: { vendorId: '1', onTimeRate: 95.5, qualityScore: 88.0 } },
+      data: { data: { vendorId: '1', entries: [], averageRating: 4.5, avgSlaCompliance: 95.5, avgOnTimeDelivery: 95.5, totalTransactions: 10 } },
     }),
   },
 }));
@@ -74,7 +74,7 @@ describe('useCreateVendor Hook', () => {
       wrapper: createWrapper(),
     });
 
-    result.current.mutate({ name: 'Vendor C', category: 'Services' });
+    result.current.mutate({ name: 'Vendor C', type: 'services' });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(result.current.data?.id).toBe('3');
@@ -101,6 +101,6 @@ describe('useVendorPerformance Hook', () => {
     });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(result.current.data?.onTimeRate).toBe(95.5);
+    expect(result.current.data?.avgOnTimeDelivery).toBe(95.5);
   });
 });

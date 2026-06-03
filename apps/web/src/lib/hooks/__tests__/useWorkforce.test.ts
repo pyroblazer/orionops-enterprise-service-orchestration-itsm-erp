@@ -8,20 +8,20 @@ jest.mock('@/lib/api', () => ({
     getEmployees: jest.fn().mockResolvedValue({
       data: {
         data: [
-          { id: '1', name: 'John Doe', department: 'Engineering' },
-          { id: '2', name: 'Jane Smith', department: 'Operations' },
+          { id: '1', firstName: 'John', lastName: 'Doe', email: 'john@example.com', department: 'Engineering', status: 'active' },
+          { id: '2', firstName: 'Jane', lastName: 'Smith', email: 'jane@example.com', department: 'Operations', status: 'active' },
         ],
         total: 2,
       },
     }),
     getEmployee: jest.fn().mockResolvedValue({
-      data: { data: { id: '1', name: 'John Doe', department: 'Engineering' } },
+      data: { data: { id: '1', firstName: 'John', lastName: 'Doe', email: 'john@example.com', department: 'Engineering', status: 'active' } },
     }),
     createEmployee: jest.fn().mockResolvedValue({
-      data: { data: { id: '3', name: 'Bob Wilson', department: 'Engineering' } },
+      data: { data: { id: '3', firstName: 'Bob', lastName: 'Wilson', email: 'bob@example.com', department: 'Engineering', status: 'active' } },
     }),
     updateEmployee: jest.fn().mockResolvedValue({
-      data: { data: { id: '1', name: 'John Updated', department: 'Engineering' } },
+      data: { data: { id: '1', firstName: 'John', lastName: 'Updated', email: 'john@example.com', department: 'Engineering', status: 'active' } },
     }),
     getSkills: jest.fn().mockResolvedValue({
       data: {
@@ -59,7 +59,7 @@ describe('useEmployees Hook', () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(result.current.data?.data).toHaveLength(2);
-    expect(result.current.data?.data?.[0]?.name).toBe('John Doe');
+    expect(result.current.data?.data?.[0]?.firstName).toBe('John');
   });
 });
 
@@ -88,7 +88,7 @@ describe('useCreateEmployee Hook', () => {
       wrapper: createWrapper(),
     });
 
-    result.current.mutate({ name: 'Bob Wilson', department: 'Engineering' });
+    result.current.mutate({ firstName: 'Bob', lastName: 'Wilson', email: 'bob@example.com', department: 'Engineering' });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(result.current.data?.id).toBe('3');
@@ -101,10 +101,10 @@ describe('useUpdateEmployee Hook', () => {
       wrapper: createWrapper(),
     });
 
-    result.current.mutate({ id: '1', data: { name: 'John Updated' } });
+    result.current.mutate({ id: '1', data: { firstName: 'John', lastName: 'Updated' } });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(result.current.data?.name).toBe('John Updated');
+    expect(result.current.data?.lastName).toBe('Updated');
   });
 });
 

@@ -8,20 +8,20 @@ jest.mock('@/lib/api', () => ({
     getBudgets: jest.fn().mockResolvedValue({
       data: {
         data: [
-          { id: '1', name: 'IT Operations', amount: 500000, spent: 250000 },
-          { id: '2', name: 'Infrastructure', amount: 300000, spent: 180000 },
+          { id: '1', name: 'IT Operations', totalAmount: 500000, spentAmount: 250000, fiscalYear: 2024, costCenterId: 'cc1', currency: 'USD' },
+          { id: '2', name: 'Infrastructure', totalAmount: 300000, spentAmount: 180000, fiscalYear: 2024, costCenterId: 'cc2', currency: 'USD' },
         ],
         total: 2,
       },
     }),
     getBudget: jest.fn().mockResolvedValue({
-      data: { data: { id: '1', name: 'IT Operations', amount: 500000, spent: 250000 } },
+      data: { data: { id: '1', name: 'IT Operations', totalAmount: 500000, spentAmount: 250000, fiscalYear: 2024, costCenterId: 'cc1', currency: 'USD' } },
     }),
     createBudget: jest.fn().mockResolvedValue({
-      data: { data: { id: '3', name: 'New Budget', amount: 100000, spent: 0 } },
+      data: { data: { id: '3', name: 'New Budget', totalAmount: 100000, spentAmount: 0, fiscalYear: 2024, costCenterId: 'cc3', currency: 'USD' } },
     }),
     updateBudget: jest.fn().mockResolvedValue({
-      data: { data: { id: '1', name: 'Updated IT Operations', amount: 600000, spent: 250000 } },
+      data: { data: { id: '1', name: 'Updated IT Operations', totalAmount: 600000, spentAmount: 250000, fiscalYear: 2024, costCenterId: 'cc1', currency: 'USD' } },
     }),
     getCostCenters: jest.fn().mockResolvedValue({
       data: {
@@ -98,7 +98,7 @@ describe('useCreateBudget Hook', () => {
       wrapper: createWrapper(),
     });
 
-    result.current.mutate({ name: 'New Budget', amount: 100000 });
+    result.current.mutate({ name: 'New Budget', totalAmount: 100000, fiscalYear: 2024, costCenterId: 'cc3', currency: 'USD' });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(result.current.data?.id).toBe('3');
@@ -111,7 +111,7 @@ describe('useUpdateBudget Hook', () => {
       wrapper: createWrapper(),
     });
 
-    result.current.mutate({ id: '1', data: { name: 'Updated IT Operations', amount: 600000 } });
+    result.current.mutate({ id: '1', data: { name: 'Updated IT Operations', totalAmount: 600000 } });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(result.current.data?.name).toBe('Updated IT Operations');

@@ -8,17 +8,17 @@ jest.mock('@/lib/api', () => ({
     getInventoryItems: jest.fn().mockResolvedValue({
       data: {
         data: [
-          { id: 'ii1', sku: 'SKU001', quantity: 100, location: 'Warehouse A' },
-          { id: 'ii2', sku: 'SKU002', quantity: 50, location: 'Warehouse B' },
+          { id: 'ii1', name: 'Item 1', sku: 'SKU001', quantityOnHand: 100, unit: 'pcs', minimumQuantity: 10, warehouseId: 'w1', unitCost: 10, currency: 'USD' },
+          { id: 'ii2', name: 'Item 2', sku: 'SKU002', quantityOnHand: 50, unit: 'pcs', minimumQuantity: 5, warehouseId: 'w2', unitCost: 20, currency: 'USD' },
         ],
         total: 2,
       },
     }),
     getInventoryItem: jest.fn().mockResolvedValue({
-      data: { data: { id: 'ii1', sku: 'SKU001', quantity: 100, location: 'Warehouse A' } },
+      data: { data: { id: 'ii1', name: 'Item 1', sku: 'SKU001', quantityOnHand: 100, unit: 'pcs', minimumQuantity: 10, warehouseId: 'w1', unitCost: 10, currency: 'USD' } },
     }),
     createInventoryItem: jest.fn().mockResolvedValue({
-      data: { data: { id: 'ii3', sku: 'SKU003', quantity: 75, location: 'Warehouse C' } },
+      data: { data: { id: 'ii3', name: 'Item 3', sku: 'SKU003', quantityOnHand: 75, unit: 'pcs', minimumQuantity: 5, warehouseId: 'w3', unitCost: 15, currency: 'USD' } },
     }),
     getAssets: jest.fn().mockResolvedValue({
       data: {
@@ -95,7 +95,7 @@ describe('useCreateInventoryItem Hook', () => {
       wrapper: createWrapper(),
     });
 
-    result.current.mutate({ sku: 'SKU003', quantity: 75, location: 'Warehouse C' });
+    result.current.mutate({ name: 'Item 3', sku: 'SKU003', quantityOnHand: 75, warehouseId: 'w3', unit: 'pcs', minimumQuantity: 5, unitCost: 15, currency: 'USD' });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(result.current.data?.id).toBe('ii3');

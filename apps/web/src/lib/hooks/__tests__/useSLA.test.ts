@@ -42,7 +42,7 @@ describe('useSLADefinitions Hook', () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(Array.isArray(result.current.data)).toBe(true);
-    expect(result.current.data?.length).toBe(2);
+    expect((result.current.data as any)?.length).toBe(2);
   });
 });
 

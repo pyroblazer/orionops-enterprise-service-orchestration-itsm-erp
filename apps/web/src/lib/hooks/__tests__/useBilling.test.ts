@@ -8,8 +8,8 @@ jest.mock('@/lib/api', () => ({
     getBillingUsage: jest.fn().mockResolvedValue({
       data: {
         data: [
-          { id: '1', tenantId: 't1', usage: 1000, date: '2024-06-01' },
-          { id: '2', tenantId: 't1', usage: 1200, date: '2024-06-02' },
+          { id: '1', tenantId: 't1', quantity: 1000, serviceType: 'api', unit: 'requests', usageDate: '2024-06-01' },
+          { id: '2', tenantId: 't1', quantity: 1200, serviceType: 'api', unit: 'requests', usageDate: '2024-06-02' },
         ],
         total: 2,
       },
@@ -17,7 +17,7 @@ jest.mock('@/lib/api', () => ({
     getBillingRecords: jest.fn().mockResolvedValue({
       data: {
         data: [
-          { id: 'br1', tenantId: 't1', amount: 500, period: '2024-06' },
+          { id: 'br1', tenantId: 't1', totalAmount: 500, period: '2024-06', currency: 'USD', status: 'draft' },
         ],
         total: 1,
       },
@@ -48,7 +48,7 @@ describe('useBillingUsage Hook', () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(result.current.data?.data).toHaveLength(2);
-    expect(result.current.data?.data?.[0]?.usage).toBe(1000);
+    expect(result.current.data?.data?.[0]?.quantity).toBe(1000);
   });
 
   it('uses correct query key', () => {
@@ -66,7 +66,7 @@ describe('useBillingRecords Hook', () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(result.current.data?.data).toHaveLength(1);
-    expect(result.current.data?.data?.[0]?.amount).toBe(500);
+    expect(result.current.data?.data?.[0]?.totalAmount).toBe(500);
   });
 });
 

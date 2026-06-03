@@ -24,7 +24,7 @@ jest.mock('@/lib/api', () => ({
       data: { data: { id: 'ci1', name: 'Updated Server A', type: 'SERVER' } },
     }),
     getCMDBImpactAnalysis: jest.fn().mockResolvedValue({
-      data: { data: { impacted: ['ci2', 'ci3'], impactedCount: 2 } },
+      data: { data: { ciId: 'ci1', ciName: 'Server A', affectedCIs: [{ id: 'ci2', name: 'Database B', type: 'DATABASE', impactLevel: 'high' }, { id: 'ci3', name: 'App C', type: 'APPLICATION', impactLevel: 'medium' }], affectedServices: [] } },
     }),
   },
 }));
@@ -102,6 +102,6 @@ describe('useCMDBImpactAnalysis Hook', () => {
     });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(result.current.data?.impactedCount).toBe(2);
+    expect(result.current.data?.affectedCIs).toHaveLength(2);
   });
 });
