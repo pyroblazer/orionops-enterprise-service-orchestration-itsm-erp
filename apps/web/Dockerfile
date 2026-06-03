@@ -5,10 +5,10 @@ WORKDIR /app
 FROM base AS deps
 COPY package.json pnpm-lock.yaml* pnpm-workspace.yaml ./
 COPY apps/web/package.json ./apps/web/
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --frozen-lockfile --node-linker=hoisted
 
 FROM base AS builder
-COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/node_modules apps/web/node_modules
 COPY apps/web ./apps/web
 WORKDIR /app/apps/web
 RUN pnpm build
