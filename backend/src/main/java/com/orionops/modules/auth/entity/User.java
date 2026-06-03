@@ -54,6 +54,9 @@ public class User extends BaseEntity {
     @Column
     private String avatarUrl;
 
+    @Column(name = "password_hash")
+    private String passwordHash;
+
     @Builder.Default
     @Column(nullable = false)
     private boolean active = true;
