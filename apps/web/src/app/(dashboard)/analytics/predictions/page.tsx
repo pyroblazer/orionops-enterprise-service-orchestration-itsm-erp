@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -17,36 +17,27 @@ interface Anomaly {
   vendor: string;
   amount: number;
   reason: string;
+  riskLevel?: string;
 }
 
+
 export default function PredictiveAnalyticsPage() {
-  const [cashFlow, setCashFlow] = useState<CashFlow | null>(null);
-  const [anomalies, setAnomalies] = useState<Anomaly[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: cashFlowRes, isLoading: cashFlowLoading } = useQuery({
+    queryKey: ['analytics', 'cash-flow'],
+    queryFn: () => api.predictCashFlow(),
+  });
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  const { data: anomaliesRes, isLoading: anomaliesLoading } = useQuery({
+    queryKey: ['analytics', 'anomalies'],
+    queryFn: () => api.detectAnomalies(),
+  });
 
-  async function fetchData() {
-    try {
-      setLoading(true);
-      const [cashFlowRes, anomaliesRes] = await Promise.all([
-        api.predictCashFlow?.(),
-        api.detectAnomalies?.()
-      ]);
-      const cashFlowData = cashFlowRes?.data?.data as unknown as CashFlow | undefined;
-      const anomaliesData = anomaliesRes?.data?.data as unknown as Anomaly[] | undefined;
-      setCashFlow(cashFlowData || null);
-      setAnomalies(anomaliesData || []);
-    } catch (err) {
-      console.error('Failed to load predictions:', err);
-    } finally {
-      setLoading(false);
-    }
-  }
+  const cashFlow = cashFlowRes?.data as unknown as CashFlow | undefined;
+  const anomalies = (anomaliesRes?.data as unknown as Anomaly[] | undefined) || [];
 
-  if (loading) {
+  const maxCashFlow = cashFlow?.values?.length ? Math.max(...(cashFlow.values || [1])) : 100000;
+
+  if (cashFlowLoading || anomaliesLoading) {
     return <Skeleton className="h-[500px]" />;
   }
 
@@ -70,7 +61,7 @@ export default function PredictiveAnalyticsPage() {
                   <span className="text-sm">${cashFlow?.values[index]?.toLocaleString()}</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded h-2">
-                  <div className="bg-blue-600 h-2 rounded" style={{ width: `${(cashFlow?.values[index] / 400000) * 100}%` }}></div>
+                  <div className="bg-blue-600 h-2 rounded" style={{ width: `${(cashFlow?.values[index] / maxCashFlow) * 100}%` }}></div>
                 </div>
               </div>
             ))}
@@ -96,16 +87,20 @@ export default function PredictiveAnalyticsPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {anomalies.map((anom) => (
-                  <TableRow key={anom.id}>
-                    <TableCell>{anom.vendor}</TableCell>
-                    <TableCell>${anom.amount.toLocaleString()}</TableCell>
-                    <TableCell>{anom.reason}</TableCell>
-                    <TableCell>
-                      <Badge variant="destructive">HIGH</Badge>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {anomalies.map((anom) => {
+                  const riskLevel = anom.riskLevel || 'HIGH';
+                  const badgeVariant = riskLevel === 'HIGH' ? 'destructive' : riskLevel === 'MEDIUM' ? 'outline' : 'secondary';
+                  return (
+                    <TableRow key={anom.id}>
+                      <TableCell>{anom.vendor}</TableCell>
+                      <TableCell>${anom.amount.toLocaleString()}</TableCell>
+                      <TableCell>{anom.reason}</TableCell>
+                      <TableCell>
+                        <Badge variant={badgeVariant}>{riskLevel}</Badge>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           )}
@@ -117,16 +112,22 @@ export default function PredictiveAnalyticsPage() {
           <CardTitle>Vendor Risk Assessment</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-3">
-            <div className="flex items-center justify-between rounded border p-3">
-              <span className="font-medium">Global Tech Solutions</span>
-              <Badge variant="outline">LOW RISK</Badge>
+          {anomalies.length === 0 ? (
+            <p className="text-muted-foreground">No vendor risks detected</p>
+          ) : (
+            <div className="space-y-3">
+              {anomalies.map((anom) => {
+                const riskLevel = anom.riskLevel || 'HIGH';
+                const badgeVariant = riskLevel === 'HIGH' ? 'destructive' : riskLevel === 'MEDIUM' ? 'secondary' : 'outline';
+                return (
+                  <div key={anom.vendor} className="flex items-center justify-between rounded border p-3">
+                    <span className="font-medium">{anom.vendor}</span>
+                    <Badge variant={badgeVariant}>{riskLevel} RISK</Badge>
+                  </div>
+                );
+              })}
             </div>
-            <div className="flex items-center justify-between rounded border p-3">
-              <span className="font-medium">Industrial Supplies Inc</span>
-              <Badge variant="secondary">MODERATE RISK</Badge>
-            </div>
-          </div>
+          )}
         </CardContent>
       </Card>
     </div>

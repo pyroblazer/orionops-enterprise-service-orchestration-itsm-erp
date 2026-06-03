@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { api, ReportSummary } from '@/lib/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -20,27 +21,55 @@ interface KPIs {
 }
 
 export default function ExecutiveDashboardPage() {
-  const [kpis, setKpis] = useState<KPIs>({});
-  const [loading, setLoading] = useState(true);
+  const { data: reportData, isLoading: reportLoading } = useQuery({
+    queryKey: ['reports', 'summary'],
+    queryFn: () => api.getReportSummary(30),
+  });
 
-  useEffect(() => {
-    fetchKPIs();
-  }, []);
+  const { data: budgetData, isLoading: budgetLoading } = useQuery({
+    queryKey: ['reports', 'budget-variance'],
+    queryFn: () => api.getBudgetVariance(),
+  });
 
-  async function fetchKPIs() {
-    try {
-      setLoading(true);
-      // In production, fetch from multiple API endpoints
-      // For now, initialize empty state - API will provide aggregated KPI data
-      setKpis({});
-    } catch (err) {
-      console.error('Failed to load KPIs:', err);
-    } finally {
-      setLoading(false);
-    }
-  }
+  const { data: vendorSpendData, isLoading: vendorLoading } = useQuery({
+    queryKey: ['reports', 'vendor-spend'],
+    queryFn: () => api.getVendorSpend(),
+  });
 
-  if (loading) {
+  const { data: inventoryData, isLoading: inventoryLoading } = useQuery({
+    queryKey: ['reports', 'inventory-valuation'],
+    queryFn: () => api.getInventoryValuation(),
+  });
+
+  const { data: workforceData, isLoading: workforceLoading } = useQuery({
+    queryKey: ['reports', 'workforce-capacity'],
+    queryFn: () => api.getWorkforceCapacity(),
+  });
+
+  const isLoading = reportLoading || budgetLoading || vendorLoading || inventoryLoading || workforceLoading;
+
+  const reportSummary = reportData?.data as ReportSummary | undefined;
+  const budgetArray = budgetData?.data as unknown as Record<string, unknown>[] | undefined;
+  const vendorArray = vendorSpendData?.data as unknown as Record<string, unknown>[] | undefined;
+  const inventoryArray = inventoryData?.data as unknown as Record<string, unknown>[] | undefined;
+  const workforceArray = workforceData?.data as unknown as Record<string, unknown>[] | undefined;
+
+  const kpis: KPIs = {
+    mttr: reportSummary?.incidentMetrics?.mttrHours || 0,
+    slaCompliance: reportSummary?.slaMetrics?.metCount || 0,
+    budgetUtilization: (budgetArray?.[0]?.variance_pct as number) || 0,
+    vendorSpend: (vendorArray?.[0]?.amount as number) || 0,
+    openIncidents: reportSummary?.incidentMetrics?.openCount || 0,
+    changeSuccess: 0,
+    inventoryValue: (inventoryArray?.[0]?.totalValue as number) || 0,
+    workforceUtilization: (workforceArray?.[0]?.utilization as number) || 0,
+    overdueInvoices: 0,
+    activeContracts: 0,
+    expiringWarranties: 0,
+    complianceViolations: 0,
+  };
+
+  if (isLoading) {
     return <Skeleton className="h-[500px]" />;
   }
 
@@ -86,20 +115,20 @@ export default function ExecutiveDashboardPage() {
         <CardContent className="space-y-4">
           <div>
             <div className="flex justify-between mb-2">
-              <span className="text-sm font-medium">Overall Compliance</span>
-              <span className="text-sm">99%</span>
+              <span className="text-sm font-medium">SLA Compliance</span>
+              <span className="text-sm">{kpis.slaCompliance ?? 0}%</span>
             </div>
             <div className="w-full bg-gray-200 rounded h-3">
-              <div className="bg-green-600 h-3 rounded" style={{ width: '99%' }}></div>
+              <div className="bg-green-600 h-3 rounded" style={{ width: `${Math.min(kpis.slaCompliance ?? 0, 100)}%` }}></div>
             </div>
           </div>
           <div>
             <div className="flex justify-between mb-2">
               <span className="text-sm font-medium">Budget Tracking</span>
-              <span className="text-sm">{kpis.budgetUtilization ?? 0}%</span>
+              <span className="text-sm">{Math.min(kpis.budgetUtilization ?? 0, 100)}%</span>
             </div>
             <div className="w-full bg-gray-200 rounded h-3">
-              <div className="bg-blue-600 h-3 rounded" style={{ width: `${kpis.budgetUtilization ?? 0}%` }}></div>
+              <div className="bg-blue-600 h-3 rounded" style={{ width: `${Math.min(kpis.budgetUtilization ?? 0, 100)}%` }}></div>
             </div>
           </div>
         </CardContent>

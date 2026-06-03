@@ -1,39 +1,59 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 
-interface VendorConcentration {
-  risk?: string;
+interface VendorSpend {
+  vendor?: string;
+  vendorName?: string;
+  amount?: number;
+  percentage?: number;
+}
+
+interface CategorySpend {
+  category?: string;
+  amount?: number;
+  percentage?: number;
 }
 
 export default function SpendAnalysisPage() {
-  const [concentration, setConcentration] = useState<VendorConcentration>({});
-  const [loading, setLoading] = useState(true);
+  const { data: concentrationData, isLoading: concentrationLoading } = useQuery({
+    queryKey: ['procurement', 'spend', 'concentration'],
+    queryFn: () => api.getVendorConcentration(),
+  });
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  const { data: vendorSpendData, isLoading: vendorSpendLoading } = useQuery({
+    queryKey: ['procurement', 'spend', 'by-vendor'],
+    queryFn: () => api.getSpendByVendor(),
+  });
 
-  async function fetchData() {
-    try {
-      setLoading(true);
-      const res = await api.getVendorConcentration?.();
-      const concentrationData = res?.data?.data as unknown as VendorConcentration | undefined;
-      setConcentration(concentrationData || {});
-    } catch (err) {
-      console.error('Failed to load spend analysis:', err);
-    } finally {
-      setLoading(false);
-    }
-  }
+  const { data: categorySpendData, isLoading: categorySpendLoading } = useQuery({
+    queryKey: ['procurement', 'spend', 'by-category'],
+    queryFn: () => api.getSpendByCategory(),
+  });
 
-  if (loading) {
+  const { data: consolidationData, isLoading: consolidationLoading } = useQuery({
+    queryKey: ['procurement', 'spend', 'consolidation'],
+    queryFn: () => api.getConsolidationOpportunities(),
+  });
+
+  const concentration = (concentrationData?.data as unknown as Record<string, unknown>) || {};
+  const vendorSpend: VendorSpend[] = Array.isArray(vendorSpendData?.data) ? (vendorSpendData.data as VendorSpend[]) : [];
+  const categorySpend: CategorySpend[] = Array.isArray(categorySpendData?.data) ? (categorySpendData.data as CategorySpend[]) : [];
+  const consolidation = (consolidationData?.data as unknown as Record<string, unknown>) || {};
+
+  const isLoading = concentrationLoading || vendorSpendLoading || categorySpendLoading || consolidationLoading;
+
+  if (isLoading) {
     return <Skeleton className="h-[500px]" />;
   }
+
+  const topVendorPercentage = vendorSpend?.[0]?.percentage || 30;
+  const categoriesCount = categorySpend?.length || 0;
+  const consolidationPotential = consolidation?.potential || 0;
 
   return (
     <div className="space-y-8">
@@ -48,7 +68,7 @@ export default function SpendAnalysisPage() {
             <CardTitle className="text-sm">Vendor Concentration</CardTitle>
           </CardHeader>
           <CardContent>
-            <Badge variant="secondary">{concentration.risk || 'MODERATE'}</Badge>
+            <Badge variant="secondary">{String(concentration.risk) || 'MODERATE'}</Badge>
           </CardContent>
         </Card>
         <Card>
@@ -56,7 +76,7 @@ export default function SpendAnalysisPage() {
             <CardTitle className="text-sm">Top Vendor Spend</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-lg font-semibold">30%</p>
+            <p className="text-lg font-semibold">{topVendorPercentage}%</p>
           </CardContent>
         </Card>
         <Card>
@@ -64,7 +84,7 @@ export default function SpendAnalysisPage() {
             <CardTitle className="text-sm">Categories Tracked</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold">12</p>
+            <p className="text-2xl font-bold">{categoriesCount}</p>
           </CardContent>
         </Card>
         <Card>
@@ -72,7 +92,7 @@ export default function SpendAnalysisPage() {
             <CardTitle className="text-sm">Consolidation Potential</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold">$150K</p>
+            <p className="text-2xl font-bold">${(((consolidationPotential as unknown as number) || 0) / 1000).toFixed(0)}K</p>
           </CardContent>
         </Card>
       </div>
@@ -82,23 +102,23 @@ export default function SpendAnalysisPage() {
           <CardTitle>Top Vendors by Spend</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-2">
-            {[
-              { name: 'Global Tech Solutions', amount: 450000, percentage: 30 },
-              { name: 'Industrial Supplies Inc', amount: 320000, percentage: 21 },
-              { name: 'Office Depot', amount: 180000, percentage: 12 }
-            ].map((vendor) => (
-              <div key={vendor.name} className="space-y-1">
-                <div className="flex justify-between">
-                  <span className="font-medium">{vendor.name}</span>
-                  <span className="text-sm">${vendor.amount.toLocaleString()}</span>
+          {vendorSpend.length === 0 ? (
+            <p className="text-muted-foreground">No vendor spend data available</p>
+          ) : (
+            <div className="space-y-2">
+              {vendorSpend.map((vendor) => (
+                <div key={vendor.vendor || vendor.vendorName} className="space-y-1">
+                  <div className="flex justify-between">
+                    <span className="font-medium">{vendor.vendorName || vendor.vendor}</span>
+                    <span className="text-sm">${(vendor.amount || 0).toLocaleString()}</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded h-2">
+                    <div className="bg-blue-600 h-2 rounded" style={{ width: `${vendor.percentage || 0}%` }}></div>
+                  </div>
                 </div>
-                <div className="w-full bg-gray-200 rounded h-2">
-                  <div className="bg-blue-600 h-2 rounded" style={{ width: `${vendor.percentage}%` }}></div>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -107,18 +127,18 @@ export default function SpendAnalysisPage() {
           <CardTitle>Spend by Category</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-2">
-            {[
-              { category: 'Technology', amount: 520000 },
-              { category: 'Office Supplies', amount: 230000 },
-              { category: 'Facilities', amount: 150000 }
-            ].map((cat) => (
-              <div key={cat.category} className="flex justify-between items-center">
-                <span>{cat.category}</span>
-                <span className="font-semibold">${cat.amount.toLocaleString()}</span>
-              </div>
-            ))}
-          </div>
+          {categorySpend.length === 0 ? (
+            <p className="text-muted-foreground">No category spend data available</p>
+          ) : (
+            <div className="space-y-2">
+              {categorySpend.map((cat) => (
+                <div key={cat.category} className="flex justify-between items-center">
+                  <span>{cat.category}</span>
+                  <span className="font-semibold">${(cat.amount || 0).toLocaleString()}</span>
+                </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
