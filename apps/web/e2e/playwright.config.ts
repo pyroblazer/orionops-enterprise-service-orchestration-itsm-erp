@@ -29,7 +29,7 @@ export default defineConfig({
     ]),
   ],
   webServer: process.env.CI ? {
-    command: 'node node_modules/.bin/next start',
+    command: 'node .next/standalone/node_modules/.pnpm/next@14.2.35_@babel+core@7.29.0_@playwright+test@1.59.1_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/server/next.js',
     url: 'http://localhost:3000',
     reuseExistingServer: false,
     timeout: 120000,
