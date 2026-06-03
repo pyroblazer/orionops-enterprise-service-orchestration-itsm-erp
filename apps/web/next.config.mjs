@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: 'standalone',
   transpilePackages: [
     '@radix-ui/react-alert-dialog',
     '@radix-ui/react-avatar',
