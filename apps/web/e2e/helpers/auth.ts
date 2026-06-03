@@ -3,8 +3,8 @@ import { Page } from '@playwright/test';
 export async function injectMockAuth(page: Page) {
   await page.goto('/');
   await page.evaluate(() => {
-    localStorage.setItem('access_token', 'mock-token-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9');
-    localStorage.setItem('refresh_token', 'mock-refresh-token');
+    localStorage.setItem('orionops_access_token', 'mock-token-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9');
+    localStorage.setItem('orionops_refresh_token', 'mock-refresh-token');
     localStorage.setItem('user', JSON.stringify({
       id: 'u1',
       name: 'Test User',

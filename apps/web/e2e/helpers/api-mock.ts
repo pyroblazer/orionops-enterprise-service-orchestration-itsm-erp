@@ -1,5 +1,3 @@
-import { Page, Route } from '@playwright/test';
-
 export const mockIncidents = {
   list: {
     data: [

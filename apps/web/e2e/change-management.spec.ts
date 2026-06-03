@@ -58,8 +58,10 @@ test.describe('Change Management', () => {
     await page.route('**/api/v1/changes/chg-001**', async (route) => {
       await route.fulfill({ json: mocks.mockChanges.detail });
     });
+    await injectMockAuth(page);
     await page.goto('/changes/chg-001');
-    const rollbackSection = page.locator('text="Rollback", text="backup"').first();
+    await page.waitForTimeout(500);
+    const rollbackSection = page.locator('text="Rollback"').first();
     if (await rollbackSection.count() > 0) {
       await expect(rollbackSection).toBeVisible().catch(() => {});
     }
