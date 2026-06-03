@@ -27,11 +27,11 @@ test.describe('CSV Export Across Modules', () => {
     if (await exportButton.count() > 0) {
       const [download] = await Promise.all([
         page.waitForEvent('download').catch(() => null),
-        exportButton.click().catch(() => {}),
+        exportButton.click(),
       ]);
       if (download) {
         const filename = download.suggestedFilename();
-        await expect(filename).toContain('.csv').catch(() => {});
+        await expect(filename).toContain('.csv');
       }
     }
   });
@@ -42,11 +42,11 @@ test.describe('CSV Export Across Modules', () => {
     if (await exportButton.count() > 0) {
       const [download] = await Promise.all([
         page.waitForEvent('download').catch(() => null),
-        exportButton.click().catch(() => {}),
+        exportButton.click(),
       ]);
       if (download) {
         const filename = download.suggestedFilename();
-        await expect(filename).toContain('.csv').catch(() => {});
+        await expect(filename).toContain('.csv');
       }
     }
   });
@@ -57,11 +57,11 @@ test.describe('CSV Export Across Modules', () => {
     if (await exportButton.count() > 0) {
       const [download] = await Promise.all([
         page.waitForEvent('download').catch(() => null),
-        exportButton.click().catch(() => {}),
+        exportButton.click(),
       ]);
       if (download) {
         const filename = download.suggestedFilename();
-        await expect(filename).toContain('.csv').catch(() => {});
+        await expect(filename).toContain('.csv');
       }
     }
   });
@@ -72,11 +72,11 @@ test.describe('CSV Export Across Modules', () => {
     if (await exportButton.count() > 0) {
       const [download] = await Promise.all([
         page.waitForEvent('download').catch(() => null),
-        exportButton.click().catch(() => {}),
+        exportButton.click(),
       ]);
       if (download) {
         const filename = download.suggestedFilename();
-        await expect(filename).toContain('.csv').catch(() => {});
+        await expect(filename).toContain('.csv');
       }
     }
   });
@@ -87,11 +87,11 @@ test.describe('CSV Export Across Modules', () => {
     if (await exportButton.count() > 0) {
       const [download] = await Promise.all([
         page.waitForEvent('download').catch(() => null),
-        exportButton.click().catch(() => {}),
+        exportButton.click(),
       ]);
       if (download) {
         const filename = download.suggestedFilename();
-        await expect(filename).toMatch(/incident|problem|change|audit/i).catch(() => {});
+        await expect(filename).toMatch(/incident|problem|change|audit/i);
       }
     }
   });
@@ -102,7 +102,7 @@ test.describe('CSV Export Across Modules', () => {
     if (await exportButton.count() > 0) {
       const [download] = await Promise.all([
         page.waitForEvent('download').catch(() => null),
-        exportButton.click().catch(() => {}),
+        exportButton.click(),
       ]);
       if (download) {
         const filename = download.suggestedFilename();

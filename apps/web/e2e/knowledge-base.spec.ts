@@ -17,14 +17,14 @@ test.describe('Knowledge Management', () => {
   test('knowledge article list renders at /knowledge', async ({ page }) => {
     await page.goto('/knowledge');
     const heading = page.locator('h1, h2').first();
-    await expect(heading).toBeVisible().catch(() => {});
+    await expect(heading).toBeVisible();
   });
 
   test('knowledge list displays articles with title and status', async ({ page }) => {
     await page.goto('/knowledge');
     const articles = page.locator('text="How to Reset", text="PUBLISHED"').first();
     if (await articles.count() > 0) {
-      await expect(articles).toBeVisible().catch(() => {});
+      await expect(articles).toBeVisible();
     }
   });
 
@@ -32,7 +32,7 @@ test.describe('Knowledge Management', () => {
     await page.goto('/knowledge');
     const searchInput = page.locator('input[placeholder*="search" i], input[placeholder*="Search"]').first();
     if (await searchInput.count() > 0) {
-      await expect(searchInput).toBeVisible().catch(() => {});
+      await expect(searchInput).toBeVisible();
     }
   });
 
@@ -44,7 +44,7 @@ test.describe('Knowledge Management', () => {
       await page.waitForTimeout(300);
       const results = page.locator('text="Reset"').first();
       if (await results.count() > 0) {
-        await expect(results).toBeVisible().catch(() => {});
+        await expect(results).toBeVisible();
       }
     }
   });
@@ -58,12 +58,12 @@ test.describe('Knowledge Management', () => {
     await page.waitForTimeout(500);
     const content = page.locator('text="Follow these steps"').first();
     if (await content.count() > 0) {
-      await expect(content).toBeVisible().catch(() => {});
+      await expect(content).toBeVisible();
     } else {
       // If exact content not found, just verify page loaded
       const heading = page.locator('h1, h2').first();
       if (await heading.count() > 0) {
-        await expect(heading).toBeVisible().catch(() => {});
+        await expect(heading).toBeVisible();
       }
     }
   });
@@ -75,7 +75,7 @@ test.describe('Knowledge Management', () => {
     await page.goto('/knowledge/kb-001');
     const title = page.locator('h1:has-text("Reset Your Password"), h2:has-text("Reset Your Password")').first();
     if (await title.count() > 0) {
-      await expect(title).toBeVisible().catch(() => {});
+      await expect(title).toBeVisible();
     }
   });
 
@@ -87,7 +87,7 @@ test.describe('Knowledge Management', () => {
     await page.goto('/knowledge/kb-001');
     const linkedSection = page.locator('text="Linked Incidents", text="Related"').first();
     if (await linkedSection.count() > 0) {
-      await expect(linkedSection).toBeVisible().catch(() => {});
+      await expect(linkedSection).toBeVisible();
     }
   });
 
@@ -95,8 +95,8 @@ test.describe('Knowledge Management', () => {
     await page.goto('/knowledge');
     const createButton = page.locator('button:has-text("Create"), button:has-text("New")').first();
     if (await createButton.count() > 0) {
-      await createButton.click().catch(() => {});
-      await page.waitForURL('**/knowledge/new', { timeout: 5000 }).catch(() => {});
+      await createButton.click();
+      await page.waitForURL('**/knowledge/new', { timeout: 5000 });
     }
   });
 
@@ -105,10 +105,10 @@ test.describe('Knowledge Management', () => {
     const titleInput = page.locator('input[placeholder*="title" i], input[placeholder*="Title"]').first();
     const contentInput = page.locator('textarea[placeholder*="content" i], textarea[placeholder*="Content"], [role="textbox"]').first();
     if (await titleInput.count() > 0) {
-      await expect(titleInput).toBeVisible().catch(() => {});
+      await expect(titleInput).toBeVisible();
     }
     if (await contentInput.count() > 0) {
-      await expect(contentInput).toBeVisible().catch(() => {});
+      await expect(contentInput).toBeVisible();
     }
   });
 
@@ -123,7 +123,7 @@ test.describe('Knowledge Management', () => {
     await page.goto('/knowledge');
     const approvalBadge = page.locator('text="PENDING_APPROVAL"').first();
     if (await approvalBadge.count() > 0) {
-      await expect(approvalBadge).toBeVisible().catch(() => {});
+      await expect(approvalBadge).toBeVisible();
     }
   });
 });

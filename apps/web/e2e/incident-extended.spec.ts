@@ -14,7 +14,7 @@ test.describe('Incident Management - Extended Features', () => {
     await page.goto('/incidents/new');
     const fileInput = page.locator('input[type="file"]').first();
     if (await fileInput.count() > 0) {
-      await expect(fileInput).toBeVisible().catch(() => {});
+      await expect(fileInput).toBeVisible();
     }
   });
 
@@ -24,11 +24,11 @@ test.describe('Incident Management - Extended Features', () => {
     if (await exportButton.count() > 0) {
       const [download] = await Promise.all([
         page.waitForEvent('download').catch(() => null),
-        exportButton.click().catch(() => {}),
+        exportButton.click(),
       ]);
       if (download) {
         const fileName = download.suggestedFilename();
-        await expect(fileName).toContain('.csv').catch(() => {});
+        await expect(fileName).toContain('.csv');
       }
     }
   });
@@ -37,7 +37,7 @@ test.describe('Incident Management - Extended Features', () => {
     await page.goto('/incidents');
     const filterButton = page.locator('button:has-text("Priority"), select').first();
     if (await filterButton.count() > 0) {
-      await expect(filterButton).toBeVisible().catch(() => {});
+      await expect(filterButton).toBeVisible();
     }
   });
 
@@ -45,10 +45,10 @@ test.describe('Incident Management - Extended Features', () => {
     await page.goto('/incidents');
     const firstIncidentLink = page.locator('a[href*="/incidents/"]').first();
     if (await firstIncidentLink.count() > 0) {
-      await firstIncidentLink.click().catch(() => {});
+      await firstIncidentLink.click();
       const slaSection = page.locator('text="remaining", text="SLA"').first();
       if (await slaSection.count() > 0) {
-        await expect(slaSection).toBeVisible().catch(() => {});
+        await expect(slaSection).toBeVisible();
       }
     }
   });
@@ -61,7 +61,7 @@ test.describe('Incident Management - Extended Features', () => {
     await page.goto('/incidents/inc-001');
     const parentLink = page.locator('text="Parent", a[href*="/incidents/"]').first();
     if (await parentLink.count() > 0) {
-      await expect(parentLink).toBeVisible().catch(() => {});
+      await expect(parentLink).toBeVisible();
     }
   });
 
@@ -69,7 +69,7 @@ test.describe('Incident Management - Extended Features', () => {
     await page.goto('/incidents/inc-001');
     const commentInput = page.locator('textarea[placeholder*="comment" i], textarea[placeholder*="note" i], input[placeholder*="comment" i]').first();
     if (await commentInput.count() > 0) {
-      await expect(commentInput).toBeVisible().catch(() => {});
+      await expect(commentInput).toBeVisible();
     }
   });
 
@@ -77,7 +77,7 @@ test.describe('Incident Management - Extended Features', () => {
     await page.goto('/incidents/inc-001');
     const createdTime = page.locator('text="Created", text="2024"').first();
     if (await createdTime.count() > 0) {
-      await expect(createdTime).toBeVisible().catch(() => {});
+      await expect(createdTime).toBeVisible();
     }
   });
 
@@ -85,7 +85,7 @@ test.describe('Incident Management - Extended Features', () => {
     await page.goto('/incidents');
     const pagination = page.locator('[aria-label*="Pagination"], button:has-text("Next"), button:has-text("Previous")').first();
     if (await pagination.count() > 0) {
-      await expect(pagination).toBeVisible().catch(() => {});
+      await expect(pagination).toBeVisible();
     }
   });
 
@@ -93,7 +93,7 @@ test.describe('Incident Management - Extended Features', () => {
     await page.goto('/incidents');
     const statusBadge = page.locator('text="OPEN", text="IN_PROGRESS", text="CLOSED"').first();
     if (await statusBadge.count() > 0) {
-      await expect(statusBadge).toBeVisible().catch(() => {});
+      await expect(statusBadge).toBeVisible();
     }
   });
 });

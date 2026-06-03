@@ -13,14 +13,14 @@ test.describe('Analytics - Executive Dashboard & Predictions', () => {
   test('executive dashboard renders at /analytics/executive-dashboard', async ({ page }) => {
     await page.goto('/analytics/executive-dashboard');
     const heading = page.locator('h1, h2').first();
-    await expect(heading).toBeVisible().catch(() => {});
+    await expect(heading).toBeVisible();
   });
 
   test('executive dashboard displays 12 KPI cards', async ({ page }) => {
     await page.goto('/analytics/executive-dashboard');
     const cards = page.locator('[role="status"], [data-testid*="card"], .card').first();
     if (await cards.count() > 0) {
-      await expect(cards).toBeVisible().catch(() => {});
+      await expect(cards).toBeVisible();
     }
   });
 
@@ -30,7 +30,7 @@ test.describe('Analytics - Executive Dashboard & Predictions', () => {
     for (const kpi of kpis) {
       const card = page.locator(`text="${kpi}"`).first();
       if (await card.count() > 0) {
-        await expect(card).toBeVisible().catch(() => {});
+        await expect(card).toBeVisible();
       }
     }
   });
@@ -39,7 +39,7 @@ test.describe('Analytics - Executive Dashboard & Predictions', () => {
     await page.goto('/analytics/executive-dashboard');
     const progressBar = page.locator('progress, [role="progressbar"]').first();
     if (await progressBar.count() > 0) {
-      await expect(progressBar).toBeVisible().catch(() => {});
+      await expect(progressBar).toBeVisible();
     }
   });
 
@@ -47,21 +47,21 @@ test.describe('Analytics - Executive Dashboard & Predictions', () => {
     await page.goto('/analytics/executive-dashboard');
     const compliance = page.locator('text="99%", text="Compliance"').first();
     if (await compliance.count() > 0) {
-      await expect(compliance).toBeVisible().catch(() => {});
+      await expect(compliance).toBeVisible();
     }
   });
 
   test('predictions page renders at /analytics/predictions', async ({ page }) => {
     await page.goto('/analytics/predictions');
     const heading = page.locator('h1, h2').first();
-    await expect(heading).toBeVisible().catch(() => {});
+    await expect(heading).toBeVisible();
   });
 
   test('cash flow forecast chart displays on predictions page', async ({ page }) => {
     await page.goto('/analytics/predictions');
     const forecastSection = page.locator('text="Forecast", text="Cash"').first();
     if (await forecastSection.count() > 0) {
-      await expect(forecastSection).toBeVisible().catch(() => {});
+      await expect(forecastSection).toBeVisible();
     }
   });
 
@@ -72,10 +72,10 @@ test.describe('Analytics - Executive Dashboard & Predictions', () => {
       const vendor = page.locator('text="Vendor"').first();
       const amount = page.locator('text="Amount"').first();
       if (await vendor.count() > 0) {
-        await expect(vendor).toBeVisible().catch(() => {});
+        await expect(vendor).toBeVisible();
       }
       if (await amount.count() > 0) {
-        await expect(amount).toBeVisible().catch(() => {});
+        await expect(amount).toBeVisible();
       }
     }
   });
@@ -86,7 +86,7 @@ test.describe('Analytics - Executive Dashboard & Predictions', () => {
     for (const risk of riskBadges) {
       const badge = page.locator(`text="${risk}"`).first();
       if (await badge.count() > 0) {
-        await expect(badge).toBeVisible().catch(() => {});
+        await expect(badge).toBeVisible();
       }
     }
   });

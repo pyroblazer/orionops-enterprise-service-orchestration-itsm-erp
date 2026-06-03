@@ -13,14 +13,14 @@ test.describe('ERP - Service Billing', () => {
   test('billing overview renders at /billing', async ({ page }) => {
     await page.goto('/billing');
     const heading = page.locator('h1, h2').first();
-    await expect(heading).toBeVisible().catch(() => {});
+    await expect(heading).toBeVisible();
   });
 
   test('billing overview displays usage metric cards', async ({ page }) => {
     await page.goto('/billing');
     const cards = page.locator('[role="status"], [data-testid*="card"]').first();
     if (await cards.count() > 0) {
-      await expect(cards).toBeVisible().catch(() => {});
+      await expect(cards).toBeVisible();
     }
   });
 
@@ -30,7 +30,7 @@ test.describe('ERP - Service Billing', () => {
     if (await table.count() > 0) {
       const columns = page.locator('text="Period", text="Cost", text="Service"').first();
       if (await columns.count() > 0) {
-        await expect(columns).toBeVisible().catch(() => {});
+        await expect(columns).toBeVisible();
       }
     }
   });
@@ -39,7 +39,7 @@ test.describe('ERP - Service Billing', () => {
     await page.goto('/billing');
     const statusBadges = page.locator('text="PAID", text="DRAFT"').first();
     if (await statusBadges.count() > 0) {
-      await expect(statusBadges).toBeVisible().catch(() => {});
+      await expect(statusBadges).toBeVisible();
     }
   });
 
@@ -47,7 +47,7 @@ test.describe('ERP - Service Billing', () => {
     await page.goto('/billing');
     const costModels = page.locator('text="Cost Model"').first();
     if (await costModels.count() > 0) {
-      await expect(costModels).toBeVisible().catch(() => {});
+      await expect(costModels).toBeVisible();
     }
   });
 });

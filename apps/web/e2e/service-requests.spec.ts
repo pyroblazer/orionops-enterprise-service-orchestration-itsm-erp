@@ -13,14 +13,14 @@ test.describe('Service Requests', () => {
   test('request list renders at /requests', async ({ page }) => {
     await page.goto('/requests');
     const heading = page.locator('h1, h2').first();
-    await expect(heading).toBeVisible().catch(() => {});
+    await expect(heading).toBeVisible();
   });
 
   test('request list displays status badges', async ({ page }) => {
     await page.goto('/requests');
     const statusBadge = page.locator('text="SUBMITTED", text="APPROVED", text="COMPLETED"').first();
     if (await statusBadge.count() > 0) {
-      await expect(statusBadge).toBeVisible().catch(() => {});
+      await expect(statusBadge).toBeVisible();
     }
   });
 
@@ -28,8 +28,8 @@ test.describe('Service Requests', () => {
     await page.goto('/requests');
     const createButton = page.locator('button:has-text("Create"), button:has-text("New"), button:has-text("Request")').first();
     if (await createButton.count() > 0) {
-      await createButton.click().catch(() => {});
-      await page.waitForURL('**/requests/new', { timeout: 5000 }).catch(() => {});
+      await createButton.click();
+      await page.waitForURL('**/requests/new', { timeout: 5000 });
     }
   });
 
@@ -38,10 +38,10 @@ test.describe('Service Requests', () => {
     const titleInput = page.locator('input[placeholder*="title" i], input[placeholder*="Request" i]').first();
     const descInput = page.locator('textarea[placeholder*="description" i], textarea[placeholder*="details" i]').first();
     if (await titleInput.count() > 0) {
-      await expect(titleInput).toBeVisible().catch(() => {});
+      await expect(titleInput).toBeVisible();
     }
     if (await descInput.count() > 0) {
-      await expect(descInput).toBeVisible().catch(() => {});
+      await expect(descInput).toBeVisible();
     }
   });
 
@@ -51,7 +51,7 @@ test.describe('Service Requests', () => {
     });
     await page.goto('/requests/req-001');
     const title = page.locator(`text="New User Account"`).first();
-    await expect(title).toBeVisible().catch(() => {});
+    await expect(title).toBeVisible();
   });
 
   test('request detail has timeline/activity section', async ({ page }) => {
@@ -62,7 +62,7 @@ test.describe('Service Requests', () => {
     await page.goto('/requests/req-001');
     const timeline = page.locator('text="Timeline", text="Activity", [role="log"]').first();
     if (await timeline.count() > 0) {
-      await expect(timeline).toBeVisible().catch(() => {});
+      await expect(timeline).toBeVisible();
     }
   });
 
@@ -70,7 +70,7 @@ test.describe('Service Requests', () => {
     await page.goto('/requests');
     const textStatus = page.locator('text="SUBMITTED"').first();
     if (await textStatus.count() > 0) {
-      await expect(textStatus).toBeVisible().catch(() => {});
+      await expect(textStatus).toBeVisible();
     }
   });
 
@@ -80,10 +80,10 @@ test.describe('Service Requests', () => {
     if (await exportButton.count() > 0) {
       const [download] = await Promise.all([
         page.waitForEvent('download').catch(() => null),
-        exportButton.click().catch(() => {}),
+        exportButton.click(),
       ]);
       if (download) {
-        await expect(download.suggestedFilename()).toContain('.csv').catch(() => {});
+        await expect(download.suggestedFilename()).toContain('.csv');
       }
     }
   });

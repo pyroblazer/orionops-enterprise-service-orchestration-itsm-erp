@@ -13,14 +13,14 @@ test.describe('Change Management', () => {
   test('change list renders at /changes', async ({ page }) => {
     await page.goto('/changes');
     const heading = page.locator('h1, h2').first();
-    await expect(heading).toBeVisible().catch(() => {});
+    await expect(heading).toBeVisible();
   });
 
   test('change list displays type and status columns', async ({ page }) => {
     await page.goto('/changes');
     const typeLabel = page.locator('text="Type", text="Status", text="NORMAL", text="SUBMITTED"').first();
     if (await typeLabel.count() > 0) {
-      await expect(typeLabel).toBeVisible().catch(() => {});
+      await expect(typeLabel).toBeVisible();
     }
   });
 
@@ -28,8 +28,8 @@ test.describe('Change Management', () => {
     await page.goto('/changes');
     const createButton = page.locator('button:has-text("Create")').first();
     if (await createButton.count() > 0) {
-      await createButton.click().catch(() => {});
-      await page.waitForURL('**/changes/new', { timeout: 5000 }).catch(() => {});
+      await createButton.click();
+      await page.waitForURL('**/changes/new', { timeout: 5000 });
     }
   });
 
@@ -37,7 +37,7 @@ test.describe('Change Management', () => {
     await page.goto('/changes/new');
     const typeSelector = page.locator('select, [role="combobox"], button:has-text("NORMAL"), button:has-text("EMERGENCY")').first();
     if (await typeSelector.count() > 0) {
-      await expect(typeSelector).toBeVisible().catch(() => {});
+      await expect(typeSelector).toBeVisible();
     }
   });
 
@@ -45,11 +45,11 @@ test.describe('Change Management', () => {
     await page.goto('/changes/new');
     const emergencyButton = page.locator('button:has-text("EMERGENCY")').first();
     if (await emergencyButton.count() > 0) {
-      await emergencyButton.click().catch(() => {});
+      await emergencyButton.click();
       await page.waitForTimeout(200);
       const warning = page.locator('[role="alert"], text="risk", text="warning"').first();
       if (await warning.count() > 0) {
-        await expect(warning).toBeVisible().catch(() => {});
+        await expect(warning).toBeVisible();
       }
     }
   });
@@ -63,7 +63,7 @@ test.describe('Change Management', () => {
     await page.waitForTimeout(500);
     const rollbackSection = page.locator('text="Rollback"').first();
     if (await rollbackSection.count() > 0) {
-      await expect(rollbackSection).toBeVisible().catch(() => {});
+      await expect(rollbackSection).toBeVisible();
     }
   });
 
@@ -71,7 +71,7 @@ test.describe('Change Management', () => {
     await page.goto('/changes');
     const approvalSection = page.locator('button:has-text("Approve"), button:has-text("Reject")').first();
     if (await approvalSection.count() > 0) {
-      await expect(approvalSection).toBeVisible().catch(() => {});
+      await expect(approvalSection).toBeVisible();
     }
   });
 
@@ -82,7 +82,7 @@ test.describe('Change Management', () => {
       await page.route('**/api/v1/changes/**/approvals', async (route) => {
         await route.fulfill({ json: { success: true } });
       });
-      await approveButton.click().catch(() => {});
+      await approveButton.click();
     }
   });
 
@@ -92,10 +92,10 @@ test.describe('Change Management', () => {
     if (await exportButton.count() > 0) {
       const [download] = await Promise.all([
         page.waitForEvent('download').catch(() => null),
-        exportButton.click().catch(() => {}),
+        exportButton.click(),
       ]);
       if (download) {
-        await expect(download.suggestedFilename()).toContain('.csv').catch(() => {});
+        await expect(download.suggestedFilename()).toContain('.csv');
       }
     }
   });
@@ -105,10 +105,10 @@ test.describe('Change Management', () => {
     const riskInput = page.locator('select[name*="risk" i], button:has-text("Risk")').first();
     const impactInput = page.locator('select[name*="impact" i], button:has-text("Impact")').first();
     if (await riskInput.count() > 0) {
-      await expect(riskInput).toBeVisible().catch(() => {});
+      await expect(riskInput).toBeVisible();
     }
     if (await impactInput.count() > 0) {
-      await expect(impactInput).toBeVisible().catch(() => {});
+      await expect(impactInput).toBeVisible();
     }
   });
 });

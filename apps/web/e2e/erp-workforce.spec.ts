@@ -13,14 +13,14 @@ test.describe('ERP - Workforce Management', () => {
   test('workforce overview renders at /workforce', async ({ page }) => {
     await page.goto('/workforce');
     const heading = page.locator('h1, h2').first();
-    await expect(heading).toBeVisible().catch(() => {});
+    await expect(heading).toBeVisible();
   });
 
   test('employee list displays rows with skill tags', async ({ page }) => {
     await page.goto('/workforce');
     const skillTags = page.locator('text="Java", text="Spring Boot"').first();
     if (await skillTags.count() > 0) {
-      await expect(skillTags).toBeVisible().catch(() => {});
+      await expect(skillTags).toBeVisible();
     }
   });
 
@@ -28,7 +28,7 @@ test.describe('ERP - Workforce Management', () => {
     await page.goto('/workforce');
     const skillFilter = page.locator('input[placeholder*="Skill" i], select[name*="skill" i]').first();
     if (await skillFilter.count() > 0) {
-      await expect(skillFilter).toBeVisible().catch(() => {});
+      await expect(skillFilter).toBeVisible();
     }
   });
 
@@ -50,7 +50,7 @@ test.describe('ERP - Workforce Management', () => {
     const chart = page.locator('svg, canvas, [role="img"]').first();
     const table = page.locator('table, [role="table"]').first();
     if ((await chart.count()) > 0 || (await table.count()) > 0) {
-      await expect(chart.or(table)).toBeVisible().catch(() => {});
+      await expect(chart.or(table)).toBeVisible();
     }
   });
 
@@ -58,7 +58,7 @@ test.describe('ERP - Workforce Management', () => {
     await page.goto('/workforce/capacity');
     const allocatedAvailable = page.locator('text="Allocated", text="Available"').first();
     if (await allocatedAvailable.count() > 0) {
-      await expect(allocatedAvailable).toBeVisible().catch(() => {});
+      await expect(allocatedAvailable).toBeVisible();
     }
   });
 
@@ -66,7 +66,7 @@ test.describe('ERP - Workforce Management', () => {
     await page.goto('/workforce/capacity');
     const utilization = page.locator('text="Utilization", text="%"').first();
     if (await utilization.count() > 0) {
-      await expect(utilization).toBeVisible().catch(() => {});
+      await expect(utilization).toBeVisible();
     }
   });
 
@@ -84,7 +84,7 @@ test.describe('ERP - Workforce Management', () => {
     await page.goto('/workforce/employees/emp-001');
     const assignmentSection = page.locator('text="Assignment", text="Skill"').first();
     if (await assignmentSection.count() > 0) {
-      await expect(assignmentSection).toBeVisible().catch(() => {});
+      await expect(assignmentSection).toBeVisible();
     }
   });
 });

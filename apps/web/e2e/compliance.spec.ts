@@ -13,7 +13,7 @@ test.describe('Compliance Management', () => {
   test('SoD page renders at /compliance/sod', async ({ page }) => {
     await page.goto('/compliance/sod');
     const heading = page.locator('h1, h2').first();
-    await expect(heading).toBeVisible().catch(() => {});
+    await expect(heading).toBeVisible();
   });
 
   test('SoD rules table displays Conflict Level column', async ({ page }) => {
@@ -22,7 +22,7 @@ test.describe('Compliance Management', () => {
     if (await table.count() > 0) {
       const conflictHeader = page.locator('text="Conflict Level"').first();
       if (await conflictHeader.count() > 0) {
-        await expect(conflictHeader).toBeVisible().catch(() => {});
+        await expect(conflictHeader).toBeVisible();
       }
     }
   });
@@ -31,7 +31,7 @@ test.describe('Compliance Management', () => {
     await page.goto('/compliance/sod');
     const highBadge = page.locator('text="HIGH"').first();
     if (await highBadge.count() > 0) {
-      await expect(highBadge).toBeVisible().catch(() => {});
+      await expect(highBadge).toBeVisible();
     }
   });
 
@@ -40,10 +40,10 @@ test.describe('Compliance Management', () => {
     const userInput = page.locator('input[placeholder*="User" i], input[placeholder*="user" i]').first();
     const activityInput = page.locator('input[placeholder*="Activity" i], input[placeholder*="activity" i]').first();
     if (await userInput.count() > 0) {
-      await expect(userInput).toBeVisible().catch(() => {});
+      await expect(userInput).toBeVisible();
     }
     if (await activityInput.count() > 0) {
-      await expect(activityInput).toBeVisible().catch(() => {});
+      await expect(activityInput).toBeVisible();
     }
   });
 
@@ -54,7 +54,7 @@ test.describe('Compliance Management', () => {
     await page.goto('/compliance/sod');
     const checkButton = page.locator('button:has-text("Check Compliance"), button:has-text("Validate")').first();
     if (await checkButton.count() > 0) {
-      await checkButton.click().catch(() => {});
+      await checkButton.click();
       await page.waitForTimeout(300);
     }
   });
@@ -62,7 +62,7 @@ test.describe('Compliance Management', () => {
   test('approval authorities page renders at /compliance/approval-authorities', async ({ page }) => {
     await page.goto('/compliance/approval-authorities');
     const heading = page.locator('h1, h2').first();
-    await expect(heading).toBeVisible().catch(() => {});
+    await expect(heading).toBeVisible();
   });
 
   test('approval authorities table displays User, Activity Type, Max Amount', async ({ page }) => {
@@ -71,7 +71,7 @@ test.describe('Compliance Management', () => {
     if (await table.count() > 0) {
       const columns = page.locator('text="User", text="Activity", text="Max Amount"').first();
       if (await columns.count() > 0) {
-        await expect(columns).toBeVisible().catch(() => {});
+        await expect(columns).toBeVisible();
       }
     }
   });
@@ -80,7 +80,7 @@ test.describe('Compliance Management', () => {
     await page.goto('/compliance/approval-authorities');
     const setButton = page.locator('button:has-text("Set Authority"), button:has-text("Add Authority")').first();
     if (await setButton.count() > 0) {
-      await expect(setButton).toBeVisible().catch(() => {});
+      await expect(setButton).toBeVisible();
     }
   });
 
@@ -90,13 +90,13 @@ test.describe('Compliance Management', () => {
     const activityInput = page.locator('input[placeholder*="Activity" i]').first();
     const amountInput = page.locator('input[placeholder*="Amount" i]').first();
     if (await userInput.count() > 0) {
-      await expect(userInput).toBeVisible().catch(() => {});
+      await expect(userInput).toBeVisible();
     }
     if (await activityInput.count() > 0) {
-      await expect(activityInput).toBeVisible().catch(() => {});
+      await expect(activityInput).toBeVisible();
     }
     if (await amountInput.count() > 0) {
-      await expect(amountInput).toBeVisible().catch(() => {});
+      await expect(amountInput).toBeVisible();
     }
   });
 
@@ -107,7 +107,7 @@ test.describe('Compliance Management', () => {
     await page.goto('/compliance/approval-authorities');
     const checkButton = page.locator('button:has-text("Check Authority"), button:has-text("Validate")').first();
     if (await checkButton.count() > 0) {
-      await checkButton.click().catch(() => {});
+      await checkButton.click();
     }
   });
 });

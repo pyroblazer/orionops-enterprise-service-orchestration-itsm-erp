@@ -17,7 +17,7 @@ test.describe('User Settings', () => {
   test('settings page renders at /settings', async ({ page }) => {
     await page.goto('/settings');
     const heading = page.locator('h1, h2').first();
-    await expect(heading).toBeVisible().catch(() => {});
+    await expect(heading).toBeVisible();
   });
 
   test('Profile, Preferences, Notifications tabs visible', async ({ page }) => {
@@ -26,7 +26,7 @@ test.describe('User Settings', () => {
     for (const tab of tabs) {
       const tabButton = page.locator(`button:has-text("${tab}"), [role="tab"]:has-text("${tab}")`).first();
       if (await tabButton.count() > 0) {
-        await expect(tabButton).toBeVisible().catch(() => {});
+        await expect(tabButton).toBeVisible();
       }
     }
   });
@@ -35,12 +35,12 @@ test.describe('User Settings', () => {
     await page.goto('/settings');
     const profileTab = page.locator('button:has-text("Profile")').first();
     if (await profileTab.count() > 0) {
-      await profileTab.click().catch(() => {});
+      await profileTab.click();
       const fields = ['First Name', 'Last Name', 'Phone', 'Department'];
       for (const field of fields) {
         const input = page.locator(`input[placeholder*="${field}" i], label:has-text("${field}")`).first();
         if (await input.count() > 0) {
-          await expect(input).toBeVisible().catch(() => {});
+          await expect(input).toBeVisible();
         }
       }
     }
@@ -50,10 +50,10 @@ test.describe('User Settings', () => {
     await page.goto('/settings');
     const profileTab = page.locator('button:has-text("Profile")').first();
     if (await profileTab.count() > 0) {
-      await profileTab.click().catch(() => {});
+      await profileTab.click();
       const saveButton = page.locator('button:has-text("Save Profile")').first();
       if (await saveButton.count() > 0) {
-        await saveButton.click().catch(() => {});
+        await saveButton.click();
       }
     }
   });
@@ -62,10 +62,10 @@ test.describe('User Settings', () => {
     await page.goto('/settings');
     const prefsTab = page.locator('button:has-text("Preferences")').first();
     if (await prefsTab.count() > 0) {
-      await prefsTab.click().catch(() => {});
+      await prefsTab.click();
       const themeButtons = page.locator('button:has-text("Light"), button:has-text("Dark"), button:has-text("High Contrast")');
       const count = await themeButtons.count();
-      await expect(count).toBeGreaterThanOrEqual(2).catch(() => {});
+      await expect(count).toBeGreaterThanOrEqual(2);
     }
   });
 
@@ -73,11 +73,11 @@ test.describe('User Settings', () => {
     await page.goto('/settings');
     const prefsTab = page.locator('button:has-text("Preferences")').first();
     if (await prefsTab.count() > 0) {
-      await prefsTab.click().catch(() => {});
+      await prefsTab.click();
       const hcButton = page.locator('button:has-text("High Contrast")').first();
       if (await hcButton.count() > 0) {
         const ariaPressed = await hcButton.getAttribute('aria-pressed');
-        await expect(ariaPressed).toBeTruthy().catch(() => {});
+        await expect(ariaPressed).toBeTruthy();
       }
     }
   });
@@ -86,14 +86,14 @@ test.describe('User Settings', () => {
     await page.goto('/settings');
     const prefsTab = page.locator('button:has-text("Preferences")').first();
     if (await prefsTab.count() > 0) {
-      await prefsTab.click().catch(() => {});
+      await prefsTab.click();
       const timezone = page.locator('input[placeholder*="Timezone" i], label:has-text("Timezone")').first();
       const language = page.locator('select[name*="language" i], label:has-text("Language")').first();
       if (await timezone.count() > 0) {
-        await expect(timezone).toBeVisible().catch(() => {});
+        await expect(timezone).toBeVisible();
       }
       if (await language.count() > 0) {
-        await expect(language).toBeVisible().catch(() => {});
+        await expect(language).toBeVisible();
       }
     }
   });
@@ -102,10 +102,10 @@ test.describe('User Settings', () => {
     await page.goto('/settings');
     const prefsTab = page.locator('button:has-text("Preferences")').first();
     if (await prefsTab.count() > 0) {
-      await prefsTab.click().catch(() => {});
+      await prefsTab.click();
       const saveButton = page.locator('button:has-text("Save Preferences")').first();
       if (await saveButton.count() > 0) {
-        await saveButton.click().catch(() => {});
+        await saveButton.click();
       }
     }
   });
@@ -114,13 +114,10 @@ test.describe('User Settings', () => {
     await page.goto('/settings');
     const notifTab = page.locator('button:has-text("Notifications")').first();
     if (await notifTab.count() > 0) {
-      await notifTab.click().catch(() => {});
-      const channels = ['In-App', 'Email', 'Push'];
-      for (const channel of channels) {
-        const toggle = page.locator(`input[type="checkbox"], [role="switch"]`).first();
-        if (await toggle.count() > 0) {
-          await expect(toggle).toBeVisible().catch(() => {});
-        }
+      await notifTab.click();
+      const toggles = page.locator(`input[type="checkbox"], [role="switch"]`);
+      if (await toggles.count() > 0) {
+        await expect(toggles.first()).toBeVisible();
       }
     }
   });
@@ -129,12 +126,12 @@ test.describe('User Settings', () => {
     await page.goto('/settings');
     const notifTab = page.locator('button:has-text("Notifications")').first();
     if (await notifTab.count() > 0) {
-      await notifTab.click().catch(() => {});
+      await notifTab.click();
       const events = ['incident_assigned', 'sla_breach', 'change_approval'];
       for (const event of events) {
         const checkbox = page.locator(`input[type="checkbox"], label:has-text("${event}")`).first();
         if (await checkbox.count() > 0) {
-          await expect(checkbox).toBeVisible().catch(() => {});
+          await expect(checkbox).toBeVisible();
         }
       }
     }
@@ -144,13 +141,13 @@ test.describe('User Settings', () => {
     await page.goto('/settings');
     const notifTab = page.locator('button:has-text("Notifications")').first();
     if (await notifTab.count() > 0) {
-      await notifTab.click().catch(() => {});
+      await notifTab.click();
       const toggle = page.locator('input[type="checkbox"], [role="switch"]').first();
       if (await toggle.count() > 0) {
         const initialState = await toggle.isChecked().catch(() => null);
-        await toggle.click().catch(() => {});
+        await toggle.click();
         const newState = await toggle.isChecked().catch(() => null);
-        await expect(initialState).not.toEqual(newState).catch(() => {});
+        await expect(initialState).not.toEqual(newState);
       }
     }
   });
@@ -159,10 +156,10 @@ test.describe('User Settings', () => {
     await page.goto('/settings');
     const notifTab = page.locator('button:has-text("Notifications")').first();
     if (await notifTab.count() > 0) {
-      await notifTab.click().catch(() => {});
+      await notifTab.click();
       const saveButton = page.locator('button:has-text("Save Notification Preferences"), button:has-text("Save")').first();
       if (await saveButton.count() > 0) {
-        await saveButton.click().catch(() => {});
+        await saveButton.click();
       }
     }
   });

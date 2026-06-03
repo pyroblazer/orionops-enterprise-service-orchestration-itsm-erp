@@ -21,7 +21,7 @@ test.describe('Global Search Modal', () => {
     await page.waitForTimeout(200);
     const modal = page.locator('[role="dialog"], [role="searchbox"], input[placeholder*="Search"]').first();
     if (await modal.count() > 0) {
-      await expect(modal).toBeVisible().catch(() => {});
+      await expect(modal).toBeVisible();
     }
   });
 
@@ -29,10 +29,10 @@ test.describe('Global Search Modal', () => {
     await page.goto('/dashboard');
     const searchBar = page.locator('input[placeholder*="Search"], button:has-text("Search")').first();
     if (await searchBar.count() > 0) {
-      await searchBar.click().catch(() => {});
+      await searchBar.click();
       const modal = page.locator('[role="dialog"], [role="searchbox"]').first();
       if (await modal.count() > 0) {
-        await expect(modal).toBeVisible().catch(() => {});
+        await expect(modal).toBeVisible();
       }
     }
   });
@@ -45,7 +45,7 @@ test.describe('Global Search Modal', () => {
     await page.waitForTimeout(100);
     const modal = page.locator('[role="dialog"]').first();
     if (await modal.count() > 0) {
-      await expect(modal).not.toBeVisible().catch(() => {});
+      await expect(modal).not.toBeVisible();
     }
   });
 
@@ -59,7 +59,7 @@ test.describe('Global Search Modal', () => {
       await page.waitForTimeout(300);
       const results = page.locator('[role="option"], [role="menuitem"]').first();
       if (await results.count() > 0) {
-        await expect(results).toBeVisible().catch(() => {});
+        await expect(results).toBeVisible();
       }
     }
   });
@@ -74,7 +74,7 @@ test.describe('Global Search Modal', () => {
       await page.waitForTimeout(300);
       const typeLabel = page.locator('text="Incident", text="Problem", text="Change"').first();
       if (await typeLabel.count() > 0) {
-        await expect(typeLabel).toBeVisible().catch(() => {});
+        await expect(typeLabel).toBeVisible();
       }
     }
   });
@@ -89,10 +89,12 @@ test.describe('Global Search Modal', () => {
       await page.waitForTimeout(300);
       const resultLink = page.locator('[role="option"], a[href*="/incidents/"], a[href*="/problems/"]').first();
       if (await resultLink.count() > 0) {
-        await resultLink.click().catch(() => {});
+        await resultLink.click();
         await page.waitForTimeout(500);
         const url = page.url();
-        await expect(url).toContain('/incidents').or.toContain('/problems').catch(() => {});
+        const hasIncidents = url.includes('/incidents');
+        const hasProblems = url.includes('/problems');
+        expect(hasIncidents || hasProblems).toBeTruthy();
       }
     }
   });
@@ -107,7 +109,7 @@ test.describe('Global Search Modal', () => {
       await page.waitForTimeout(300);
       const emptyState = page.locator('text="No results", text="not found"').first();
       if (await emptyState.count() > 0) {
-        await expect(emptyState).toBeVisible().catch(() => {});
+        await expect(emptyState).toBeVisible();
       }
     }
   });

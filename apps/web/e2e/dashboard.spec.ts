@@ -13,7 +13,7 @@ test.describe('Main Dashboard', () => {
   test('dashboard renders four summary stat cards', async ({ page }) => {
     await page.goto('/dashboard');
     const cards = page.locator('[role="status"], [data-testid*="card"], .card').first();
-    await expect(cards).toBeVisible().catch(() => {});
+    await expect(cards).toBeVisible();
   });
 
   test('summary card titles are visible', async ({ page }) => {
@@ -27,7 +27,7 @@ test.describe('Main Dashboard', () => {
     for (const title of cardTitles) {
       const element = page.locator(`text="${title}"`).first();
       if (await element.count() > 0) {
-        await expect(element).toBeVisible().catch(() => {});
+        await expect(element).toBeVisible();
       }
     }
   });
@@ -36,7 +36,7 @@ test.describe('Main Dashboard', () => {
     await page.goto('/dashboard');
     const svgGauge = page.locator('svg').first();
     if (await svgGauge.count() > 0) {
-      await expect(svgGauge).toBeVisible().catch(() => {});
+      await expect(svgGauge).toBeVisible();
     }
   });
 
@@ -44,7 +44,7 @@ test.describe('Main Dashboard', () => {
     await page.goto('/dashboard');
     const table = page.locator('table, [role="table"], [data-testid*="table"]').first();
     if (await table.count() > 0) {
-      await expect(table).toBeVisible().catch(() => {});
+      await expect(table).toBeVisible();
     }
   });
 
@@ -52,7 +52,7 @@ test.describe('Main Dashboard', () => {
     await page.goto('/dashboard');
     const priorityBadge = page.locator('text="CRITICAL", text="HIGH", text="MEDIUM", [role="status"]').first();
     if (await priorityBadge.count() > 0) {
-      await expect(priorityBadge).toBeVisible().catch(() => {});
+      await expect(priorityBadge).toBeVisible();
     }
   });
 
@@ -60,8 +60,8 @@ test.describe('Main Dashboard', () => {
     await page.goto('/dashboard');
     const createButton = page.locator('button:has-text("Create Incident"), a:has-text("Create Incident")').first();
     if (await createButton.count() > 0) {
-      await createButton.click().catch(() => {});
-      await page.waitForURL('**/incidents/new', { timeout: 5000 }).catch(() => {});
+      await createButton.click();
+      await page.waitForURL('**/incidents/new', { timeout: 5000 });
     }
   });
 
@@ -69,8 +69,8 @@ test.describe('Main Dashboard', () => {
     await page.goto('/dashboard');
     const kbButton = page.locator('button:has-text("Knowledge Base"), a:has-text("Knowledge Base")').first();
     if (await kbButton.count() > 0) {
-      await kbButton.click().catch(() => {});
-      await page.waitForURL('**/knowledge', { timeout: 5000 }).catch(() => {});
+      await kbButton.click();
+      await page.waitForURL('**/knowledge', { timeout: 5000 });
     }
   });
 
@@ -78,8 +78,8 @@ test.describe('Main Dashboard', () => {
     await page.goto('/dashboard');
     const slaButton = page.locator('button:has-text("SLA"), a:has-text("SLA")').first();
     if (await slaButton.count() > 0) {
-      await slaButton.click().catch(() => {});
-      await page.waitForURL('**/sla', { timeout: 5000 }).catch(() => {});
+      await slaButton.click();
+      await page.waitForURL('**/sla', { timeout: 5000 });
     }
   });
 
@@ -87,7 +87,7 @@ test.describe('Main Dashboard', () => {
     await page.goto('/dashboard');
     const refreshButton = page.locator('button:has-text("Auto-refresh"), button[aria-label*="refresh" i]').first();
     if (await refreshButton.count() > 0) {
-      await expect(refreshButton).toBeVisible().catch(() => {});
+      await expect(refreshButton).toBeVisible();
     }
   });
 
@@ -98,7 +98,7 @@ test.describe('Main Dashboard', () => {
     // Just verify dashboard loads
     const card = page.locator('[role="status"], button, h1, h2').first();
     if (await card.count() > 0) {
-      await expect(card).toBeVisible().catch(() => {});
+      await expect(card).toBeVisible();
     }
   });
 
@@ -109,7 +109,7 @@ test.describe('Main Dashboard', () => {
     // Just verify dashboard loads
     const card = page.locator('[role="status"], button, h1, h2').first();
     if (await card.count() > 0) {
-      await expect(card).toBeVisible().catch(() => {});
+      await expect(card).toBeVisible();
     }
   });
 });

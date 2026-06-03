@@ -15,7 +15,7 @@ test.describe('Dashboard Chrome - Global UI', () => {
     const sections = ['Overview', 'ITSM', 'Service', 'ERP', 'Admin'];
     for (const section of sections) {
       const sectionElement = page.locator(`text="${section}"`).first();
-      await expect(sectionElement).toBeVisible().catch(() => {});
+      await expect(sectionElement).toBeVisible();
     }
   });
 
@@ -34,7 +34,7 @@ test.describe('Dashboard Chrome - Global UI', () => {
     for (const link of links) {
       const linkElement = page.locator(`a:has-text("${link}"), button:has-text("${link}")`).first();
       if (await linkElement.count() > 0) {
-        await expect(linkElement).toBeVisible().catch(() => {});
+        await expect(linkElement).toBeVisible();
       }
     }
   });
@@ -68,7 +68,7 @@ test.describe('Dashboard Chrome - Global UI', () => {
     if (await themeButton.count() > 0) {
       const htmlElement = page.locator('html');
       let initialTheme = await htmlElement.getAttribute('data-theme');
-      await themeButton.click().catch(() => {});
+      await themeButton.click();
       await page.waitForTimeout(100);
       let newTheme = await htmlElement.getAttribute('data-theme');
       await expect(newTheme).not.toEqual(initialTheme);
@@ -79,7 +79,7 @@ test.describe('Dashboard Chrome - Global UI', () => {
     await page.goto('/dashboard');
     const badge = page.locator('span:has-text("2"), [role="status"]').first();
     if (await badge.count() > 0) {
-      await expect(badge).toBeVisible().catch(() => {});
+      await expect(badge).toBeVisible();
     }
   });
 
@@ -87,10 +87,10 @@ test.describe('Dashboard Chrome - Global UI', () => {
     await page.goto('/dashboard');
     const bellButton = page.locator('button[aria-label*="notification" i], button:has-text("Bell")').first();
     if (await bellButton.count() > 0) {
-      await bellButton.click().catch(() => {});
+      await bellButton.click();
       const dropdownItems = page.locator('[role="menu"], [role="listbox"]').first();
       if (await dropdownItems.count() > 0) {
-        await expect(dropdownItems).toBeVisible().catch(() => {});
+        await expect(dropdownItems).toBeVisible();
       }
     }
   });
@@ -99,10 +99,10 @@ test.describe('Dashboard Chrome - Global UI', () => {
     await page.goto('/dashboard');
     const bellButton = page.locator('button[aria-label*="notification" i]').first();
     if (await bellButton.count() > 0) {
-      await bellButton.click().catch(() => {});
+      await bellButton.click();
       const markReadButton = page.locator('button:has-text("Mark all read"), button:has-text("Clear")').first();
       if (await markReadButton.count() > 0) {
-        await markReadButton.click().catch(() => {});
+        await markReadButton.click();
         await page.route('**/api/v1/notifications/mark-read**', async (route) => {
           await route.fulfill({ json: { success: true } });
         });
@@ -114,10 +114,10 @@ test.describe('Dashboard Chrome - Global UI', () => {
     await page.goto('/dashboard');
     const shortcutsButton = page.locator('button[aria-label*="keyboard" i], button[aria-label*="shortcuts" i]').first();
     if (await shortcutsButton.count() > 0) {
-      await shortcutsButton.click().catch(() => {});
+      await shortcutsButton.click();
       const overlay = page.locator('[role="dialog"]').first();
       if (await overlay.count() > 0) {
-        await expect(overlay).toBeVisible().catch(() => {});
+        await expect(overlay).toBeVisible();
       }
     }
   });
@@ -126,10 +126,10 @@ test.describe('Dashboard Chrome - Global UI', () => {
     await page.goto('/dashboard');
     const avatar = page.locator('[role="button"]:has-text("Test User"), [role="button"][aria-label*="user" i]').first();
     if (await avatar.count() > 0) {
-      await avatar.click().catch(() => {});
+      await avatar.click();
       const menu = page.locator('[role="menu"]').first();
       if (await menu.count() > 0) {
-        await expect(menu).toBeVisible().catch(() => {});
+        await expect(menu).toBeVisible();
       }
     }
   });
@@ -138,8 +138,8 @@ test.describe('Dashboard Chrome - Global UI', () => {
     await page.goto('/dashboard');
     const incidentsLink = page.locator('a:has-text("Incidents"), button:has-text("Incidents")').first();
     if (await incidentsLink.count() > 0) {
-      await incidentsLink.click().catch(() => {});
-      await page.waitForURL('**/incidents', { timeout: 5000 }).catch(() => {});
+      await incidentsLink.click();
+      await page.waitForURL('**/incidents', { timeout: 5000 });
     }
   });
 

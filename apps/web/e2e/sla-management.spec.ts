@@ -17,14 +17,14 @@ test.describe('SLA Management', () => {
   test('SLA dashboard renders at /sla', async ({ page }) => {
     await page.goto('/sla');
     const heading = page.locator('h1, h2').first();
-    await expect(heading).toBeVisible().catch(() => {});
+    await expect(heading).toBeVisible();
   });
 
   test('SLA dashboard displays metric cards', async ({ page }) => {
     await page.goto('/sla');
     const cards = page.locator('[role="status"], [data-testid*="card"], .card').first();
     if (await cards.count() > 0) {
-      await expect(cards).toBeVisible().catch(() => {});
+      await expect(cards).toBeVisible();
     }
   });
 
@@ -32,7 +32,7 @@ test.describe('SLA Management', () => {
     await page.goto('/sla');
     const table = page.locator('text="Resolution Target", text="Status", table, [role="table"]').first();
     if (await table.count() > 0) {
-      await expect(table).toBeVisible().catch(() => {});
+      await expect(table).toBeVisible();
     }
   });
 
@@ -40,7 +40,7 @@ test.describe('SLA Management', () => {
     await page.goto('/sla');
     const breachingBadge = page.locator('text="BREACHING"').first();
     if (await breachingBadge.count() > 0) {
-      await expect(breachingBadge).toBeVisible().catch(() => {});
+      await expect(breachingBadge).toBeVisible();
     }
   });
 
@@ -57,7 +57,7 @@ test.describe('SLA Management', () => {
     await page.goto('/sla');
     const breachedBadge = page.locator('text="BREACHED"').first();
     if (await breachedBadge.count() > 0) {
-      await expect(breachedBadge).toBeVisible().catch(() => {});
+      await expect(breachedBadge).toBeVisible();
     }
   });
 
@@ -65,8 +65,8 @@ test.describe('SLA Management', () => {
     await page.goto('/sla');
     const defsLink = page.locator('a:has-text("Definitions"), button:has-text("Definitions")').first();
     if (await defsLink.count() > 0) {
-      await defsLink.click().catch(() => {});
-      await page.waitForURL('**/sla/definitions', { timeout: 5000 }).catch(() => {});
+      await defsLink.click();
+      await page.waitForURL('**/sla/definitions', { timeout: 5000 });
     }
   });
 
@@ -74,7 +74,7 @@ test.describe('SLA Management', () => {
     await page.goto('/sla/definitions');
     const rows = page.locator('text="P1", text="Resolution"').first();
     if (await rows.count() > 0) {
-      await expect(rows).toBeVisible().catch(() => {});
+      await expect(rows).toBeVisible();
     }
   });
 
@@ -82,7 +82,7 @@ test.describe('SLA Management', () => {
     await page.goto('/sla/definitions');
     const createButton = page.locator('button:has-text("Create"), button:has-text("New")').first();
     if (await createButton.count() > 0) {
-      await expect(createButton).toBeVisible().catch(() => {});
+      await expect(createButton).toBeVisible();
     }
   });
 
@@ -90,7 +90,7 @@ test.describe('SLA Management', () => {
     await page.goto('/sla');
     const remainingText = page.locator('text="remaining", text="hours", text="minutes"').first();
     if (await remainingText.count() > 0) {
-      await expect(remainingText).toBeVisible().catch(() => {});
+      await expect(remainingText).toBeVisible();
     }
   });
 });

@@ -20,13 +20,13 @@ test.describe('Accessibility', () => {
 
   test('keyboard navigation works on dashboard', async ({ page }) => {
     await page.goto('/dashboard');
-    await page.waitForLoadState('networkidle').catch(() => {});
+    await page.waitForLoadState('networkidle');
     await page.waitForTimeout(500);
 
     // Just verify page loads with interactive elements
     const buttons = page.locator('button, a, input').first();
     if (await buttons.count() > 0) {
-      await expect(buttons).toBeVisible().catch(() => {});
+      await expect(buttons).toBeVisible();
     }
   });
 

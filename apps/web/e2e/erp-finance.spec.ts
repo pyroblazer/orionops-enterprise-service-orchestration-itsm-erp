@@ -13,14 +13,14 @@ test.describe('ERP - Financial Management', () => {
   test('finance overview renders at /finance', async ({ page }) => {
     await page.goto('/finance');
     const heading = page.locator('h1, h2').first();
-    await expect(heading).toBeVisible().catch(() => {});
+    await expect(heading).toBeVisible();
   });
 
   test('finance overview displays budget summary cards', async ({ page }) => {
     await page.goto('/finance');
     const cards = page.locator('[role="status"], [data-testid*="card"]').first();
     if (await cards.count() > 0) {
-      await expect(cards).toBeVisible().catch(() => {});
+      await expect(cards).toBeVisible();
     }
   });
 
@@ -28,7 +28,7 @@ test.describe('ERP - Financial Management', () => {
     await page.goto('/finance/gl');
     const heading = page.locator('h1, h2').first();
     if (await heading.count() > 0) {
-      await expect(heading).toBeVisible().catch(() => {});
+      await expect(heading).toBeVisible();
     }
   });
 
@@ -36,7 +36,7 @@ test.describe('ERP - Financial Management', () => {
     await page.goto('/finance/gl');
     const table = page.locator('table, [role="table"]').first();
     if (await table.count() > 0) {
-      await expect(table).toBeVisible().catch(() => {});
+      await expect(table).toBeVisible();
     }
   });
 
@@ -44,7 +44,7 @@ test.describe('ERP - Financial Management', () => {
     await page.goto('/finance/forecast');
     const heading = page.locator('h1, h2').first();
     if (await heading.count() > 0) {
-      await expect(heading).toBeVisible().catch(() => {});
+      await expect(heading).toBeVisible();
     }
   });
 
@@ -52,7 +52,7 @@ test.describe('ERP - Financial Management', () => {
     await page.goto('/finance/forecast');
     const chart = page.locator('svg, canvas, [role="img"]').first();
     if (await chart.count() > 0) {
-      await expect(chart).toBeVisible().catch(() => {});
+      await expect(chart).toBeVisible();
     }
   });
 
@@ -63,7 +63,7 @@ test.describe('ERP - Financial Management', () => {
     await page.goto('/finance/budgets/budget-001');
     const title = page.locator(`text="IT Operations"`).first();
     if (await title.count() > 0) {
-      await expect(title).toBeVisible().catch(() => {});
+      await expect(title).toBeVisible();
     }
   });
 
@@ -74,7 +74,7 @@ test.describe('ERP - Financial Management', () => {
     await page.goto('/finance/cost-centers/cc-001');
     const title = page.locator(`text="Support"`).first();
     if (await title.count() > 0) {
-      await expect(title).toBeVisible().catch(() => {});
+      await expect(title).toBeVisible();
     }
   });
 
@@ -82,7 +82,7 @@ test.describe('ERP - Financial Management', () => {
     await page.goto('/finance');
     const paidBadge = page.locator('text="PAID"').first();
     if (await paidBadge.count() > 0) {
-      await expect(paidBadge).toBeVisible().catch(() => {});
+      await expect(paidBadge).toBeVisible();
     }
   });
 });

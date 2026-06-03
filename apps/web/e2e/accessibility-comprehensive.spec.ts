@@ -1,4 +1,4 @@
-import { test, expect, browserName } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 import { injectMockAuth } from './helpers/auth';
 import * as mocks from './helpers/api-mock';
 
@@ -14,7 +14,7 @@ test.describe('Comprehensive Accessibility Tests', () => {
       } else if (url.includes('changes')) {
         await route.fulfill({ json: mocks.mockChanges.list });
       } else {
-        await route.abort().catch(() => {});
+        await route.abort();
       }
     });
   });
@@ -38,7 +38,7 @@ test.describe('Comprehensive Accessibility Tests', () => {
     await page.waitForTimeout(200);
     const modal = page.locator('[role="dialog"]').first();
     if (await modal.count() > 0) {
-      await expect(modal).toBeVisible().catch(() => {});
+      await expect(modal).toBeVisible();
       // Just verify modal is visible - full keyboard trap testing requires more setup
     }
   });
@@ -47,11 +47,11 @@ test.describe('Comprehensive Accessibility Tests', () => {
     await page.goto('/dashboard');
     const bellButton = page.locator('button[aria-label*="notification" i]').first();
     if (await bellButton.count() > 0) {
-      await bellButton.click().catch(() => {});
+      await bellButton.click();
       await page.keyboard.press('Tab');
       const dropdown = page.locator('[role="menu"]').first();
       if (await dropdown.count() > 0) {
-        await expect(dropdown).toBeVisible().catch(() => {});
+        await expect(dropdown).toBeVisible();
       }
     }
   });
@@ -75,16 +75,16 @@ test.describe('Comprehensive Accessibility Tests', () => {
     await page.goto('/incidents/new');
     const submitButton = page.locator('button[type="submit"], button:has-text("Submit")').first();
     if (await submitButton.count() > 0) {
-      await submitButton.click().catch(() => {});
+      await submitButton.click();
       await page.waitForTimeout(300);
       const errorMessage = page.locator('[role="alert"], [aria-describedby]').first();
       if (await errorMessage.count() > 0) {
-        await expect(errorMessage).toBeVisible().catch(() => {});
+        await expect(errorMessage).toBeVisible();
       }
     }
   });
 
-  test('reduced motion preference respected (CDP-only, chromium)', async ({ page, context }) => {
+  test('reduced motion preference respected (CDP-only, chromium)', async ({ page, browserName }) => {
     test.skip(browserName !== 'chromium', 'CDP only available on chromium');
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await injectMockAuth(page);
@@ -93,7 +93,7 @@ test.describe('Comprehensive Accessibility Tests', () => {
       const elem = document.querySelector('button');
       return window.getComputedStyle(elem!).transitionDuration;
     });
-    await expect(computedStyle).not.toContain('0s').catch(() => {});
+    await expect(computedStyle).not.toContain('0s');
   });
 
   test('status badge colors have text labels (not color-only on /changes)', async ({ page }) => {
@@ -102,7 +102,7 @@ test.describe('Comprehensive Accessibility Tests', () => {
     for (const badge of badges) {
       const badgeElement = page.locator(`text="${badge}"`).first();
       if (await badgeElement.count() > 0) {
-        await expect(badgeElement).toBeVisible().catch(() => {});
+        await expect(badgeElement).toBeVisible();
       }
     }
   });
@@ -113,7 +113,7 @@ test.describe('Comprehensive Accessibility Tests', () => {
     for (const badge of badges) {
       const badgeElement = page.locator(`text="${badge}"`).first();
       if (await badgeElement.count() > 0) {
-        await expect(badgeElement).toBeVisible().catch(() => {});
+        await expect(badgeElement).toBeVisible();
       }
     }
   });
@@ -122,12 +122,12 @@ test.describe('Comprehensive Accessibility Tests', () => {
     await page.goto('/settings');
     const prefsTab = page.locator('button:has-text("Preferences")').first();
     if (await prefsTab.count() > 0) {
-      await prefsTab.click().catch(() => {});
+      await prefsTab.click();
       const hcButton = page.locator('button:has-text("High Contrast")').first();
       if (await hcButton.count() > 0) {
-        await hcButton.click().catch(() => {});
+        await hcButton.click();
         const htmlTheme = await page.locator('html').getAttribute('data-theme');
-        await expect(htmlTheme).toContain('high-contrast').catch(() => {});
+        await expect(htmlTheme).toContain('high-contrast');
       }
     }
   });
@@ -136,12 +136,12 @@ test.describe('Comprehensive Accessibility Tests', () => {
     await page.goto('/settings');
     const notifTab = page.locator('button:has-text("Notifications")').first();
     if (await notifTab.count() > 0) {
-      await notifTab.click().catch(() => {});
+      await notifTab.click();
       const toggle = page.locator('input[type="checkbox"], [role="switch"]').first();
       if (await toggle.count() > 0) {
         const role = await toggle.getAttribute('role');
         const type = await toggle.getAttribute('type');
-        await expect(role === 'switch' || type === 'checkbox').toBeTruthy().catch(() => {});
+        await expect(role === 'switch' || type === 'checkbox').toBeTruthy();
       }
     }
   });
@@ -153,7 +153,7 @@ test.describe('Comprehensive Accessibility Tests', () => {
     // Just verify page loads
     const heading = page.locator('h1, h2, button').first();
     if (await heading.count() > 0) {
-      await expect(heading).toBeVisible().catch(() => {});
+      await expect(heading).toBeVisible();
     }
   });
 
@@ -163,7 +163,7 @@ test.describe('Comprehensive Accessibility Tests', () => {
     for (const img of images) {
       const alt = await img.getAttribute('alt');
       if (alt !== null) {
-        await expect(alt.length).toBeGreaterThan(0).catch(() => {});
+        await expect(alt.length).toBeGreaterThan(0);
       }
     }
   });
@@ -174,13 +174,13 @@ test.describe('Comprehensive Accessibility Tests', () => {
     const navElement = page.locator('nav, [role="navigation"]').first();
     const headerElement = page.locator('header, [role="banner"]').first();
     if (await mainElement.count() > 0) {
-      await expect(mainElement).toBeVisible().catch(() => {});
+      await expect(mainElement).toBeVisible();
     }
     if (await navElement.count() > 0) {
-      await expect(navElement).toBeVisible().catch(() => {});
+      await expect(navElement).toBeVisible();
     }
     if (await headerElement.count() > 0) {
-      await expect(headerElement).toBeVisible().catch(() => {});
+      await expect(headerElement).toBeVisible();
     }
   });
 
@@ -188,7 +188,7 @@ test.describe('Comprehensive Accessibility Tests', () => {
     await page.goto('/dashboard');
     const liveRegion = page.locator('[aria-live]').first();
     if (await liveRegion.count() > 0) {
-      await expect(liveRegion).toBeVisible().catch(() => {});
+      await expect(liveRegion).toBeVisible();
     }
   });
 

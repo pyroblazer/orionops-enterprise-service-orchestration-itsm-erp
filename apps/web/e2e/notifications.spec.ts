@@ -14,10 +14,10 @@ test.describe('Notifications Center', () => {
     await page.goto('/dashboard');
     const bellButton = page.locator('button[aria-label*="notification" i]').first();
     if (await bellButton.count() > 0) {
-      await expect(bellButton).toBeVisible().catch(() => {});
+      await expect(bellButton).toBeVisible();
       const badge = page.locator('span:has-text("2")').first();
       if (await badge.count() > 0) {
-        await expect(badge).toBeVisible().catch(() => {});
+        await expect(badge).toBeVisible();
       }
     }
   });
@@ -26,10 +26,10 @@ test.describe('Notifications Center', () => {
     await page.goto('/dashboard');
     const bellButton = page.locator('button[aria-label*="notification" i]').first();
     if (await bellButton.count() > 0) {
-      await bellButton.click().catch(() => {});
+      await bellButton.click();
       const dropdownMenu = page.locator('[role="menu"], [role="listbox"]').first();
       if (await dropdownMenu.count() > 0) {
-        await expect(dropdownMenu).toBeVisible().catch(() => {});
+        await expect(dropdownMenu).toBeVisible();
       }
     }
   });
@@ -38,10 +38,10 @@ test.describe('Notifications Center', () => {
     await page.goto('/dashboard');
     const bellButton = page.locator('button[aria-label*="notification" i]').first();
     if (await bellButton.count() > 0) {
-      await bellButton.click().catch(() => {});
+      await bellButton.click();
       const notifTitle = page.locator('text="Incident INC-001 Assigned"').first();
       if (await notifTitle.count() > 0) {
-        await expect(notifTitle).toBeVisible().catch(() => {});
+        await expect(notifTitle).toBeVisible();
       }
     }
   });
@@ -50,11 +50,11 @@ test.describe('Notifications Center', () => {
     await page.goto('/dashboard');
     const bellButton = page.locator('button[aria-label*="notification" i]').first();
     if (await bellButton.count() > 0) {
-      await bellButton.click().catch(() => {});
+      await bellButton.click();
       const notifLink = page.locator('[role="menuitem"], a[href*="/incidents/"]').first();
       if (await notifLink.count() > 0) {
-        await notifLink.click().catch(() => {});
-        await page.waitForURL('**/incidents/**', { timeout: 5000 }).catch(() => {});
+        await notifLink.click();
+        await page.waitForURL('**/incidents/**', { timeout: 5000 });
       }
     }
   });
@@ -66,14 +66,14 @@ test.describe('Notifications Center', () => {
     await page.goto('/dashboard');
     const bellButton = page.locator('button[aria-label*="notification" i]').first();
     if (await bellButton.count() > 0) {
-      await bellButton.click().catch(() => {});
+      await bellButton.click();
       const markReadButton = page.locator('button:has-text("Mark all read"), button:has-text("Clear")').first();
       if (await markReadButton.count() > 0) {
-        await markReadButton.click().catch(() => {});
+        await markReadButton.click();
         await page.waitForTimeout(300);
         const badge = page.locator('span:has-text("2")').first();
         if (await badge.count() === 0) {
-          await expect(badge).not.toBeVisible().catch(() => {});
+          await expect(badge).not.toBeVisible();
         }
       }
     }
@@ -83,10 +83,10 @@ test.describe('Notifications Center', () => {
     await page.goto('/dashboard');
     const bellButton = page.locator('button[aria-label*="notification" i]').first();
     if (await bellButton.count() > 0) {
-      await bellButton.click().catch(() => {});
+      await bellButton.click();
       const timestamp = page.locator('text="ago", text="just now", text="minute"').first();
       if (await timestamp.count() > 0) {
-        await expect(timestamp).toBeVisible().catch(() => {});
+        await expect(timestamp).toBeVisible();
       }
     }
   });
@@ -95,11 +95,11 @@ test.describe('Notifications Center', () => {
     await page.goto('/dashboard');
     const bellButton = page.locator('button[aria-label*="notification" i]').first();
     if (await bellButton.count() > 0) {
-      await bellButton.click().catch(() => {});
+      await bellButton.click();
       const unreadItem = page.locator('[role="menuitem"]').first();
       if (await unreadItem.count() > 0) {
         const bgColor = await unreadItem.evaluate((el) => window.getComputedStyle(el).backgroundColor);
-        await expect(bgColor).toBeTruthy().catch(() => {});
+        await expect(bgColor).toBeTruthy();
       }
     }
   });

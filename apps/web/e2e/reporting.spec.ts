@@ -13,14 +13,14 @@ test.describe('Reporting & Analytics - Reports Page', () => {
   test('reporting page renders at /reporting', async ({ page }) => {
     await page.goto('/reporting');
     const heading = page.locator('h1, h2').first();
-    await expect(heading).toBeVisible().catch(() => {});
+    await expect(heading).toBeVisible();
   });
 
   test('period selector dropdown visible', async ({ page }) => {
     await page.goto('/reporting');
     const periodSelector = page.locator('select, button:has-text("7 days"), button:has-text("30 days")').first();
     if (await periodSelector.count() > 0) {
-      await expect(periodSelector).toBeVisible().catch(() => {});
+      await expect(periodSelector).toBeVisible();
     }
   });
 
@@ -30,7 +30,7 @@ test.describe('Reporting & Analytics - Reports Page', () => {
     for (const tab of tabs) {
       const tabButton = page.locator(`button:has-text("${tab}"), [role="tab"]:has-text("${tab}")`).first();
       if (await tabButton.count() > 0) {
-        await expect(tabButton).toBeVisible().catch(() => {});
+        await expect(tabButton).toBeVisible();
       }
     }
   });
@@ -39,12 +39,12 @@ test.describe('Reporting & Analytics - Reports Page', () => {
     await page.goto('/reporting');
     const itsmTab = page.locator('button:has-text("ITSM")').first();
     if (await itsmTab.count() > 0) {
-      await itsmTab.click().catch(() => {});
+      await itsmTab.click();
       const metrics = ['MTTR', 'MTTA', 'SLA', 'Incidents'];
       for (const metric of metrics) {
         const metricCard = page.locator(`text="${metric}"`).first();
         if (await metricCard.count() > 0) {
-          await expect(metricCard).toBeVisible().catch(() => {});
+          await expect(metricCard).toBeVisible();
         }
       }
     }
@@ -54,10 +54,10 @@ test.describe('Reporting & Analytics - Reports Page', () => {
     await page.goto('/reporting');
     const itsmTab = page.locator('button:has-text("ITSM")').first();
     if (await itsmTab.count() > 0) {
-      await itsmTab.click().catch(() => {});
+      await itsmTab.click();
       const chart = page.locator('[role="img"], svg, canvas').first();
       if (await chart.count() > 0) {
-        await expect(chart).toBeVisible().catch(() => {});
+        await expect(chart).toBeVisible();
       }
     }
   });
@@ -66,10 +66,10 @@ test.describe('Reporting & Analytics - Reports Page', () => {
     await page.goto('/reporting');
     const financeTab = page.locator('button:has-text("Finance")').first();
     if (await financeTab.count() > 0) {
-      await financeTab.click().catch(() => {});
+      await financeTab.click();
       const budgetTable = page.locator('table, [role="table"]').first();
       if (await budgetTable.count() > 0) {
-        await expect(budgetTable).toBeVisible().catch(() => {});
+        await expect(budgetTable).toBeVisible();
       }
     }
   });
@@ -78,10 +78,10 @@ test.describe('Reporting & Analytics - Reports Page', () => {
     await page.goto('/reporting');
     const procTab = page.locator('button:has-text("Procurement")').first();
     if (await procTab.count() > 0) {
-      await procTab.click().catch(() => {});
+      await procTab.click();
       const aging = page.locator('text="PO Aging", text="Vendor"').first();
       if (await aging.count() > 0) {
-        await expect(aging).toBeVisible().catch(() => {});
+        await expect(aging).toBeVisible();
       }
     }
   });
@@ -94,7 +94,7 @@ test.describe('Reporting & Analytics - Reports Page', () => {
     await page.goto('/reporting');
     const periodButton = page.locator('button:has-text("30 days")').first();
     if (await periodButton.count() > 0) {
-      await periodButton.click().catch(() => {});
+      await periodButton.click();
       await page.waitForTimeout(300);
     }
   });
@@ -104,8 +104,8 @@ test.describe('Reporting & Analytics - Reports Page', () => {
     const metricValue = page.locator('[data-testid*="metric"], .metric').first();
     if (await metricValue.count() > 0) {
       const text = await metricValue.textContent();
-      await expect(text).not.toContain('NaN').catch(() => {});
-      await expect(text).not.toContain('undefined').catch(() => {});
+      await expect(text).not.toContain('NaN');
+      await expect(text).not.toContain('undefined');
     }
   });
 });

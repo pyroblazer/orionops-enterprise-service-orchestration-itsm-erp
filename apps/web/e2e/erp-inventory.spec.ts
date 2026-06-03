@@ -13,7 +13,7 @@ test.describe('ERP - Inventory Management', () => {
   test('inventory overview renders at /inventory', async ({ page }) => {
     await page.goto('/inventory');
     const heading = page.locator('h1, h2').first();
-    await expect(heading).toBeVisible().catch(() => {});
+    await expect(heading).toBeVisible();
   });
 
   test('inventory items table displays quantity and warehouse columns', async ({ page }) => {
@@ -22,7 +22,7 @@ test.describe('ERP - Inventory Management', () => {
     if (await table.count() > 0) {
       const columns = page.locator('text="Quantity", text="Warehouse"').first();
       if (await columns.count() > 0) {
-        await expect(columns).toBeVisible().catch(() => {});
+        await expect(columns).toBeVisible();
       }
     }
   });
@@ -34,7 +34,7 @@ test.describe('ERP - Inventory Management', () => {
     await page.goto('/inventory/assets/asset-001');
     const serial = page.locator('text="Serial"').first();
     if (await serial.count() > 0) {
-      await expect(serial).toBeVisible().catch(() => {});
+      await expect(serial).toBeVisible();
     }
   });
 
@@ -42,7 +42,7 @@ test.describe('ERP - Inventory Management', () => {
     await page.goto('/inventory/cycle-counts');
     const heading = page.locator('h1, h2').first();
     if (await heading.count() > 0) {
-      await expect(heading).toBeVisible().catch(() => {});
+      await expect(heading).toBeVisible();
     }
   });
 
@@ -50,7 +50,7 @@ test.describe('ERP - Inventory Management', () => {
     await page.goto('/inventory/cycle-counts');
     const warehouse = page.locator('text="Warehouse"').first();
     if (await warehouse.count() > 0) {
-      await expect(warehouse).toBeVisible().catch(() => {});
+      await expect(warehouse).toBeVisible();
     }
   });
 
@@ -58,7 +58,7 @@ test.describe('ERP - Inventory Management', () => {
     await page.goto('/inventory/demand-planning');
     const heading = page.locator('h1, h2').first();
     if (await heading.count() > 0) {
-      await expect(heading).toBeVisible().catch(() => {});
+      await expect(heading).toBeVisible();
     }
   });
 
@@ -66,7 +66,7 @@ test.describe('ERP - Inventory Management', () => {
     await page.goto('/inventory/lots');
     const heading = page.locator('h1, h2').first();
     if (await heading.count() > 0) {
-      await expect(heading).toBeVisible().catch(() => {});
+      await expect(heading).toBeVisible();
     }
   });
 
@@ -74,7 +74,7 @@ test.describe('ERP - Inventory Management', () => {
     await page.goto('/inventory/transfers');
     const fromTo = page.locator('text="From", text="To"').first();
     if (await fromTo.count() > 0) {
-      await expect(fromTo).toBeVisible().catch(() => {});
+      await expect(fromTo).toBeVisible();
     }
   });
 });

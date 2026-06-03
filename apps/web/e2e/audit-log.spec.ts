@@ -13,14 +13,14 @@ test.describe('Audit Log Explorer', () => {
   test('audit log page renders at /audit', async ({ page }) => {
     await page.goto('/audit');
     const heading = page.locator('h1, h2').first();
-    await expect(heading).toBeVisible().catch(() => {});
+    await expect(heading).toBeVisible();
   });
 
   test('audit log displays entry table or list', async ({ page }) => {
     await page.goto('/audit');
     const entries = page.locator('table, [role="table"], [role="listbox"]').first();
     if (await entries.count() > 0) {
-      await expect(entries).toBeVisible().catch(() => {});
+      await expect(entries).toBeVisible();
     }
   });
 
@@ -28,7 +28,7 @@ test.describe('Audit Log Explorer', () => {
     await page.goto('/audit');
     const actionText = page.locator('text="INCIDENT_CREATED", text="2024"').first();
     if (await actionText.count() > 0) {
-      await expect(actionText).toBeVisible().catch(() => {});
+      await expect(actionText).toBeVisible();
     }
   });
 
@@ -36,7 +36,7 @@ test.describe('Audit Log Explorer', () => {
     await page.goto('/audit');
     const dateFilter = page.locator('input[type="date"], input[placeholder*="date" i]').first();
     if (await dateFilter.count() > 0) {
-      await expect(dateFilter).toBeVisible().catch(() => {});
+      await expect(dateFilter).toBeVisible();
     }
   });
 
@@ -44,7 +44,7 @@ test.describe('Audit Log Explorer', () => {
     await page.goto('/audit');
     const userFilter = page.locator('input[placeholder*="user" i], select[name*="actor" i]').first();
     if (await userFilter.count() > 0) {
-      await expect(userFilter).toBeVisible().catch(() => {});
+      await expect(userFilter).toBeVisible();
     }
   });
 
@@ -52,7 +52,7 @@ test.describe('Audit Log Explorer', () => {
     await page.goto('/audit');
     const actionFilter = page.locator('select[name*="action" i], input[placeholder*="action" i]').first();
     if (await actionFilter.count() > 0) {
-      await expect(actionFilter).toBeVisible().catch(() => {});
+      await expect(actionFilter).toBeVisible();
     }
   });
 
@@ -75,10 +75,10 @@ test.describe('Audit Log Explorer', () => {
     if (await exportButton.count() > 0) {
       const [download] = await Promise.all([
         page.waitForEvent('download').catch(() => null),
-        exportButton.click().catch(() => {}),
+        exportButton.click(),
       ]);
       if (download) {
-        await expect(download.suggestedFilename()).toContain('.csv').catch(() => {});
+        await expect(download.suggestedFilename()).toContain('.csv');
       }
     }
   });
@@ -87,10 +87,10 @@ test.describe('Audit Log Explorer', () => {
     await page.goto('/audit');
     const expandButton = page.locator('button[aria-label*="expand" i], tr button').first();
     if (await expandButton.count() > 0) {
-      await expandButton.click().catch(() => {});
+      await expandButton.click();
       const detailPanel = page.locator('[role="region"], [data-testid*="detail"]').first();
       if (await detailPanel.count() > 0) {
-        await expect(detailPanel).toBeVisible().catch(() => {});
+        await expect(detailPanel).toBeVisible();
       }
     }
   });
@@ -99,7 +99,7 @@ test.describe('Audit Log Explorer', () => {
     await page.goto('/audit');
     const actorEmail = page.locator('text="@"').first();
     if (await actorEmail.count() > 0) {
-      await expect(actorEmail).toBeVisible().catch(() => {});
+      await expect(actorEmail).toBeVisible();
     }
   });
 });

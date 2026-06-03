@@ -17,14 +17,14 @@ test.describe('CMDB - Configuration Management', () => {
   test('CMDB list renders at /cmdb', async ({ page }) => {
     await page.goto('/cmdb');
     const heading = page.locator('h1, h2').first();
-    await expect(heading).toBeVisible().catch(() => {});
+    await expect(heading).toBeVisible();
   });
 
   test('CMDB list displays CI type and status columns', async ({ page }) => {
     await page.goto('/cmdb');
     const columns = page.locator('text="Type", text="Status", text="APPLICATION", text="OPERATIONAL"').first();
     if (await columns.count() > 0) {
-      await expect(columns).toBeVisible().catch(() => {});
+      await expect(columns).toBeVisible();
     }
   });
 
@@ -34,7 +34,7 @@ test.describe('CMDB - Configuration Management', () => {
     });
     await page.goto('/cmdb/ci-001');
     const title = page.locator(`text="Production API Server"`).first();
-    await expect(title).toBeVisible().catch(() => {});
+    await expect(title).toBeVisible();
   });
 
   test('CI detail displays attributes section', async ({ page }) => {
@@ -44,7 +44,7 @@ test.describe('CMDB - Configuration Management', () => {
     await page.goto('/cmdb/ci-001');
     const attributes = page.locator('text="Attributes", text="hostname", text="ipAddress"').first();
     if (await attributes.count() > 0) {
-      await expect(attributes).toBeVisible().catch(() => {});
+      await expect(attributes).toBeVisible();
     }
   });
 
@@ -58,7 +58,7 @@ test.describe('CMDB - Configuration Management', () => {
     await page.goto('/cmdb/ci-001');
     const graph = page.locator('svg, [data-testid*="graph"]').first();
     if (await graph.count() > 0) {
-      await expect(graph).toBeVisible().catch(() => {});
+      await expect(graph).toBeVisible();
     }
   });
 
@@ -72,10 +72,10 @@ test.describe('CMDB - Configuration Management', () => {
     await page.goto('/cmdb/ci-001');
     const impactButton = page.locator('button:has-text("Impact")').first();
     if (await impactButton.count() > 0) {
-      await impactButton.click().catch(() => {});
+      await impactButton.click();
       const relatedList = page.locator('text="Related", text="Database"').first();
       if (await relatedList.count() > 0) {
-        await expect(relatedList).toBeVisible().catch(() => {});
+        await expect(relatedList).toBeVisible();
       }
     }
   });
@@ -84,7 +84,7 @@ test.describe('CMDB - Configuration Management', () => {
     await page.goto('/cmdb');
     const typeFilter = page.locator('select[name*="type" i], button:has-text("Type")').first();
     if (await typeFilter.count() > 0) {
-      await expect(typeFilter).toBeVisible().catch(() => {});
+      await expect(typeFilter).toBeVisible();
     }
   });
 
@@ -92,7 +92,7 @@ test.describe('CMDB - Configuration Management', () => {
     await page.goto('/cmdb');
     const createButton = page.locator('button:has-text("Create"), button:has-text("New")').first();
     if (await createButton.count() > 0) {
-      await expect(createButton).toBeVisible().catch(() => {});
+      await expect(createButton).toBeVisible();
     }
   });
 });
