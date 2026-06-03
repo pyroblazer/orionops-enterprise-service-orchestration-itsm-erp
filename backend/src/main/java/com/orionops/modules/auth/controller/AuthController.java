@@ -1,6 +1,8 @@
 package com.orionops.modules.auth.controller;
 
 import com.orionops.common.dto.ApiResponse;
+import com.orionops.modules.auth.dto.LoginRequest;
+import com.orionops.modules.auth.dto.LoginResponse;
 import com.orionops.modules.auth.dto.RegisterRequest;
 import com.orionops.modules.auth.dto.UserResponse;
 import com.orionops.modules.auth.dto.UserSyncRequest;

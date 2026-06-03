@@ -2,6 +2,8 @@ package com.orionops.modules.auth.service;
 
 import com.orionops.common.exception.ResourceNotFoundException;
 import com.orionops.common.tenant.TenantContextHolder;
+import com.orionops.modules.auth.dto.LoginRequest;
+import com.orionops.modules.auth.dto.LoginResponse;
 import com.orionops.modules.auth.dto.RegisterRequest;
 import com.orionops.modules.auth.dto.UserResponse;
 import com.orionops.modules.auth.dto.UserSyncRequest;
@@ -11,10 +13,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -28,6 +32,8 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final KeycloakService keycloakService;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtTokenProvider jwtTokenProvider;
 
     /**
      * Gets the current authenticated user from the security context.
@@ -108,6 +114,53 @@ public class AuthService {
      */
     private UUID resolveTenantId() {
         return TenantContextHolder.getCurrentTenantId();
+    }
+
+    /**
+     * Authenticates a user with username and password, returning a JWT.
+     * This bypasses Keycloak and validates against the local BCrypt hash.
+     *
+     * @param request login credentials (username + password)
+     * @return LoginResponse with JWT, or empty if authentication fails
+     */
+    @Transactional(readOnly = true)
+    public Optional<LoginResponse> loginWithPassword(LoginRequest request) {
+        // Look up by username, fall back to email
+        Optional<User> userOpt = userRepository.findByUsername(request.getUsername());
+        if (userOpt.isEmpty()) {
+            userOpt = userRepository.findByEmail(request.getUsername());
+        }
+
+        if (userOpt.isEmpty()) {
+            log.warn("Login failed: user not found for username={}", request.getUsername());
+            return Optional.empty();
+        }
+
+        User user = userOpt.get();
+
+        if (!user.isActive() || user.getPasswordHash() == null) {
+            log.warn("Login failed: user inactive or no password set for username={}", request.getUsername());
+            return Optional.empty();
+        }
+
+        if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
+            log.warn("Login failed: invalid password for username={}", request.getUsername());
+            return Optional.empty();
+        }
+
+        try {
+            String token = jwtTokenProvider.generateToken(user);
+            LoginResponse response = LoginResponse.builder()
+                    .accessToken(token)
+                    .tokenType("Bearer")
+                    .expiresIn(jwtTokenProvider.getExpirationSeconds())
+                    .build();
+            log.info("User logged in successfully: username={}", user.getUsername());
+            return Optional.of(response);
+        } catch (Exception e) {
+            log.error("Failed to generate JWT for user: {}", user.getUsername(), e);
+            return Optional.empty();
+        }
     }
 
     /**
