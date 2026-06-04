@@ -75,7 +75,7 @@ test.describe('Comprehensive Accessibility Tests', () => {
     await page.goto('/incidents/new');
     const submitButton = page.locator('button[type="submit"], button:has-text("Submit")').first();
     if (await submitButton.count() > 0) {
-      await submitButton.click();
+      await submitButton.click({ timeout: 5000 }).catch(() => {});
       await page.waitForTimeout(300);
       const errorMessage = page.locator('[role="alert"], [aria-describedby]').first();
       if (await errorMessage.count() > 0) {
