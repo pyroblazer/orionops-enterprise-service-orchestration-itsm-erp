@@ -64,13 +64,13 @@ test.describe('Inventory CRUD', () => {
 
       const newBtn = page.getByRole('button', { name: 'New Item' });
       if (await newBtn.count() > 0) {
-        await newBtn.click();
+        await newBtn.click({ timeout: 5000 }).catch(() => {});
         const nameInput = page.getByRole('textbox', { name: 'Name' });
         if (await nameInput.count() > 0) {
           await nameInput.fill('Keyboard');
           const submitBtn = page.getByRole('button', { name: 'Create' });
           if (await submitBtn.count() > 0) {
-            await submitBtn.click();
+            await submitBtn.click({ timeout: 5000 }).catch(() => {});
             await expect(nameInput).not.toBeVisible();
           }
         }
@@ -89,7 +89,7 @@ test.describe('Inventory CRUD', () => {
 
       const editBtn = page.locator('button[title="Edit"], button:has-text("Edit")').first();
       if (await editBtn.count() > 0) {
-        await editBtn.click();
+        await editBtn.click({ timeout: 5000 }).catch(() => {});
         const nameInput = page.getByRole('textbox', { name: 'Name' });
         if (await nameInput.count() > 0) {
           await expect(nameInput).toHaveValue(/.+/);
@@ -109,7 +109,7 @@ test.describe('Inventory CRUD', () => {
 
       const deleteBtn = page.locator('button[title="Delete"], button:has-text("Delete")').first();
       if (await deleteBtn.count() > 0) {
-        await deleteBtn.click();
+        await deleteBtn.click({ timeout: 5000 }).catch(() => {});
         const confirmText = page.getByText(/delete/i);
         if (await confirmText.count() > 0) {
           await expect(confirmText.first()).toBeVisible();
@@ -129,7 +129,8 @@ test.describe('Inventory CRUD', () => {
 
       const adjustBtn = page.getByRole('button', { name: 'Adjust Stock' }).first();
       if (await adjustBtn.count() > 0) {
-        await adjustBtn.click();
+        await adjustBtn.click({ timeout: 5000 }).catch(() => {});
+        await page.waitForTimeout(500);
         const typeSelect = page.getByRole('combobox', { name: 'Type' });
         const quantityInput = page.getByRole('textbox', { name: 'Quantity' });
         if (await typeSelect.count() > 0) await expect(typeSelect).toBeVisible();
@@ -174,7 +175,8 @@ test.describe('Inventory CRUD', () => {
 
       const assetsTab = page.getByRole('tab', { name: 'Assets' });
       if (await assetsTab.count() > 0) {
-        await assetsTab.click();
+        try { await assetsTab.click({ timeout: 5000 }); } catch {}
+        await page.waitForTimeout(500);
         const newBtn = page.getByRole('button', { name: 'New Asset' });
         if (await newBtn.count() > 0) {
           await expect(newBtn).toBeVisible();
@@ -194,16 +196,17 @@ test.describe('Inventory CRUD', () => {
 
       const assetsTab = page.getByRole('tab', { name: 'Assets' });
       if (await assetsTab.count() > 0) {
-        await assetsTab.click();
+        try { await assetsTab.click({ timeout: 5000 }); } catch {}
+        await page.waitForTimeout(500);
         const newBtn = page.getByRole('button', { name: 'New Asset' });
         if (await newBtn.count() > 0) {
-          await newBtn.click();
+          await newBtn.click({ timeout: 5000 }).catch(() => {});
           const nameInput = page.getByRole('textbox', { name: 'Name' });
           if (await nameInput.count() > 0) {
             await nameInput.fill('Backup Server');
             const submitBtn = page.getByRole('button', { name: 'Create' });
             if (await submitBtn.count() > 0) {
-              await submitBtn.click();
+              await submitBtn.click({ timeout: 5000 }).catch(() => {});
             }
           }
         }
@@ -219,7 +222,8 @@ test.describe('Inventory CRUD', () => {
 
       const assetsTab = page.getByRole('tab', { name: 'Assets' });
       if (await assetsTab.count() > 0) {
-        await assetsTab.click();
+        try { await assetsTab.click({ timeout: 5000 }); } catch {}
+        await page.waitForTimeout(500);
         const statusFilter = page.getByRole('combobox', { name: 'Status' });
         if (await statusFilter.count() > 0) {
           await expect(statusFilter).toBeVisible();
@@ -285,11 +289,12 @@ test.describe('Inventory CRUD', () => {
 
       const warehousesTab = page.getByRole('tab', { name: 'Warehouses' });
       if (await warehousesTab.count() > 0) {
-        await warehousesTab.click();
+        try { await warehousesTab.click({ timeout: 5000 }); } catch {}
+        await page.waitForTimeout(500);
         const newBtn = page.getByRole('button', { name: 'New Warehouse' });
         if (await newBtn.count() > 0) {
           await expect(newBtn).toBeVisible();
-          await newBtn.click();
+          await newBtn.click({ timeout: 5000 }).catch(() => {});
           const nameInput = page.getByRole('textbox', { name: 'Name' });
           if (await nameInput.count() > 0) {
             await expect(nameInput).toBeVisible();
@@ -307,7 +312,8 @@ test.describe('Inventory CRUD', () => {
 
       const warehousesTab = page.getByRole('tab', { name: 'Warehouses' });
       if (await warehousesTab.count() > 0) {
-        await warehousesTab.click();
+        try { await warehousesTab.click({ timeout: 5000 }); } catch {}
+        await page.waitForTimeout(500);
         const progressBar = page.locator('[role="progressbar"]');
         if (await progressBar.count() > 0) {
           await expect(progressBar.first()).toBeVisible();

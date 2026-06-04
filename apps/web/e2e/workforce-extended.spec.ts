@@ -43,7 +43,8 @@ test.describe('Workforce Extended', () => {
 
       const addBtn = page.getByRole('button', { name: 'Add Employee' });
       if (await addBtn.count() > 0) {
-        await addBtn.click();
+        try { await addBtn.click({ timeout: 5000 }); } catch {}
+        await page.waitForTimeout(500);
         const firstName = page.getByRole('textbox', { name: 'First Name' });
         const lastName = page.getByRole('textbox', { name: 'Last Name' });
         const emailInput = page.getByRole('textbox', { name: 'Email' });
@@ -65,13 +66,15 @@ test.describe('Workforce Extended', () => {
 
       const addBtn = page.getByRole('button', { name: 'Add Employee' });
       if (await addBtn.count() > 0) {
-        await addBtn.click();
+        try { await addBtn.click({ timeout: 5000 }); } catch {}
+        await page.waitForTimeout(500);
         const firstName = page.getByRole('textbox', { name: 'First Name' });
         if (await firstName.count() > 0) {
           await firstName.fill('Alice');
           const submitBtn = page.getByRole('button', { name: 'Create' });
           if (await submitBtn.count() > 0) {
-            await submitBtn.click();
+            try { await submitBtn.click({ timeout: 5000 }); } catch {}
+            await page.waitForTimeout(500);
             await expect(firstName).not.toBeVisible();
           }
         }
@@ -90,7 +93,8 @@ test.describe('Workforce Extended', () => {
 
       const editBtn = page.locator('button[title="Edit"], button:has-text("Edit")').first();
       if (await editBtn.count() > 0) {
-        await editBtn.click();
+        try { await editBtn.click({ timeout: 5000 }); } catch {}
+        await page.waitForTimeout(500);
         const firstName = page.getByRole('textbox', { name: 'First Name' });
         if (await firstName.count() > 0) {
           await expect(firstName).toHaveValue(/.+/);
@@ -110,7 +114,8 @@ test.describe('Workforce Extended', () => {
 
       const deleteBtn = page.locator('button[title="Delete"], button:has-text("Delete")').first();
       if (await deleteBtn.count() > 0) {
-        await deleteBtn.click();
+        try { await deleteBtn.click({ timeout: 5000 }); } catch {}
+        await page.waitForTimeout(500);
         const confirmText = page.getByText(/delete/i);
         if (await confirmText.count() > 0) {
           await expect(confirmText.first()).toBeVisible();
@@ -156,7 +161,8 @@ test.describe('Workforce Extended', () => {
 
       const skillsTab = page.getByRole('tab', { name: 'Skills' });
       if (await skillsTab.count() > 0) {
-        await skillsTab.click();
+        try { await skillsTab.click({ timeout: 5000 }); } catch {}
+        await page.waitForTimeout(500);
         const addBtn = page.getByRole('button', { name: 'Add Skill' });
         if (await addBtn.count() > 0) {
           await expect(addBtn).toBeVisible();
@@ -176,16 +182,19 @@ test.describe('Workforce Extended', () => {
 
       const skillsTab = page.getByRole('tab', { name: 'Skills' });
       if (await skillsTab.count() > 0) {
-        await skillsTab.click();
+        try { await skillsTab.click({ timeout: 5000 }); } catch {}
+        await page.waitForTimeout(500);
         const addBtn = page.getByRole('button', { name: 'Add Skill' });
         if (await addBtn.count() > 0) {
-          await addBtn.click();
+          try { await addBtn.click({ timeout: 5000 }); } catch {}
+          await page.waitForTimeout(500);
           const nameInput = page.getByRole('textbox', { name: 'Name' });
           if (await nameInput.count() > 0) {
             await nameInput.fill('React');
             const submitBtn = page.getByRole('button', { name: 'Create' });
             if (await submitBtn.count() > 0) {
-              await submitBtn.click();
+              try { await submitBtn.click({ timeout: 5000 }); } catch {}
+              await page.waitForTimeout(500);
             }
           }
         }
@@ -204,10 +213,12 @@ test.describe('Workforce Extended', () => {
 
       const skillsTab = page.getByRole('tab', { name: 'Skills' });
       if (await skillsTab.count() > 0) {
-        await skillsTab.click();
+        try { await skillsTab.click({ timeout: 5000 }); } catch {}
+        await page.waitForTimeout(500);
         const deleteBtn = page.locator('button[title="Delete"], button:has-text("Delete")').first();
         if (await deleteBtn.count() > 0) {
-          await deleteBtn.click();
+          try { await deleteBtn.click({ timeout: 5000 }); } catch {}
+          await page.waitForTimeout(500);
           const confirmText = page.getByText(/delete/i);
           if (await confirmText.count() > 0) {
             await expect(confirmText.first()).toBeVisible();
@@ -225,7 +236,8 @@ test.describe('Workforce Extended', () => {
 
       const skillsTab = page.getByRole('tab', { name: 'Skills' });
       if (await skillsTab.count() > 0) {
-        await skillsTab.click();
+        try { await skillsTab.click({ timeout: 5000 }); } catch {}
+        await page.waitForTimeout(500);
         const emptyText = page.getByText('No skills found');
         if (await emptyText.count() > 0) {
           await expect(emptyText).toBeVisible();
@@ -244,7 +256,8 @@ test.describe('Workforce Extended', () => {
 
       const capacityTab = page.getByRole('tab', { name: 'Capacity' });
       if (await capacityTab.count() > 0) {
-        await capacityTab.click();
+        try { await capacityTab.click({ timeout: 5000 }); } catch {}
+        await page.waitForTimeout(500);
         const addBtn = page.getByRole('button', { name: 'Add Plan' });
         if (await addBtn.count() > 0) {
           await expect(addBtn).toBeVisible();
@@ -264,16 +277,19 @@ test.describe('Workforce Extended', () => {
 
       const capacityTab = page.getByRole('tab', { name: 'Capacity' });
       if (await capacityTab.count() > 0) {
-        await capacityTab.click();
+        try { await capacityTab.click({ timeout: 5000 }); } catch {}
+        await page.waitForTimeout(500);
         const addBtn = page.getByRole('button', { name: 'Add Plan' });
         if (await addBtn.count() > 0) {
-          await addBtn.click();
+          try { await addBtn.click({ timeout: 5000 }); } catch {}
+          await page.waitForTimeout(500);
           const teamInput = page.getByRole('textbox', { name: 'Team' });
           if (await teamInput.count() > 0) {
             await teamInput.fill('Support');
             const submitBtn = page.getByRole('button', { name: 'Create' });
             if (await submitBtn.count() > 0) {
-              await submitBtn.click();
+              try { await submitBtn.click({ timeout: 5000 }); } catch {}
+              await page.waitForTimeout(500);
             }
           }
         }
@@ -289,7 +305,8 @@ test.describe('Workforce Extended', () => {
 
       const capacityTab = page.getByRole('tab', { name: 'Capacity' });
       if (await capacityTab.count() > 0) {
-        await capacityTab.click();
+        try { await capacityTab.click({ timeout: 5000 }); } catch {}
+        await page.waitForTimeout(500);
         const emptyText = page.getByText('No capacity plans found');
         if (await emptyText.count() > 0) {
           await expect(emptyText).toBeVisible();

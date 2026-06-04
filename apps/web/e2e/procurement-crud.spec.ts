@@ -111,7 +111,9 @@ test.describe('Procurement CRUD', () => {
         await editBtn.click();
         const titleInput = page.getByRole('textbox', { name: 'Title' });
         if (await titleInput.count() > 0) {
-          await expect(titleInput).toHaveValue(/.+/);
+          if (await titleInput.count() > 0) {
+            await expect(titleInput).toHaveValue(/.+/);
+          }
         }
       }
     });
@@ -175,6 +177,7 @@ test.describe('Procurement CRUD', () => {
       const poTab = page.getByRole('tab', { name: 'Purchase Orders' });
       if (await poTab.count() > 0) {
         await poTab.click();
+        await page.waitForTimeout(500);
         const poTable = page.locator('table');
         if (await poTable.count() > 0) {
           await expect(poTable).toBeVisible();
@@ -192,6 +195,7 @@ test.describe('Procurement CRUD', () => {
       const poTab = page.getByRole('tab', { name: 'Purchase Orders' });
       if (await poTab.count() > 0) {
         await poTab.click();
+        await page.waitForTimeout(500);
         const emptyText = page.getByText('No purchase orders found');
         if (await emptyText.count() > 0) {
           await expect(emptyText).toBeVisible();
@@ -211,6 +215,7 @@ test.describe('Procurement CRUD', () => {
       const contractsTab = page.getByRole('tab', { name: 'Contracts' });
       if (await contractsTab.count() > 0) {
         await contractsTab.click();
+        await page.waitForTimeout(500);
         const newBtn = page.getByRole('button', { name: 'New Contract' });
         if (await newBtn.count() > 0) {
           await expect(newBtn).toBeVisible();
@@ -231,6 +236,7 @@ test.describe('Procurement CRUD', () => {
       const contractsTab = page.getByRole('tab', { name: 'Contracts' });
       if (await contractsTab.count() > 0) {
         await contractsTab.click();
+        await page.waitForTimeout(500);
         const newBtn = page.getByRole('button', { name: 'New Contract' });
         if (await newBtn.count() > 0) {
           await newBtn.click();
@@ -266,6 +272,7 @@ test.describe('Procurement CRUD', () => {
       const contractsTab = page.getByRole('tab', { name: 'Contracts' });
       if (await contractsTab.count() > 0) {
         await contractsTab.click();
+        await page.waitForTimeout(500);
 
         // Edit
         const editBtn = page.locator('button[title="Edit"], button:has-text("Edit")').first();
@@ -273,7 +280,9 @@ test.describe('Procurement CRUD', () => {
           await editBtn.click();
           const titleInput = page.getByRole('textbox', { name: 'Title' });
           if (await titleInput.count() > 0) {
-            await expect(titleInput).toHaveValue(/.+/);
+            if (await titleInput.count() > 0) {
+              await expect(titleInput).toHaveValue(/.+/);
+            }
           }
         }
       }
@@ -289,6 +298,7 @@ test.describe('Procurement CRUD', () => {
       const contractsTab = page.getByRole('tab', { name: 'Contracts' });
       if (await contractsTab.count() > 0) {
         await contractsTab.click();
+        await page.waitForTimeout(500);
         const activeBadge = page.getByText('active');
         if (await activeBadge.count() > 0) {
           await expect(activeBadge.first()).toBeVisible();
@@ -306,6 +316,7 @@ test.describe('Procurement CRUD', () => {
       const contractsTab = page.getByRole('tab', { name: 'Contracts' });
       if (await contractsTab.count() > 0) {
         await contractsTab.click();
+        await page.waitForTimeout(500);
         const emptyText = page.getByText('No contracts found');
         if (await emptyText.count() > 0) {
           await expect(emptyText).toBeVisible();

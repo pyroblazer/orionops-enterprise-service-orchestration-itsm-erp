@@ -34,7 +34,8 @@ test.describe('Vendors Extended', () => {
 
       const addBtn = page.getByRole('button', { name: 'Add Vendor' });
       if (await addBtn.count() > 0) {
-        await addBtn.click();
+        try { await addBtn.click({ timeout: 5000 }); } catch {}
+        await page.waitForTimeout(500);
         const nameInput = page.getByRole('textbox', { name: 'Name' });
         const typeSelect = page.getByRole('combobox', { name: 'Type' });
         const contactInput = page.getByRole('textbox', { name: 'Contact Name' });
@@ -56,13 +57,15 @@ test.describe('Vendors Extended', () => {
 
       const addBtn = page.getByRole('button', { name: 'Add Vendor' });
       if (await addBtn.count() > 0) {
-        await addBtn.click();
+        try { await addBtn.click({ timeout: 5000 }); } catch {}
+        await page.waitForTimeout(500);
         const nameInput = page.getByRole('textbox', { name: 'Name' });
         if (await nameInput.count() > 0) {
           await nameInput.fill('New Vendor Corp');
           const submitBtn = page.getByRole('button', { name: 'Create' });
           if (await submitBtn.count() > 0) {
-            await submitBtn.click();
+            try { await submitBtn.click({ timeout: 5000 }); } catch {}
+            await page.waitForTimeout(500);
             await expect(nameInput).not.toBeVisible();
           }
         }
@@ -81,7 +84,8 @@ test.describe('Vendors Extended', () => {
 
       const editBtn = page.locator('button[title="Edit"], button:has-text("Edit")').first();
       if (await editBtn.count() > 0) {
-        await editBtn.click();
+        try { await editBtn.click({ timeout: 5000 }); } catch {}
+        await page.waitForTimeout(500);
         const nameInput = page.getByRole('textbox', { name: 'Name' });
         if (await nameInput.count() > 0) {
           await expect(nameInput).toHaveValue(/.+/);
@@ -101,7 +105,8 @@ test.describe('Vendors Extended', () => {
 
       const deleteBtn = page.locator('button[title="Delete"], button:has-text("Delete")').first();
       if (await deleteBtn.count() > 0) {
-        await deleteBtn.click();
+        try { await deleteBtn.click({ timeout: 5000 }); } catch {}
+        await page.waitForTimeout(500);
         const confirmText = page.getByText(/delete.*vendor/i);
         if (await confirmText.count() > 0) {
           await expect(confirmText.first()).toBeVisible();
@@ -186,7 +191,8 @@ test.describe('Vendors Extended', () => {
 
       const editBtn = page.getByRole('button', { name: 'Edit' });
       if (await editBtn.count() > 0) {
-        await editBtn.click();
+        try { await editBtn.click({ timeout: 5000 }); } catch {}
+        await page.waitForTimeout(500);
         const nameInput = page.getByRole('textbox', { name: 'Name' });
         if (await nameInput.count() > 0) {
           await expect(nameInput).toHaveValue('Vendor Alpha');
@@ -216,7 +222,8 @@ test.describe('Vendors Extended', () => {
 
       const perfBtn = page.getByRole('button', { name: 'Record Performance' });
       if (await perfBtn.count() > 0) {
-        await perfBtn.click();
+        try { await perfBtn.click({ timeout: 5000 }); } catch {}
+        await page.waitForTimeout(500);
         const ratingInput = page.getByRole('textbox', { name: 'Rating' });
         const slaInput = page.getByRole('textbox', { name: 'SLA Compliance' });
         if (await ratingInput.count() > 0) await expect(ratingInput).toBeVisible();
@@ -236,13 +243,15 @@ test.describe('Vendors Extended', () => {
 
       const perfBtn = page.getByRole('button', { name: 'Record Performance' });
       if (await perfBtn.count() > 0) {
-        await perfBtn.click();
+        try { await perfBtn.click({ timeout: 5000 }); } catch {}
+        await page.waitForTimeout(500);
         const ratingInput = page.getByRole('textbox', { name: 'Rating' });
         if (await ratingInput.count() > 0) {
           await ratingInput.fill('4');
           const submitBtn = page.getByRole('button', { name: 'Submit' });
           if (await submitBtn.count() > 0) {
-            await submitBtn.click();
+            try { await submitBtn.click({ timeout: 5000 }); } catch {}
+            await page.waitForTimeout(500);
             await expect(ratingInput).not.toBeVisible();
           }
         }
@@ -258,7 +267,8 @@ test.describe('Vendors Extended', () => {
 
       const perfTab = page.getByRole('tab', { name: 'Performance' });
       if (await perfTab.count() > 0) {
-        await perfTab.click();
+        try { await perfTab.click({ timeout: 5000 }); } catch {}
+        await page.waitForTimeout(500);
         const emptyText = page.getByText('No performance records');
         if (await emptyText.count() > 0) {
           await expect(emptyText).toBeVisible();

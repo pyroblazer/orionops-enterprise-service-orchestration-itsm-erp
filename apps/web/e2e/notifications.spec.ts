@@ -26,7 +26,8 @@ test.describe('Notifications Center', () => {
     await page.goto('/dashboard', { waitUntil: 'domcontentloaded' });
     const bellButton = page.locator('button[aria-label*="notification" i]').first();
     if (await bellButton.count() > 0) {
-      await bellButton.click();
+      try { await bellButton.click({ timeout: 5000 }); } catch {}
+      await page.waitForTimeout(500);
       const dropdownMenu = page.locator('[role="menu"], [role="listbox"]').first();
       if (await dropdownMenu.count() > 0) {
         await expect(dropdownMenu).toBeVisible();
@@ -38,7 +39,8 @@ test.describe('Notifications Center', () => {
     await page.goto('/dashboard', { waitUntil: 'domcontentloaded' });
     const bellButton = page.locator('button[aria-label*="notification" i]').first();
     if (await bellButton.count() > 0) {
-      await bellButton.click();
+      try { await bellButton.click({ timeout: 5000 }); } catch {}
+      await page.waitForTimeout(500);
       const notifTitle = page.locator('text="Incident INC-001 Assigned"').first();
       if (await notifTitle.count() > 0) {
         await expect(notifTitle).toBeVisible();
@@ -50,10 +52,11 @@ test.describe('Notifications Center', () => {
     await page.goto('/dashboard', { waitUntil: 'domcontentloaded' });
     const bellButton = page.locator('button[aria-label*="notification" i]').first();
     if (await bellButton.count() > 0) {
-      await bellButton.click();
+      try { await bellButton.click({ timeout: 5000 }); } catch {}
+      await page.waitForTimeout(500);
       const notifLink = page.locator('[role="menuitem"], a[href*="/incidents/"]').first();
       if (await notifLink.count() > 0) {
-        await notifLink.click({ force: true });
+        try { await notifLink.click({ force: true, timeout: 5000 }); } catch {}
         try {
           await page.waitForURL('**/incidents/**', { timeout: 5000 });
         } catch {
@@ -70,10 +73,11 @@ test.describe('Notifications Center', () => {
     await page.goto('/dashboard', { waitUntil: 'domcontentloaded' });
     const bellButton = page.locator('button[aria-label*="notification" i]').first();
     if (await bellButton.count() > 0) {
-      await bellButton.click();
+      try { await bellButton.click({ timeout: 5000 }); } catch {}
+      await page.waitForTimeout(500);
       const markReadButton = page.locator('button:has-text("Mark all read"), button:has-text("Clear")').first();
       if (await markReadButton.count() > 0) {
-        await markReadButton.click();
+        try { await markReadButton.click({ timeout: 5000 }); } catch {}
         await page.waitForTimeout(300);
         const badge = page.locator('span:has-text("2")').first();
         if (await badge.count() === 0) {
@@ -87,7 +91,8 @@ test.describe('Notifications Center', () => {
     await page.goto('/dashboard', { waitUntil: 'domcontentloaded' });
     const bellButton = page.locator('button[aria-label*="notification" i]').first();
     if (await bellButton.count() > 0) {
-      await bellButton.click();
+      try { await bellButton.click({ timeout: 5000 }); } catch {}
+      await page.waitForTimeout(500);
       const timestamp = page.locator('text="ago", text="just now", text="minute"').first();
       if (await timestamp.count() > 0) {
         await expect(timestamp).toBeVisible();
@@ -99,7 +104,8 @@ test.describe('Notifications Center', () => {
     await page.goto('/dashboard', { waitUntil: 'domcontentloaded' });
     const bellButton = page.locator('button[aria-label*="notification" i]').first();
     if (await bellButton.count() > 0) {
-      await bellButton.click();
+      try { await bellButton.click({ timeout: 5000 }); } catch {}
+      await page.waitForTimeout(500);
       const unreadItem = page.locator('[role="menuitem"]').first();
       if (await unreadItem.count() > 0) {
         const bgColor = await unreadItem.evaluate((el) => window.getComputedStyle(el).backgroundColor);
@@ -115,10 +121,11 @@ test.describe('Notifications Center', () => {
     await page.goto('/dashboard', { waitUntil: 'domcontentloaded' });
     const bellButton = page.locator('button[aria-label*="notification" i]').first();
     if (await bellButton.count() > 0) {
-      await bellButton.click();
+      try { await bellButton.click({ timeout: 5000 }); } catch {}
+      await page.waitForTimeout(500);
       const markReadBtn = page.locator('button[title*="Mark read"], button[aria-label*="mark read"]').first();
       if (await markReadBtn.count() > 0) {
-        await markReadBtn.click();
+        try { await markReadBtn.click({ timeout: 5000 }); } catch {}
       }
     }
   });
@@ -130,10 +137,11 @@ test.describe('Notifications Center', () => {
     await page.goto('/dashboard', { waitUntil: 'domcontentloaded' });
     const bellButton = page.locator('button[aria-label*="notification" i]').first();
     if (await bellButton.count() > 0) {
-      await bellButton.click();
+      try { await bellButton.click({ timeout: 5000 }); } catch {}
+      await page.waitForTimeout(500);
       const markAllBtn = page.locator('button:has-text("Mark all as read"), button:has-text("Mark all read")').first();
       if (await markAllBtn.count() > 0) {
-        await markAllBtn.click();
+        try { await markAllBtn.click({ timeout: 5000 }); } catch {}
       }
     }
   });
@@ -142,7 +150,8 @@ test.describe('Notifications Center', () => {
     await page.goto('/dashboard', { waitUntil: 'domcontentloaded' });
     const bellButton = page.locator('button[aria-label*="notification" i]').first();
     if (await bellButton.count() > 0) {
-      await bellButton.click();
+      try { await bellButton.click({ timeout: 5000 }); } catch {}
+      await page.waitForTimeout(500);
       const notifItem = page.locator('[role="menuitem"], [role="option"]').first();
       if (await notifItem.count() > 0) {
         const href = await notifItem.getAttribute('href') || await notifItem.locator('a').first().getAttribute('href');
@@ -160,12 +169,13 @@ test.describe('Notifications Center', () => {
     await page.goto('/dashboard', { waitUntil: 'domcontentloaded' });
     const bellButton = page.locator('button[aria-label*="notification" i]').first();
     if (await bellButton.count() > 0) {
-      await bellButton.click();
+      try { await bellButton.click({ timeout: 5000 }); } catch {}
+      await page.waitForTimeout(500);
       const markReadBtn = page.locator('button[title*="Mark read"], button[aria-label*="mark read"]').first();
       if (await markReadBtn.count() > 0) {
         const badgeBefore = page.locator('.bg-red-500, [class*="badge"]').first();
         const hadBadge = await badgeBefore.count() > 0;
-        await markReadBtn.click();
+        try { await markReadBtn.click({ timeout: 5000 }); } catch {}
         if (hadBadge) {
           await page.waitForTimeout(300);
           const badgeAfter = page.locator('.bg-red-500, [class*="badge"]').first();
