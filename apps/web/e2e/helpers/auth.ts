@@ -2,6 +2,12 @@ import { Page } from '@playwright/test';
 
 export async function injectMockAuth(page: Page) {
   await page.goto('/');
+  await page.context().addCookies([{
+    name: 'orionops_authenticated',
+    value: 'true',
+    domain: 'localhost',
+    path: '/',
+  }]);
   await page.evaluate(() => {
     localStorage.setItem('orionops_access_token', 'mock-token-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9');
     localStorage.setItem('orionops_refresh_token', 'mock-refresh-token');
@@ -16,11 +22,17 @@ export async function injectMockAuth(page: Page) {
 
 export async function injectExpiredAuth(page: Page) {
   await page.goto('/');
+  await page.context().addCookies([{
+    name: 'orionops_authenticated',
+    value: 'true',
+    domain: 'localhost',
+    path: '/',
+  }]);
   await page.evaluate(() => {
     const expiredToken =
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MDAwMDAwMDB9.expired';
-    localStorage.setItem('access_token', expiredToken);
-    localStorage.setItem('refresh_token', 'mock-refresh-token');
+    localStorage.setItem('orionops_access_token', expiredToken);
+    localStorage.setItem('orionops_refresh_token', 'mock-refresh-token');
     localStorage.setItem('user', JSON.stringify({
       id: 'u1',
       name: 'Test User',
@@ -31,10 +43,11 @@ export async function injectExpiredAuth(page: Page) {
 }
 
 export async function clearAuth(page: Page) {
+  await page.context().clearCookies();
   await page.evaluate(() => {
     try {
-      localStorage.removeItem('access_token');
-      localStorage.removeItem('refresh_token');
+      localStorage.removeItem('orionops_access_token');
+      localStorage.removeItem('orionops_refresh_token');
       localStorage.removeItem('user');
     } catch (e) {
       // localStorage may not be accessible on auth pages

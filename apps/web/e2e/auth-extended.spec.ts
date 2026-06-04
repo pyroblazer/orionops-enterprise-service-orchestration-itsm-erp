@@ -43,7 +43,7 @@ test.describe('Extended Authentication', () => {
   test('session expiry redirects to login', async ({ page }) => {
     // Just navigate without auth - should redirect to login
     await page.goto('/dashboard');
-    await page.waitForURL('**/login', { timeout: 5000 });
+    await expect(page).toHaveURL(/\/login/);
   });
 
   test('sign out from user menu clears session', async ({ page }) => {
