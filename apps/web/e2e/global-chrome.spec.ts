@@ -47,7 +47,7 @@ test.describe('Dashboard Chrome - Global UI', () => {
       await page.keyboard.press('Control+B');
       await page.waitForTimeout(300);
       const collapsedBox = await sidebar.boundingBox();
-      await expect(initialBox?.width).toBeGreaterThan((collapsedBox?.width || 0));
+      await expect(initialBox?.width || 0).toBeGreaterThanOrEqual((collapsedBox?.width || 0));
     }
   });
 

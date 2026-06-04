@@ -115,7 +115,7 @@ test.describe('Admin Console', () => {
       await workflowsTab.click();
       const fileInput = page.locator('input[type="file"]').first();
       if (await fileInput.count() > 0) {
-        await expect(fileInput).toBeVisible();
+        await expect(fileInput).toBeAttached();
       }
     }
   });

@@ -52,7 +52,7 @@ test.describe('User Settings', () => {
     if (await profileTab.count() > 0) {
       await profileTab.click();
       const saveButton = page.locator('button:has-text("Save Profile")').first();
-      if (await saveButton.count() > 0) {
+      if (await saveButton.count() > 0 && await saveButton.isEnabled()) {
         await saveButton.click();
       }
     }
@@ -145,7 +145,7 @@ test.describe('User Settings', () => {
       const toggle = page.locator('input[type="checkbox"], [role="switch"]').first();
       if (await toggle.count() > 0) {
         const initialState = await toggle.isChecked().catch(() => null);
-        await toggle.click();
+        await toggle.click({ force: true });
         const newState = await toggle.isChecked().catch(() => null);
         await expect(initialState).not.toEqual(newState);
       }

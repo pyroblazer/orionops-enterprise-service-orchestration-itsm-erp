@@ -18,7 +18,7 @@ test.describe('ERP - Service Billing', () => {
 
   test('billing overview displays usage metric cards', async ({ page }) => {
     await page.goto('/billing');
-    const cards = page.locator('[role="status"], [data-testid*="card"]').first();
+    const cards = page.locator('[role="status"], [data-testid*="card"], .card, [class*="card"]').first();
     if (await cards.count() > 0) {
       await expect(cards).toBeVisible();
     }

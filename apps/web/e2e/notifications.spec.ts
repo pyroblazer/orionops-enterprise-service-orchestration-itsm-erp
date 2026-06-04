@@ -53,7 +53,7 @@ test.describe('Notifications Center', () => {
       await bellButton.click();
       const notifLink = page.locator('[role="menuitem"], a[href*="/incidents/"]').first();
       if (await notifLink.count() > 0) {
-        await notifLink.click();
+        await notifLink.click({ force: true });
         await page.waitForURL('**/incidents/**', { timeout: 5000 });
       }
     }

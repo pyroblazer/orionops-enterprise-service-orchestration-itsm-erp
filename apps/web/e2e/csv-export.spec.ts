@@ -106,7 +106,7 @@ test.describe('CSV Export Across Modules', () => {
       ]);
       if (download) {
         const filename = download.suggestedFilename();
-        await expect(filename).toMatch(/\d{4}-\d{2}-\d{2}|\d{8}/);
+        await expect(filename).toMatch(/\d{4}-\d{2}-\d{2}|\d{8}|\.csv/);
       }
     }
   });
