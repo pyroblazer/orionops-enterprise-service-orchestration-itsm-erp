@@ -1,4 +1,4 @@
-import { Page, BrowserContext } from '@playwright/test';
+import { Page } from '@playwright/test';
 
 /**
  * Inject mock authentication state WITHOUT navigating to any page.
