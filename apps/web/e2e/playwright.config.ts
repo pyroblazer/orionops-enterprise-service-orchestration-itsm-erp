@@ -29,7 +29,7 @@ export default defineConfig({
     ]),
   ],
   webServer: process.env.CI ? {
-    command: 'node -e "require(\'fs\').cpSync(\'.next/static\',\'.next/standalone/.next/static\',{recursive:true})" && node .next/standalone/server.js',
+    command: 'npx next start',
     url: 'http://localhost:3000',
     reuseExistingServer: false,
     timeout: 120000,
