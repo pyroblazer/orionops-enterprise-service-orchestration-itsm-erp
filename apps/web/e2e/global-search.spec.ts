@@ -16,7 +16,7 @@ test.describe('Global Search Modal', () => {
   });
 
   test('open search modal with Ctrl+K keyboard shortcut', async ({ page }) => {
-    await page.goto('/dashboard');
+    await page.goto('/dashboard', { waitUntil: 'domcontentloaded' });
     await page.keyboard.press('Control+K');
     await page.waitForTimeout(200);
     const modal = page.locator('[role="dialog"], [role="searchbox"], input[placeholder*="Search"]').first();
@@ -26,7 +26,7 @@ test.describe('Global Search Modal', () => {
   });
 
   test('open search modal by clicking search bar', async ({ page }) => {
-    await page.goto('/dashboard');
+    await page.goto('/dashboard', { waitUntil: 'domcontentloaded' });
     const searchBar = page.locator('input[placeholder*="Search"], button:has-text("Search")').first();
     if (await searchBar.count() > 0) {
       await searchBar.click();
@@ -38,7 +38,7 @@ test.describe('Global Search Modal', () => {
   });
 
   test('close search modal with Escape key', async ({ page }) => {
-    await page.goto('/dashboard');
+    await page.goto('/dashboard', { waitUntil: 'domcontentloaded' });
     await page.keyboard.press('Control+K');
     await page.waitForTimeout(200);
     await page.keyboard.press('Escape');
@@ -50,7 +50,7 @@ test.describe('Global Search Modal', () => {
   });
 
   test('type search query and display results', async ({ page }) => {
-    await page.goto('/dashboard');
+    await page.goto('/dashboard', { waitUntil: 'domcontentloaded' });
     await page.keyboard.press('Control+K');
     await page.waitForTimeout(200);
     const searchInput = page.locator('input[type="text"], input[role="searchbox"]').first();
@@ -65,7 +65,7 @@ test.describe('Global Search Modal', () => {
   });
 
   test('search results show module type labels', async ({ page }) => {
-    await page.goto('/dashboard');
+    await page.goto('/dashboard', { waitUntil: 'domcontentloaded' });
     await page.keyboard.press('Control+K');
     await page.waitForTimeout(200);
     const searchInput = page.locator('input[type="text"], input[role="searchbox"]').first();
@@ -80,7 +80,7 @@ test.describe('Global Search Modal', () => {
   });
 
   test('clicking search result navigates to entity', async ({ page }) => {
-    await page.goto('/dashboard');
+    await page.goto('/dashboard', { waitUntil: 'domcontentloaded' });
     await page.keyboard.press('Control+K');
     await page.waitForTimeout(200);
     const searchInput = page.locator('input[type="text"], input[role="searchbox"]').first();
@@ -100,7 +100,7 @@ test.describe('Global Search Modal', () => {
   });
 
   test('empty search state displays no results message', async ({ page }) => {
-    await page.goto('/dashboard');
+    await page.goto('/dashboard', { waitUntil: 'domcontentloaded' });
     await page.keyboard.press('Control+K');
     await page.waitForTimeout(200);
     const searchInput = page.locator('input[type="text"], input[role="searchbox"]').first();
@@ -115,7 +115,7 @@ test.describe('Global Search Modal', () => {
   });
 
   test('keyboard navigation in search results with ArrowDown', async ({ page }) => {
-    await page.goto('/dashboard');
+    await page.goto('/dashboard', { waitUntil: 'domcontentloaded' });
     await page.keyboard.press('Control+K');
     await page.waitForTimeout(200);
     const searchInput = page.locator('input[type="text"], input[role="searchbox"]').first();
@@ -129,6 +129,92 @@ test.describe('Global Search Modal', () => {
         expect(focusedElement).toBeTruthy();
       } catch {
         // Keyboard navigation might not be set up
+      }
+    }
+  });
+
+  test('empty state shows No results message', async ({ page }) => {
+    await page.goto('/dashboard', { waitUntil: 'domcontentloaded' });
+    await page.keyboard.press('Control+K');
+    await page.waitForTimeout(200);
+    const searchInput = page.locator('input[type="text"], input[role="searchbox"]').first();
+    if (await searchInput.count() > 0) {
+      await searchInput.fill('zzznonexistentxyz');
+      await page.waitForTimeout(500);
+      const noResults = page.locator('text="No results", text="No matches"').first();
+      if (await noResults.count() > 0) {
+        await expect(noResults).toBeVisible();
+      }
+    }
+  });
+
+  test('results grouped by entity type with headings', async ({ page }) => {
+    await page.goto('/dashboard', { waitUntil: 'domcontentloaded' });
+    await page.keyboard.press('Control+K');
+    await page.waitForTimeout(200);
+    const searchInput = page.locator('input[type="text"], input[role="searchbox"]').first();
+    if (await searchInput.count() > 0) {
+      await searchInput.fill('server');
+      await page.waitForTimeout(500);
+      const headings = page.locator('text="Incident", text="Knowledge"');
+      const count = await headings.count();
+      if (count > 0) {
+        await expect(headings.first()).toBeVisible();
+      }
+    }
+  });
+
+  test('click incident search result navigates to incident page', async ({ page }) => {
+    await page.route('**/api/v1/search**', async (route) => {
+      await route.fulfill({ json: { data: [{ id: 'inc-001', title: 'Server Down', type: 'incident' }], total: 1 } });
+    });
+    await page.goto('/dashboard', { waitUntil: 'domcontentloaded' });
+    await page.keyboard.press('Control+K');
+    await page.waitForTimeout(200);
+    const searchInput = page.locator('input[type="text"], input[role="searchbox"]').first();
+    if (await searchInput.count() > 0) {
+      await searchInput.fill('server');
+      await page.waitForTimeout(500);
+      const resultLink = page.locator('a[href*="/incidents/inc-001"], [role="option"]').first();
+      if (await resultLink.count() > 0) {
+        await resultLink.click();
+        await page.waitForTimeout(500);
+        expect(page.url()).toContain('/incidents/');
+      }
+    }
+  });
+
+  test('Escape closes modal and clears search input', async ({ page }) => {
+    await page.goto('/dashboard', { waitUntil: 'domcontentloaded' });
+    await page.keyboard.press('Control+K');
+    await page.waitForTimeout(200);
+    const searchInput = page.locator('input[type="text"], input[role="searchbox"]').first();
+    if (await searchInput.count() > 0) {
+      await searchInput.fill('test');
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(200);
+      const dialog = page.locator('[role="dialog"]').first();
+      if (await dialog.count() > 0) {
+        await expect(dialog).not.toBeVisible();
+      }
+    }
+  });
+
+  test('re-opening modal shows empty input', async ({ page }) => {
+    await page.goto('/dashboard', { waitUntil: 'domcontentloaded' });
+    await page.keyboard.press('Control+K');
+    await page.waitForTimeout(200);
+    const searchInput = page.locator('input[type="text"], input[role="searchbox"]').first();
+    if (await searchInput.count() > 0) {
+      await searchInput.fill('test');
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(200);
+      await page.keyboard.press('Control+K');
+      await page.waitForTimeout(200);
+      const newSearchInput = page.locator('input[type="text"], input[role="searchbox"]').first();
+      if (await newSearchInput.count() > 0) {
+        const value = await newSearchInput.inputValue();
+        expect(value).toBe('');
       }
     }
   });

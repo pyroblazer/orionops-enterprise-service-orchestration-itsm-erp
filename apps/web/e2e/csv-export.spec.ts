@@ -22,7 +22,7 @@ test.describe('CSV Export Across Modules', () => {
   });
 
   test('incidents list export downloads CSV file', async ({ page }) => {
-    await page.goto('/incidents');
+    await page.goto('/incidents', { waitUntil: 'domcontentloaded' });
     const exportButton = page.locator('button:has-text("Export")').first();
     if (await exportButton.count() > 0) {
       const [download] = await Promise.all([
@@ -37,7 +37,7 @@ test.describe('CSV Export Across Modules', () => {
   });
 
   test('problems list export downloads CSV file', async ({ page }) => {
-    await page.goto('/problems');
+    await page.goto('/problems', { waitUntil: 'domcontentloaded' });
     const exportButton = page.locator('button:has-text("Export")').first();
     if (await exportButton.count() > 0) {
       try {
@@ -56,7 +56,7 @@ test.describe('CSV Export Across Modules', () => {
   });
 
   test('changes list export downloads CSV file', async ({ page }) => {
-    await page.goto('/changes');
+    await page.goto('/changes', { waitUntil: 'domcontentloaded' });
     const exportButton = page.locator('button:has-text("Export")').first();
     if (await exportButton.count() > 0) {
       const [download] = await Promise.all([
@@ -71,7 +71,7 @@ test.describe('CSV Export Across Modules', () => {
   });
 
   test('audit log export downloads CSV file', async ({ page }) => {
-    await page.goto('/audit');
+    await page.goto('/audit', { waitUntil: 'domcontentloaded' });
     const exportButton = page.locator('button:has-text("Export")').first();
     if (await exportButton.count() > 0) {
       const [download] = await Promise.all([
@@ -86,7 +86,7 @@ test.describe('CSV Export Across Modules', () => {
   });
 
   test('exported filename contains module name', async ({ page }) => {
-    await page.goto('/incidents');
+    await page.goto('/incidents', { waitUntil: 'domcontentloaded' });
     const exportButton = page.locator('button:has-text("Export")').first();
     if (await exportButton.count() > 0) {
       const [download] = await Promise.all([
@@ -101,7 +101,7 @@ test.describe('CSV Export Across Modules', () => {
   });
 
   test('exported filename contains timestamp or date', async ({ page }) => {
-    await page.goto('/incidents');
+    await page.goto('/incidents', { waitUntil: 'domcontentloaded' });
     const exportButton = page.locator('button:has-text("Export")').first();
     if (await exportButton.count() > 0) {
       const [download] = await Promise.all([
@@ -111,6 +111,114 @@ test.describe('CSV Export Across Modules', () => {
       if (download) {
         const filename = download.suggestedFilename();
         await expect(filename).toMatch(/\d{4}-\d{2}-\d{2}|\d{8}|\.csv/);
+      }
+    }
+  });
+
+  test('knowledge list export downloads CSV file', async ({ page }) => {
+    await page.route('**/api/v1/knowledge**', async (route) => {
+      await route.fulfill({ json: mocks.mockKnowledge.list });
+    });
+    await page.goto('/knowledge', { waitUntil: 'domcontentloaded' });
+    const exportButton = page.locator('button:has-text("Export")').first();
+    if (await exportButton.count() > 0) {
+      const [download] = await Promise.all([
+        page.waitForEvent('download').catch(() => null),
+        exportButton.click(),
+      ]);
+      if (download) {
+        const filename = download.suggestedFilename();
+        await expect(filename).toContain('.csv');
+      }
+    }
+  });
+
+  test('SLA list export downloads CSV file', async ({ page }) => {
+    await page.route('**/api/v1/sla/**', async (route) => {
+      await route.fulfill({ json: mocks.mockSLA.instances });
+    });
+    await page.goto('/sla', { waitUntil: 'domcontentloaded' });
+    const exportButton = page.locator('button:has-text("Export")').first();
+    if (await exportButton.count() > 0) {
+      const [download] = await Promise.all([
+        page.waitForEvent('download').catch(() => null),
+        exportButton.click(),
+      ]);
+      if (download) {
+        const filename = download.suggestedFilename();
+        await expect(filename).toContain('.csv');
+      }
+    }
+  });
+
+  test('CMDB list export downloads CSV file', async ({ page }) => {
+    await page.route('**/api/v1/cmdb/**', async (route) => {
+      await route.fulfill({ json: mocks.mockCMDB.list });
+    });
+    await page.goto('/cmdb', { waitUntil: 'domcontentloaded' });
+    const exportButton = page.locator('button:has-text("Export")').first();
+    if (await exportButton.count() > 0) {
+      const [download] = await Promise.all([
+        page.waitForEvent('download').catch(() => null),
+        exportButton.click(),
+      ]);
+      if (download) {
+        const filename = download.suggestedFilename();
+        await expect(filename).toContain('.csv');
+      }
+    }
+  });
+
+  test('vendors list export downloads CSV file', async ({ page }) => {
+    await page.route('**/api/v1/vendors**', async (route) => {
+      await route.fulfill({ json: mocks.mockVendors.list });
+    });
+    await page.goto('/vendors', { waitUntil: 'domcontentloaded' });
+    const exportButton = page.locator('button:has-text("Export")').first();
+    if (await exportButton.count() > 0) {
+      const [download] = await Promise.all([
+        page.waitForEvent('download').catch(() => null),
+        exportButton.click(),
+      ]);
+      if (download) {
+        const filename = download.suggestedFilename();
+        await expect(filename).toContain('.csv');
+      }
+    }
+  });
+
+  test('finance list export downloads CSV file', async ({ page }) => {
+    await page.route('**/api/v1/finance/**', async (route) => {
+      await route.fulfill({ json: mocks.mockFinance });
+    });
+    await page.goto('/finance', { waitUntil: 'domcontentloaded' });
+    const exportButton = page.locator('button:has-text("Export")').first();
+    if (await exportButton.count() > 0) {
+      const [download] = await Promise.all([
+        page.waitForEvent('download').catch(() => null),
+        exportButton.click(),
+      ]);
+      if (download) {
+        const filename = download.suggestedFilename();
+        await expect(filename).toContain('.csv');
+      }
+    }
+  });
+
+  test('inventory list export downloads CSV file', async ({ page }) => {
+    await page.route('**/api/v1/inventory/**', async (route) => {
+      await route.fulfill({ json: mocks.mockInventory });
+    });
+    await page.goto('/inventory', { waitUntil: 'domcontentloaded' });
+    const exportButton = page.locator('button:has-text("Export")').first();
+    if (await exportButton.count() > 0) {
+      const [download] = await Promise.all([
+        page.waitForEvent('download').catch(() => null),
+        exportButton.click(),
+      ]);
+      if (download) {
+        const filename = download.suggestedFilename();
+        await expect(filename).toContain('.csv');
       }
     }
   });

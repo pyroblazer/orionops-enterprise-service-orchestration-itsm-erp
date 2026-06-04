@@ -558,3 +558,179 @@ export const mockSettings = {
     department: 'IT Operations',
   },
 };
+
+export const mockTransfers = {
+  list: { data: [
+    { id: 'tr-001', sku: 'RAM-16GB', fromWarehouse: 'WH-001', toWarehouse: 'WH-002', quantity: 10, status: 'PENDING' },
+    { id: 'tr-002', sku: 'SSD-512', fromWarehouse: 'WH-002', toWarehouse: 'WH-003', quantity: 5, status: 'IN_TRANSIT' },
+    { id: 'tr-003', sku: 'CPU-AMD', fromWarehouse: 'WH-001', toWarehouse: 'WH-003', quantity: 2, status: 'RECEIVED' },
+  ], total: 3 },
+  created: { data: { id: 'tr-004', sku: 'RAM-16GB', fromWarehouse: 'WH-001', toWarehouse: 'WH-002', quantity: 20, status: 'PENDING' } },
+  transited: { data: { id: 'tr-001', sku: 'RAM-16GB', fromWarehouse: 'WH-001', toWarehouse: 'WH-002', quantity: 10, status: 'IN_TRANSIT' } },
+  received: { data: { id: 'tr-002', sku: 'SSD-512', fromWarehouse: 'WH-002', toWarehouse: 'WH-003', quantity: 5, status: 'RECEIVED' } },
+};
+
+export const mockLots = {
+  list: { data: [
+    { id: 'lot-001', sku: 'RAM-16GB', lotNumber: 'LOT-2024-001', quantity: 100, expiryDate: '2026-12-31', status: 'ACTIVE' },
+    { id: 'lot-002', sku: 'SSD-512', lotNumber: 'LOT-2024-002', quantity: 50, expiryDate: '2025-01-01', status: 'ACTIVE' },
+  ], total: 2 },
+  expiring: { data: [
+    { id: 'lot-002', sku: 'SSD-512', lotNumber: 'LOT-2024-002', daysRemaining: 30 },
+  ]},
+};
+
+export const mockDemandPlan = {
+  list: { data: [
+    { sku: 'RAM-16GB', reorderPoint: 20, reorderQuantity: 50, forecastAccuracy: '92%' },
+    { sku: 'SSD-512', reorderPoint: 10, reorderQuantity: 25, forecastAccuracy: '92%' },
+  ], total: 2 },
+};
+
+export const mockApprovalAuthorities = {
+  list: { data: [], total: 0 },
+  canApprove: { data: { canApprove: true, reason: 'User has authority up to $10,000' } },
+  cannotApprove: { data: { canApprove: false, reason: 'Amount exceeds user authority limit' } },
+  created: { data: { id: 'auth-001', userId: 'u1', activityType: 'APPROVE_PO', maxAmount: 5000 } },
+};
+
+export const mockSpendAnalysis = {
+  concentration: { data: { risk: 'MEDIUM', topVendorPercentage: 42, totalVendors: 15, consolidationPotential: 125000 } },
+  byVendor: { data: [
+    { vendorName: 'Vendor A', totalSpend: 500000, percentage: 42 },
+    { vendorName: 'Vendor B', totalSpend: 350000, percentage: 29 },
+  ]},
+  byCategory: { data: [
+    { category: 'Software', totalSpend: 400000 },
+    { category: 'Hardware', totalSpend: 300000 },
+  ]},
+  consolidation: { data: { opportunities: [], totalSavings: 125000 } },
+};
+
+export const mockBudgetDetail = {
+  data: { id: 'budget-001', name: 'Software Development', total: 250000, spent: 185000, period: '2026 Q2', utilization: 74 },
+};
+
+export const mockCostCenterDetail = {
+  data: { id: 'cc-001', name: 'Engineering Department', code: 'CC-001', owner: 'John Doe', budgetAmount: 500000, status: 'ACTIVE' },
+};
+
+export const mockPurchaseRequests = {
+  list: { data: [
+    { id: 'pr-001', title: 'Office Supplies', estimatedCost: 5000, status: 'draft', priority: 'medium', currency: 'USD', quantity: 10, requiredDate: '2026-07-01', justification: 'Quarterly restock' },
+    { id: 'pr-002', title: 'Server Hardware', estimatedCost: 25000, status: 'approved', priority: 'high', currency: 'USD', quantity: 2, requiredDate: '2026-08-15', justification: 'Data center expansion' },
+  ], total: 2 },
+};
+
+export const mockContracts = {
+  list: { data: [
+    { id: 'contract-001', title: 'Cloud Services Agreement', vendorId: 'v-001', contractValue: 100000, currency: 'USD', startDate: '2026-01-01', endDate: '2026-12-31', autoRenewal: true, status: 'active' },
+  ], total: 1 },
+};
+
+export const mockRFQDetail = {
+  data: { id: 'rfq-001', title: 'Server Procurement RFQ', status: 'SENT', deadline: '2026-07-15', vendorsSolicited: 3, bidResponses: 2, bids: [
+    { vendorId: 'v-001', vendorName: 'Vendor A', price: 45000, deliveryDays: 14, qualityRating: 4.5, score: 87 },
+    { vendorId: 'v-002', vendorName: 'Vendor B', price: 52000, deliveryDays: 7, qualityRating: 4.0, score: 72 },
+  ]},
+};
+
+export const mockMatchingExceptions = {
+  data: [
+    { id: 'match-001', invoiceId: 'inv-001', variance: 500, reason: 'Price mismatch', status: 'PENDING' },
+    { id: 'match-002', invoiceId: 'inv-002', variance: 0, reason: null, status: 'RESOLVED' },
+  ],
+};
+
+export const mockGLAccounts = {
+  data: [
+    { code: '1000', name: 'Cash', type: 'ASSET', balance: 150000 },
+    { code: '2000', name: 'Accounts Payable', type: 'LIABILITY', balance: 45000 },
+    { code: '3000', name: 'Revenue', type: 'REVENUE', balance: 250000 },
+  ],
+};
+
+export const mockForecast = {
+  data: {
+    budgets: [{ id: 'budget-001', name: 'IT Operations', totalAmount: 500000, spentAmount: 250000, forecastSpend: 400000 }],
+    alerts: [{ budgetId: 'budget-001', budgetName: 'IT Operations', percentUsed: 85, message: 'Approaching budget limit' }],
+  },
+};
+
+export const mockExpenses = {
+  list: { data: [
+    { id: 'exp-001', title: 'Travel Expense', amount: 1500, currency: 'USD', category: 'travel', date: '2026-05-15', status: 'pending', description: 'Conference attendance' },
+    { id: 'exp-002', title: 'Software License', amount: 5000, currency: 'USD', category: 'software', date: '2026-06-01', status: 'approved', description: 'Annual renewal' },
+  ], total: 2 },
+};
+
+export const mockInvoices = {
+  list: { data: [
+    { id: 'inv-001', invoiceNumber: 'INV-2026-001', vendorId: 'v-001', amount: 10000, currency: 'USD', dueDate: '2026-07-01', status: 'sent', notes: '' },
+    { id: 'inv-002', invoiceNumber: 'INV-2026-002', vendorId: 'v-002', amount: 5000, currency: 'USD', dueDate: '2026-06-15', status: 'paid', notes: '' },
+  ], total: 2 },
+};
+
+export const mockCostCenters = {
+  list: { data: [
+    { id: 'cc-001', name: 'Engineering', code: 'CC-001', status: 'active', description: 'Engineering department' },
+  ], total: 1 },
+};
+
+export const mockEmployees = {
+  list: { data: [
+    { id: 'emp-001', employeeNumber: 'EMP-001', firstName: 'John', lastName: 'Doe', email: 'john@orionops.com', department: 'IT', jobTitle: 'Engineer', status: 'active', skills: ['Java', 'Python'] },
+    { id: 'emp-002', employeeNumber: 'EMP-002', firstName: 'Jane', lastName: 'Smith', email: 'jane@orionops.com', department: 'Support', jobTitle: 'Analyst', status: 'active', skills: ['ITIL', 'SQL'] },
+  ], total: 2 },
+};
+
+export const mockSkills = {
+  list: { data: [
+    { id: 'skill-001', name: 'Java', category: 'technical', description: 'Java programming' },
+    { id: 'skill-002', name: 'ITIL', category: 'certification', description: 'ITIL Foundation' },
+  ], total: 2 },
+};
+
+export const mockCapacityPlans = {
+  list: { data: [
+    { id: 'cap-001', team: 'Engineering', periodStart: '2026-06-01', periodEnd: '2026-06-30', allocatedHours: 1600, availableHours: 2000 },
+  ], total: 1 },
+};
+
+export const mockBillingUsage = {
+  list: { data: [
+    { id: 'usage-001', service: 'Compute', usageType: 'hours', quantity: 500, unit: 'hours', recordedAt: '2026-06-01' },
+  ], total: 1 },
+};
+
+export const mockBillingRecords = {
+  list: { data: [
+    { id: 'rec-001', period: '2026-05', tenantId: 't-001', amount: 5000, status: 'paid' },
+    { id: 'rec-002', period: '2026-06', tenantId: 't-001', amount: 7000, status: 'pending' },
+  ], total: 2 },
+};
+
+export const mockCostModels = {
+  list: { data: [
+    { id: 'cm-001', name: 'Standard Compute', modelType: 'per_unit', status: 'active', description: 'Per-hour compute pricing', effectiveFrom: '2026-01-01', effectiveTo: '2026-12-31' },
+  ], total: 1 },
+};
+
+export const mockVendorDetail = {
+  data: { id: 'v-001', name: 'Vendor Alpha', type: 'service', status: 'active', contactName: 'Bob Johnson', contactEmail: 'bob@vendor.com', website: 'https://vendor.com', notes: 'Preferred vendor', slaCompliance: 98, performanceRating: 4.5 },
+};
+
+export const mockVendorPerformance = {
+  list: { data: [] },
+  created: { data: { id: 'vp-001', vendorId: 'v-001', rating: 4, slaCompliance: 95, onTimeDelivery: 90, evaluationDate: '2026-06-01' } },
+};
+
+export const mockCycleCounts = {
+  list: { data: [
+    { id: 'cc-001', warehouse: 'WH-001', scheduleDate: '2026-06-15', lastCountDate: '2026-05-15', itemsVariance: 3 },
+  ], total: 1 },
+};
+
+export const mockAssetDetail = {
+  data: { id: 'asset-001', name: 'Production Server', assetTag: 'AST-001', type: 'server', serialNumber: 'SN-12345', purchaseDate: '2025-01-15', purchaseValue: 15000, assignedTo: 'IT Ops', location: 'Data Center A', warrantyExpiry: '2028-01-15', status: 'in_use', bookValue: 11250, depreciationMethod: 'STRAIGHT_LINE', annualDepreciation: 3750, usefulLifeYears: 4 },
+};

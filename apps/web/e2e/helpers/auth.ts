@@ -1,14 +1,23 @@
-import { Page } from '@playwright/test';
+import { Page, BrowserContext } from '@playwright/test';
 
+/**
+ * Inject mock authentication state WITHOUT navigating to any page.
+ * Sets cookies via the context API and localStorage via addInitScript.
+ * This avoids frame detachment errors that occur when navigating twice in sequence.
+ */
 export async function injectMockAuth(page: Page) {
-  await page.goto('/');
-  await page.context().addCookies([{
+  const context = page.context();
+
+  // Set auth cookie via context API (works before any navigation)
+  await context.addCookies([{
     name: 'orionops_authenticated',
     value: 'true',
     domain: 'localhost',
     path: '/',
   }]);
-  await page.evaluate(() => {
+
+  // Inject localStorage values via addInitScript so they're set on every page load
+  await page.addInitScript(() => {
     localStorage.setItem('orionops_access_token', 'mock-token-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9');
     localStorage.setItem('orionops_refresh_token', 'mock-refresh-token');
     localStorage.setItem('user', JSON.stringify({
@@ -21,14 +30,14 @@ export async function injectMockAuth(page: Page) {
 }
 
 export async function injectExpiredAuth(page: Page) {
-  await page.goto('/');
-  await page.context().addCookies([{
+  const context = page.context();
+  await context.addCookies([{
     name: 'orionops_authenticated',
     value: 'true',
     domain: 'localhost',
     path: '/',
   }]);
-  await page.evaluate(() => {
+  await page.addInitScript(() => {
     const expiredToken =
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MDAwMDAwMDB9.expired';
     localStorage.setItem('orionops_access_token', expiredToken);
@@ -54,5 +63,35 @@ export async function clearAuth(page: Page) {
     }
   }).catch(() => {
     // Ignore localStorage errors on protected pages
+  });
+}
+
+export async function setupCallbackAuth(page: Page, code = 'mock-auth-code') {
+  await page.evaluate(() => {
+    sessionStorage.setItem('orionops_oauth_state', 'mock-state-value');
+    sessionStorage.setItem('orionops_pkce_verifier', 'mock-pkce-verifier');
+  });
+}
+
+/**
+ * Mock all unmatched API calls with empty responses. Register this AFTER
+ * your specific route mocks so the specific ones take priority.
+ * Playwright checks routes in registration order (first match wins).
+ */
+export async function mockUnmatchedApiCalls(page: Page) {
+  await page.route('**/api/v1/**', async (route) => {
+    const method = route.request().method();
+    if (method === 'GET') {
+      return route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ data: [], total: 0 }),
+      });
+    }
+    return route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ data: {} }),
+    });
   });
 }

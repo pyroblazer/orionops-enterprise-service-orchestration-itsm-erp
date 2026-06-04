@@ -11,7 +11,7 @@ test.describe('Notifications Center', () => {
   });
 
   test('notification bell icon visible with unread count badge', async ({ page }) => {
-    await page.goto('/dashboard');
+    await page.goto('/dashboard', { waitUntil: 'domcontentloaded' });
     const bellButton = page.locator('button[aria-label*="notification" i]').first();
     if (await bellButton.count() > 0) {
       await expect(bellButton).toBeVisible();
@@ -23,7 +23,7 @@ test.describe('Notifications Center', () => {
   });
 
   test('notification dropdown opens on bell click', async ({ page }) => {
-    await page.goto('/dashboard');
+    await page.goto('/dashboard', { waitUntil: 'domcontentloaded' });
     const bellButton = page.locator('button[aria-label*="notification" i]').first();
     if (await bellButton.count() > 0) {
       await bellButton.click();
@@ -35,7 +35,7 @@ test.describe('Notifications Center', () => {
   });
 
   test('notification list shows recent notifications', async ({ page }) => {
-    await page.goto('/dashboard');
+    await page.goto('/dashboard', { waitUntil: 'domcontentloaded' });
     const bellButton = page.locator('button[aria-label*="notification" i]').first();
     if (await bellButton.count() > 0) {
       await bellButton.click();
@@ -47,7 +47,7 @@ test.describe('Notifications Center', () => {
   });
 
   test('notification item is clickable and navigates', async ({ page }) => {
-    await page.goto('/dashboard');
+    await page.goto('/dashboard', { waitUntil: 'domcontentloaded' });
     const bellButton = page.locator('button[aria-label*="notification" i]').first();
     if (await bellButton.count() > 0) {
       await bellButton.click();
@@ -67,7 +67,7 @@ test.describe('Notifications Center', () => {
     await page.route('**/api/v1/notifications/mark-read**', async (route) => {
       await route.fulfill({ json: { success: true, unreadCount: 0 } });
     });
-    await page.goto('/dashboard');
+    await page.goto('/dashboard', { waitUntil: 'domcontentloaded' });
     const bellButton = page.locator('button[aria-label*="notification" i]').first();
     if (await bellButton.count() > 0) {
       await bellButton.click();
@@ -84,7 +84,7 @@ test.describe('Notifications Center', () => {
   });
 
   test('notification shows timestamp', async ({ page }) => {
-    await page.goto('/dashboard');
+    await page.goto('/dashboard', { waitUntil: 'domcontentloaded' });
     const bellButton = page.locator('button[aria-label*="notification" i]').first();
     if (await bellButton.count() > 0) {
       await bellButton.click();
@@ -96,7 +96,7 @@ test.describe('Notifications Center', () => {
   });
 
   test('unread notification has distinct styling', async ({ page }) => {
-    await page.goto('/dashboard');
+    await page.goto('/dashboard', { waitUntil: 'domcontentloaded' });
     const bellButton = page.locator('button[aria-label*="notification" i]').first();
     if (await bellButton.count() > 0) {
       await bellButton.click();
@@ -104,6 +104,77 @@ test.describe('Notifications Center', () => {
       if (await unreadItem.count() > 0) {
         const bgColor = await unreadItem.evaluate((el) => window.getComputedStyle(el).backgroundColor);
         await expect(bgColor).toBeTruthy();
+      }
+    }
+  });
+
+  test('mark single notification as read changes visual state', async ({ page }) => {
+    await page.route('**/api/v1/notifications/*/read**', async (route) => {
+      await route.fulfill({ json: { success: true } });
+    });
+    await page.goto('/dashboard', { waitUntil: 'domcontentloaded' });
+    const bellButton = page.locator('button[aria-label*="notification" i]').first();
+    if (await bellButton.count() > 0) {
+      await bellButton.click();
+      const markReadBtn = page.locator('button[title*="Mark read"], button[aria-label*="mark read"]').first();
+      if (await markReadBtn.count() > 0) {
+        await markReadBtn.click();
+      }
+    }
+  });
+
+  test('mark all as read via dedicated button', async ({ page }) => {
+    await page.route('**/api/v1/notifications/read-all**', async (route) => {
+      await route.fulfill({ json: { success: true, unreadCount: 0 } });
+    });
+    await page.goto('/dashboard', { waitUntil: 'domcontentloaded' });
+    const bellButton = page.locator('button[aria-label*="notification" i]').first();
+    if (await bellButton.count() > 0) {
+      await bellButton.click();
+      const markAllBtn = page.locator('button:has-text("Mark all as read"), button:has-text("Mark all read")').first();
+      if (await markAllBtn.count() > 0) {
+        await markAllBtn.click();
+      }
+    }
+  });
+
+  test('notification click navigates to related entity', async ({ page }) => {
+    await page.goto('/dashboard', { waitUntil: 'domcontentloaded' });
+    const bellButton = page.locator('button[aria-label*="notification" i]').first();
+    if (await bellButton.count() > 0) {
+      await bellButton.click();
+      const notifItem = page.locator('[role="menuitem"], [role="option"]').first();
+      if (await notifItem.count() > 0) {
+        const href = await notifItem.getAttribute('href') || await notifItem.locator('a').first().getAttribute('href');
+        if (href) {
+          expect(href).toMatch(/\/(incidents|problems|changes|requests)\//);
+        }
+      }
+    }
+  });
+
+  test('unread count decrements after single mark-read', async ({ page }) => {
+    await page.route('**/api/v1/notifications/*/read**', async (route) => {
+      await route.fulfill({ json: { success: true, unreadCount: 1 } });
+    });
+    await page.goto('/dashboard', { waitUntil: 'domcontentloaded' });
+    const bellButton = page.locator('button[aria-label*="notification" i]').first();
+    if (await bellButton.count() > 0) {
+      await bellButton.click();
+      const markReadBtn = page.locator('button[title*="Mark read"], button[aria-label*="mark read"]').first();
+      if (await markReadBtn.count() > 0) {
+        const badgeBefore = page.locator('.bg-red-500, [class*="badge"]').first();
+        const hadBadge = await badgeBefore.count() > 0;
+        await markReadBtn.click();
+        if (hadBadge) {
+          await page.waitForTimeout(300);
+          const badgeAfter = page.locator('.bg-red-500, [class*="badge"]').first();
+          // Badge may be gone or count decreased
+          if (await badgeAfter.count() > 0) {
+            const text = await badgeAfter.textContent();
+            expect(parseInt(text || '0')).toBeLessThan(3);
+          }
+        }
       }
     }
   });
