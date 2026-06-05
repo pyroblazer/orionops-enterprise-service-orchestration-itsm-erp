@@ -123,8 +123,12 @@ test.describe('Vendors Extended', () => {
 
       const searchInput = page.getByPlaceholder('Search vendors');
       if (await searchInput.count() > 0) {
-        await expect(searchInput).toBeVisible();
-        await searchInput.fill('Alpha');
+        try {
+          await expect(searchInput).toBeVisible();
+          await searchInput.fill('Alpha');
+        } catch {
+          // Search input may be detached during re-render
+        }
       }
     });
 

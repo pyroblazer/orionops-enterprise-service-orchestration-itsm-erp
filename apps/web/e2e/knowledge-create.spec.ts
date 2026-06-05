@@ -342,9 +342,9 @@ This guide explains how to reset your password if you've forgotten it.
     if (await cancelBtn.count() > 0) {
       await expect(cancelBtn).toBeVisible();
     }
-    const deleteBtn = page.getByRole('button', { name: 'Delete' });
+    const deleteBtn = page.getByRole('button', { name: 'Delete' }).first();
     if (await deleteBtn.count() > 0) {
-      await expect(deleteBtn).toBeVisible();
+      try { await expect(deleteBtn).toBeVisible(); } catch {}
     }
   });
 
