@@ -205,6 +205,14 @@ springdoc:
     oauth2-redirect-url: /api/swagger-ui/oauth2-redirect.html
 
 # ---------------------------------------------------------------------------
+# Application Auth (local JWT without Keycloak)
+# ---------------------------------------------------------------------------
+app:
+  auth:
+    jwt-secret: ${JWT_SECRET:orionops-local-dev-secret-key-min-32-chars!!}
+    jwt-expiration: ${JWT_EXPIRATION:1800}
+
+# ---------------------------------------------------------------------------
 # Actuator
 # ---------------------------------------------------------------------------
 management:

@@ -1379,6 +1379,26 @@ export const auth = {
     }
   },
   loginWithPassword: async (username: string, password: string): Promise<void> => {
+    // Try backend local auth first (works without Keycloak)
+    try {
+      const res = await fetch(`${API_BASE_URL}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      });
+      if (res.ok) {
+        const json = await res.json();
+        const { accessToken } = json.data || json;
+        if (accessToken) {
+          auth.setTokens(accessToken);
+          return;
+        }
+      }
+    } catch {
+      // Backend unavailable, fall through to Keycloak
+    }
+
+    // Fallback: Keycloak ROPC grant
     const res = await fetch(
       `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/token`,
       {

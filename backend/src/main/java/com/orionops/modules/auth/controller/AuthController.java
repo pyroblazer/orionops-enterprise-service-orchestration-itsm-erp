@@ -32,6 +32,15 @@ public class AuthController {
 
     private final AuthService authService;
 
+    @PostMapping("/login")
+    @Operation(summary = "Login with username and password", description = "Authenticates a user with local credentials and returns a JWT token")
+    public ResponseEntity<ApiResponse<LoginResponse>> login(@Valid @RequestBody LoginRequest request) {
+        return authService.loginWithPassword(request)
+                .map(response -> ResponseEntity.ok(ApiResponse.success(response)))
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(ApiResponse.error("Invalid username or password")));
+    }
+
     @GetMapping("/me")
     @Operation(summary = "Get current user profile", description = "Returns the profile of the currently authenticated user")
     public ResponseEntity<ApiResponse<UserResponse>> getCurrentUser() {
