@@ -68,7 +68,7 @@ spring:
     locations: classpath:db/migration
     schemas: public
     baseline-on-migrate: true
-    baseline-version: "0"
+    baseline-version: "12"
     validate-on-migrate: true
     clean-disabled: true
 
