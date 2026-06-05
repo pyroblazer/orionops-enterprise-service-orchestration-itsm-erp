@@ -1,70 +1,24 @@
 name: Render Heartbeat
 
+# Pings the Render free-tier backend every 14 minutes to prevent the service
+# from sleeping (Render sleeps after 15 minutes of inactivity).
+# Uses ~3 GitHub Actions minutes/day — well within the 2000 min/month free tier.
+
 on:
   schedule:
-    # Every 10 minutes to keep Render free tier services from spinning down (15-min timeout)
-    - cron: '*/10 * * * *'
+    - cron: '*/14 * * * *'
   workflow_dispatch:
 
-env:
-  BACKEND_URL: https://orionops-enterprise-service.onrender.com
-  KEYCLOAK_URL: https://orionops-keycloak.onrender.com
-
 jobs:
-  heartbeat:
+  ping:
+    name: Keep Render awake
     runs-on: ubuntu-latest
-    name: Keep Render Services Alive
     steps:
-      - name: Ping Backend Service
-        continue-on-error: true
+      - name: Ping backend health endpoint
         run: |
-          echo "🔄 Pinging Backend Service: ${{ env.BACKEND_URL }}"
-          for i in {1..3}; do
-            if curl -sf --max-time 10 "${{ env.BACKEND_URL }}/actuator/health" > /dev/null 2>&1; then
-              echo "✅ Backend service is alive (attempt $i)"
-              break
-            else
-              echo "⚠️ Backend health check attempt $i failed, retrying..."
-              sleep 2
-            fi
-          done
-
-      - name: Ping Keycloak Service
-        continue-on-error: true
-        run: |
-          echo "🔄 Pinging Keycloak Service: ${{ env.KEYCLOAK_URL }}"
-          for i in {1..3}; do
-            if curl -sf --max-time 10 "${{ env.KEYCLOAK_URL }}/health/ready" > /dev/null 2>&1; then
-              echo "✅ Keycloak service is alive (attempt $i)"
-              break
-            else
-              echo "⚠️ Keycloak health check attempt $i failed, retrying..."
-              sleep 2
-            fi
-          done
-
-      - name: Fallback Ping - Backend
-        continue-on-error: true
-        run: |
-          echo "🔄 Fallback: Pinging Backend root endpoint"
-          curl -sf --max-time 10 "${{ env.BACKEND_URL }}/" > /dev/null 2>&1 && echo "✅ Backend responds" || echo "⚠️ Backend not responding"
-
-      - name: Fallback Ping - Keycloak
-        continue-on-error: true
-        run: |
-          echo "🔄 Fallback: Pinging Keycloak root endpoint"
-          curl -sf --max-time 10 "${{ env.KEYCLOAK_URL }}/" > /dev/null 2>&1 && echo "✅ Keycloak responds" || echo "⚠️ Keycloak not responding"
-
-      - name: Summary
-        run: |
-          echo "═══════════════════════════════════════════════════════"
-          echo "🎯 Render Services Heartbeat Completed"
-          echo "═══════════════════════════════════════════════════════"
-          echo "⏰ Time: $(date -u +'%Y-%m-%d %H:%M:%S UTC')"
-          echo "✅ Backend: ${{ env.BACKEND_URL }}"
-          echo "✅ Keycloak: ${{ env.KEYCLOAK_URL }}"
-          echo "═══════════════════════════════════════════════════════"
-          echo ""
-          echo "📌 Services pinged every 10 minutes to prevent Render"
-          echo "   free tier 15-minute inactivity spin-down."
-          echo "═══════════════════════════════════════════════════════"
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 \
+            https://orionops-enterprise-service.onrender.com/api/actuator/health)
+          echo "Health check HTTP status: $STATUS"
+          if [ "$STATUS" != "200" ] && [ "$STATUS" != "000" ]; then
+            echo "::warning::Backend returned unexpected status $STATUS"
+          fi

@@ -94,7 +94,7 @@ app:
       - ${FRONTEND_URL:https://orionops.vercel.app}
       - https://orionops.vercel.app
   auth:
-    jwt-secret:
+    jwt-secret: ${APP_AUTH_JWT_SECRET:}
 
 # --- Platform URL for integration links (Slack, Teams) ---
 orionops:
