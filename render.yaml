@@ -15,9 +15,9 @@ services:
         value: cloud
       - key: JAVA_OPTS
         value: "-Xmx384m -Xss256k"
-      # Neon PostgreSQL (pooler endpoint for serverless)
+      # Neon PostgreSQL (direct endpoint — pooler disabled on this compute)
       - key: SPRING_DATASOURCE_URL
-        value: "jdbc:postgresql://ep-patient-star-aozxgghu-pooler.c-2.ap-southeast-1.aws.neon.tech/neondb?sslmode=require"
+        value: "jdbc:postgresql://ep-patient-star-aozxgghu.c-2.ap-southeast-1.aws.neon.tech/neondb?sslmode=require"
       - key: SPRING_DATASOURCE_USERNAME
         value: neondb_owner
       - key: SPRING_DATASOURCE_PASSWORD
@@ -48,11 +48,11 @@ services:
         value: admin
       - key: KEYCLOAK_ADMIN_PASSWORD
         generateValue: true
-      # Neon PostgreSQL (pooler endpoint for serverless)
+      # Neon PostgreSQL (direct endpoint — pooler disabled on this compute)
       - key: KC_DB
         value: postgres
       - key: KC_DB_URL
-        value: "jdbc:postgresql://ep-patient-star-aozxgghu-pooler.c-2.ap-southeast-1.aws.neon.tech/neondb?sslmode=require"
+        value: "jdbc:postgresql://ep-patient-star-aozxgghu.c-2.ap-southeast-1.aws.neon.tech/neondb?sslmode=require"
       - key: KC_DB_USERNAME
         value: neondb_owner
       - key: KC_DB_PASSWORD
