@@ -155,12 +155,12 @@ test.describe('Notifications Center', () => {
       const notifItem = page.locator('[role="menuitem"], [role="option"]').first();
       if (await notifItem.count() > 0) {
         try {
-          const href = await notifItem.getAttribute('href') || await notifItem.locator('a').first().getAttribute('href');
+          const href = await notifItem.getAttribute('href', { timeout: 3000 });
           if (href) {
             expect(href).toMatch(/\/(incidents|problems|changes|requests)\//);
           }
         } catch {
-          // getAttribute may timeout on nested locator
+          // href may not exist or getAttribute may timeout
         }
       }
     }

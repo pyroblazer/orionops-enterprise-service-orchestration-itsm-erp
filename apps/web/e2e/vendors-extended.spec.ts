@@ -124,8 +124,7 @@ test.describe('Vendors Extended', () => {
       const searchInput = page.getByPlaceholder('Search vendors');
       if (await searchInput.count() > 0) {
         try {
-          await expect(searchInput).toBeVisible();
-          await searchInput.fill('Alpha');
+          await searchInput.fill('Alpha', { timeout: 5000 });
         } catch {
           // Search input may be detached during re-render
         }

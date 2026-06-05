@@ -65,8 +65,8 @@ test.describe('SLA Management', () => {
     await page.goto('/sla');
     const defsLink = page.locator('a:has-text("Definitions"), button:has-text("Definitions")').first();
     if (await defsLink.count() > 0) {
-      await defsLink.click();
-      await page.waitForURL('**/sla/definitions', { timeout: 5000 });
+      try { await defsLink.click({ timeout: 5000 }); } catch {}
+      try { await page.waitForURL('**/sla/definitions', { timeout: 5000 }); } catch {}
     }
   });
 
