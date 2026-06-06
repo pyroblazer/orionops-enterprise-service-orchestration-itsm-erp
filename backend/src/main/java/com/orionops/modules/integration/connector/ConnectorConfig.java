@@ -4,6 +4,7 @@ import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
@@ -22,6 +23,7 @@ import java.time.Duration;
  * with connection pooling, timeouts, and authentication support.</p>
  */
 @Configuration
+@ConditionalOnProperty(name = "orionops.connector.enabled", havingValue = "true", matchIfMissing = true)
 public class ConnectorConfig {
 
     @Value("${orionops.connector.timeout.connect:10000}")

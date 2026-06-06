@@ -12,7 +12,8 @@ import com.orionops.modules.integration.email.EmailService;
 import com.orionops.modules.notification.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
@@ -29,16 +30,22 @@ import java.util.Map;
  */
 @Slf4j
 @Component
-@ConditionalOnBean(KafkaTemplate.class)
+@ConditionalOnProperty(name = "orionops.consumer.sla.enabled", havingValue = "true")
 @RequiredArgsConstructor
 public class SLAEventConsumer {
 
-    private final EmailService emailService;
-    private final SlackIntegrationService slackIntegrationService;
-    private final NotificationService notificationService;
     private final ServiceRepository serviceRepository;
     private final UserRepository userRepository;
     private final ObjectMapper objectMapper;
+
+    @Autowired(required = false)
+    private EmailService emailService;
+
+    @Autowired(required = false)
+    private SlackIntegrationService slackIntegrationService;
+
+    @Autowired(required = false)
+    private NotificationService notificationService;
 
     /**
      * Consumes SLA events from Kafka topics matching "orionops.sla.*".
@@ -92,7 +99,7 @@ public class SLAEventConsumer {
         templateVars.put("targetType", event.getTargetType());
         templateVars.put("breachType", event.getBreachType());
 
-        emailService.sendEmail(
+        if (emailService != null) emailService.sendEmail(
                 resolveServiceOwnerEmail(event.getTargetEntityId()),
                 "[URGENT] [OrionOps] SLA Breach Detected - " + event.getBreachType(),
                 "sla-breached",
@@ -107,7 +114,7 @@ public class SLAEventConsumer {
                 if (svc.getOwner() != null) {
                     java.util.UUID ownerUserId = resolveOwnerUserId(svc);
                     if (ownerUserId != null) {
-                        notificationService.createNotification(
+                        if (notificationService != null) notificationService.createNotification(
                                 ownerUserId,
                                 "[URGENT] SLA Breach Detected - " + event.getBreachType(),
                                 "SLA breach on " + event.getTargetType() + " " + event.getTargetEntityId()
@@ -125,7 +132,7 @@ public class SLAEventConsumer {
 
         // Post alert to Slack
         try {
-            slackIntegrationService.sendNotification(
+            if (slackIntegrationService != null) slackIntegrationService.sendNotification(
                     "#sla-alerts",
                     ":warning: *SLA BREACH DETECTED*\n"
                             + "Breach Type: " + event.getBreachType() + "\n"

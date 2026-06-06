@@ -12,6 +12,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
@@ -39,6 +40,7 @@ import java.util.UUID;
  */
 @Slf4j
 @Service
+@ConditionalOnProperty(name = "orionops.webhook.enabled", havingValue = "true")
 @RequiredArgsConstructor
 public class WebhookService {
 

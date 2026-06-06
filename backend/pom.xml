@@ -30,7 +30,6 @@
         <opensearch-rest.version>2.19.0</opensearch-rest.version>
         <minio.version>8.5.14</minio.version>
         <stripe.version>28.3.0</stripe.version>
-        <keycloak-admin.version>26.0.3</keycloak-admin.version>
         <springdoc.version>2.8.6</springdoc.version>
         <resilience4j.version>2.2.0</resilience4j.version>
         <httpclient.version>4.5.14</httpclient.version>
@@ -167,13 +166,6 @@
             <groupId>com.stripe</groupId>
             <artifactId>stripe-java</artifactId>
             <version>${stripe.version}</version>
-        </dependency>
-
-        <!-- Keycloak Admin Client -->
-        <dependency>
-            <groupId>org.keycloak</groupId>
-            <artifactId>keycloak-admin-client</artifactId>
-            <version>${keycloak-admin.version}</version>
         </dependency>
 
         <!-- Springdoc OpenAPI / Swagger -->

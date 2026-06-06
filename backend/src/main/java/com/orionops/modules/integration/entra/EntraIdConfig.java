@@ -2,6 +2,7 @@ package com.orionops.modules.integration.entra;
 
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,6 +24,7 @@ import org.springframework.web.client.RestClient;
  */
 @Slf4j
 @Configuration
+@ConditionalOnProperty(name = "orionops.entra.enabled", havingValue = "true")
 public class EntraIdConfig {
 
     /**

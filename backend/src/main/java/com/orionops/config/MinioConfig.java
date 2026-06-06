@@ -2,6 +2,7 @@ package com.orionops.config;
 
 import io.minio.MinioClient;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -10,6 +11,7 @@ import org.springframework.context.annotation.Configuration;
  * export documents, and other binary storage needs.
  */
 @Configuration
+@ConditionalOnProperty(name = "minio.enabled", havingValue = "true", matchIfMissing = true)
 public class MinioConfig {
 
     @Value("${minio.endpoint}")

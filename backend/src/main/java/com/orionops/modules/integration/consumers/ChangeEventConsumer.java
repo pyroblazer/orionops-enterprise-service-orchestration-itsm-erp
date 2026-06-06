@@ -12,7 +12,8 @@ import com.orionops.modules.integration.email.EmailService;
 import com.orionops.modules.notification.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
@@ -31,15 +32,19 @@ import java.util.UUID;
  */
 @Slf4j
 @Component
-@ConditionalOnBean(KafkaTemplate.class)
+@ConditionalOnProperty(name = "orionops.consumer.change.enabled", havingValue = "true")
 @RequiredArgsConstructor
 public class ChangeEventConsumer {
 
-    private final EmailService emailService;
-    private final NotificationService notificationService;
     private final UserRepository userRepository;
     private final ChangeRequestRepository changeRequestRepository;
     private final ObjectMapper objectMapper;
+
+    @Autowired(required = false)
+    private EmailService emailService;
+
+    @Autowired(required = false)
+    private NotificationService notificationService;
 
     /**
      * Consumes change events from Kafka topics matching "orionops.change.*".
@@ -90,7 +95,7 @@ public class ChangeEventConsumer {
         templateVars.put("changeId", event.getChangeId());
         templateVars.put("approvedBy", event.getApprovedBy());
 
-        emailService.sendEmail(
+        if (emailService != null) emailService.sendEmail(
                 resolveImplementationTeamEmail(event.getChangeId()),
                 "[OrionOps] Change Request Approved - Ready for Implementation",
                 "change-approved",
@@ -103,7 +108,7 @@ public class ChangeEventConsumer {
         try {
             changeRequestRepository.findById(event.getChangeId()).ifPresent(cr -> {
                 if (cr.getAssigneeId() != null) {
-                    notificationService.createNotification(
+                    if (notificationService != null) notificationService.createNotification(
                             cr.getAssigneeId(),
                             "Change Request Approved - Ready for Implementation",
                             "Change " + event.getChangeId() + " has been approved by " + event.getApprovedBy(),
@@ -138,7 +143,7 @@ public class ChangeEventConsumer {
         templateVars.put("rejectedBy", event.getRejectedBy());
         templateVars.put("rejectionReason", event.getRejectionReason());
 
-        emailService.sendEmail(
+        if (emailService != null) emailService.sendEmail(
                 resolveRequesterEmail(event.getChangeId()),
                 "[OrionOps] Change Request Rejected",
                 "change-approved",  // reuse template; in production, use a dedicated rejection template
@@ -151,7 +156,7 @@ public class ChangeEventConsumer {
         try {
             changeRequestRepository.findById(event.getChangeId()).ifPresent(cr -> {
                 if (cr.getRequesterId() != null) {
-                    notificationService.createNotification(
+                    if (notificationService != null) notificationService.createNotification(
                             cr.getRequesterId(),
                             "Change Request Rejected",
                             "Change " + event.getChangeId() + " was rejected. Reason: " + event.getRejectionReason(),
@@ -187,7 +192,7 @@ public class ChangeEventConsumer {
         templateVars.put("implementedBy", event.getImplementedBy());
         templateVars.put("implementationNotes", event.getImplementationNotes());
 
-        emailService.sendEmail(
+        if (emailService != null) emailService.sendEmail(
                 resolveStakeholdersEmail(event.getChangeId()),
                 "[OrionOps] Change Implementation Complete",
                 "change-approved",  // reuse template; in production, use a dedicated completion template
@@ -201,7 +206,7 @@ public class ChangeEventConsumer {
             changeRequestRepository.findById(event.getChangeId()).ifPresent(cr -> {
                 UUID notifyUserId = cr.getRequesterId() != null ? cr.getRequesterId() : cr.getApproverId();
                 if (notifyUserId != null) {
-                    notificationService.createNotification(
+                    if (notificationService != null) notificationService.createNotification(
                             notifyUserId,
                             "Change Implementation Complete",
                             "Change " + event.getChangeId() + " has been implemented by " + event.getImplementedBy(),

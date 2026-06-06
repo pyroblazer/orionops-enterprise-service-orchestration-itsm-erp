@@ -3,6 +3,7 @@ package com.orionops.config;
 import org.flowable.engine.ProcessEngineConfiguration;
 import org.flowable.spring.SpringProcessEngineConfiguration;
 import org.flowable.spring.boot.EngineConfigurationConfigurer;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Configuration;
 
 import javax.sql.DataSource;
@@ -17,6 +18,7 @@ import javax.sql.DataSource;
  */
 @Configuration
 @org.springframework.context.annotation.Profile("!test")
+@ConditionalOnProperty(name = "flowable.enabled", havingValue = "true", matchIfMissing = true)
 public class FlowableConfig implements EngineConfigurationConfigurer<SpringProcessEngineConfiguration> {
 
     @org.springframework.beans.factory.annotation.Value("${flowable.database-schema-update:false}")

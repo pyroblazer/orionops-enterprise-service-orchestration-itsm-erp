@@ -2,6 +2,7 @@ package com.orionops.modules.integration.connector;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Component;
 import org.springframework.ws.client.core.WebServiceTemplate;
 import org.springframework.ws.soap.client.core.SoapActionCallback;
@@ -19,6 +20,7 @@ import javax.xml.namespace.QName;
 @Slf4j
 @Component
 @RequiredArgsConstructor
+@ConditionalOnBean(WebServiceTemplate.class)
 public class SoapConnector {
 
     private final WebServiceTemplate webServiceTemplate;

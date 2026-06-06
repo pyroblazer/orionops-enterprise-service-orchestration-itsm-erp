@@ -13,7 +13,8 @@ import com.orionops.modules.notification.service.NotificationService;
 import com.orionops.modules.search.service.SearchService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
@@ -33,16 +34,24 @@ import java.util.Map;
  */
 @Slf4j
 @Component
-@ConditionalOnBean(KafkaTemplate.class)
+@ConditionalOnProperty(name = "orionops.consumer.incident.enabled", havingValue = "true")
 @RequiredArgsConstructor
 public class IncidentEventConsumer {
 
-    private final EmailService emailService;
-    private final SlackIntegrationService slackIntegrationService;
-    private final NotificationService notificationService;
     private final UserRepository userRepository;
     private final ObjectMapper objectMapper;
-    private final SearchService searchService;
+
+    @Autowired(required = false)
+    private EmailService emailService;
+
+    @Autowired(required = false)
+    private SlackIntegrationService slackIntegrationService;
+
+    @Autowired(required = false)
+    private NotificationService notificationService;
+
+    @Autowired(required = false)
+    private SearchService searchService;
 
     /**
      * Consumes incident events from Kafka topics matching "orionops.incident.*".
@@ -96,7 +105,7 @@ public class IncidentEventConsumer {
             templateVars.put("category", event.getCategory());
             templateVars.put("reporterId", event.getReporterId());
 
-            emailService.sendEmail(
+            if (emailService != null) emailService.sendEmail(
                     resolveEmailForUser(event.getAssigneeId()),
                     "[OrionOps] New Incident Assigned: " + event.getTitle(),
                     "incident-created",
@@ -109,7 +118,7 @@ public class IncidentEventConsumer {
         // Create in-app notification for the assignee
         if (event.getAssigneeId() != null) {
             try {
-                notificationService.createNotification(
+                if (notificationService != null) notificationService.createNotification(
                         event.getAssigneeId(),
                         "New Incident Assigned: " + event.getTitle(),
                         "Incident " + event.getIncidentId() + " has been assigned to you. Priority: " + event.getPriority(),
@@ -124,7 +133,7 @@ public class IncidentEventConsumer {
 
         // Index in OpenSearch
         try {
-            searchService.indexIncident(event.getIncidentId(), event.getTitle(), event.getCategory(),
+            if (searchService != null) searchService.indexIncident(event.getIncidentId(), event.getTitle(), event.getCategory(),
                 "OPEN");
         } catch (Exception e) {
             log.warn("Failed to index incident in OpenSearch: {}", e.getMessage());
@@ -151,7 +160,7 @@ public class IncidentEventConsumer {
             templateVars.put("assignedBy", event.getAssignedBy());
             templateVars.put("assigneeGroupId", event.getAssigneeGroupId());
 
-            emailService.sendEmail(
+            if (emailService != null) emailService.sendEmail(
                     resolveEmailForUser(event.getAssigneeId()),
                     "[OrionOps] Incident Assigned to You",
                     "incident-assigned",
@@ -164,7 +173,7 @@ public class IncidentEventConsumer {
         // Create in-app notification for the assignee
         if (event.getAssigneeId() != null) {
             try {
-                notificationService.createNotification(
+                if (notificationService != null) notificationService.createNotification(
                         event.getAssigneeId(),
                         "Incident Assigned to You",
                         "Incident " + event.getIncidentId() + " has been assigned to you.",
@@ -199,7 +208,7 @@ public class IncidentEventConsumer {
             templateVars.put("escalationReason", event.getEscalationReason());
             templateVars.put("escalatedBy", event.getEscalatedBy());
 
-            emailService.sendEmail(
+            if (emailService != null) emailService.sendEmail(
                     resolveEmailForUser(event.getNewAssigneeId()),
                     "[URGENT] [OrionOps] Incident Escalated to Level " + event.getEscalationLevel(),
                     "incident-created",  // reuse template with escalation context
@@ -211,7 +220,7 @@ public class IncidentEventConsumer {
 
         // Post to Slack for team visibility
         try {
-            slackIntegrationService.sendNotification(
+            if (slackIntegrationService != null) slackIntegrationService.sendNotification(
                     "#incidents",
                     ":rotating_light: *INCIDENT ESCALATED* (Level " + event.getEscalationLevel() + ")\n"
                             + "Incident ID: " + event.getIncidentId() + "\n"
@@ -225,7 +234,7 @@ public class IncidentEventConsumer {
         // Create in-app notification for the escalation
         if (event.getNewAssigneeId() != null) {
             try {
-                notificationService.createNotification(
+                if (notificationService != null) notificationService.createNotification(
                         event.getNewAssigneeId(),
                         "[URGENT] Incident Escalated to Level " + event.getEscalationLevel(),
                         "Incident " + event.getIncidentId() + " has been escalated. Reason: " + event.getEscalationReason(),
@@ -261,7 +270,7 @@ public class IncidentEventConsumer {
         // Notify the reporter about the resolution
         if (event.getResolvedBy() != null) {
             try {
-                notificationService.createNotification(
+                if (notificationService != null) notificationService.createNotification(
                         event.getResolvedBy(),
                         "Incident Resolved: " + event.getIncidentId(),
                         "Incident " + event.getIncidentId() + " has been resolved. Resolution: " + event.getResolution(),

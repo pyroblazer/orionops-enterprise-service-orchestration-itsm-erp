@@ -1,10 +1,12 @@
 services:
-  # ── OrionOps Backend (Spring Boot) ──────────────────────────────────────
+  # ── OrionOps API (Core REST API) ──────────────────────────────────────────
   - type: web
-    name: orionops-enterprise-service
+    name: orionops-api
     runtime: docker
     dockerfilePath: ./backend/Dockerfile
     dockerContext: ./backend
+    dockerbuildargs:
+      SERVICE_PROFILE: cloud-api
     plan: free
     region: oregon
     healthCheckPath: /api/actuator/health
@@ -12,28 +14,151 @@ services:
       - key: PORT
         value: "8080"
       - key: SPRING_PROFILES_ACTIVE
-        value: cloud
-      - key: JAVA_OPTS
-        value: "-Xmx384m -Xss256k"
-      # Neon PostgreSQL (direct endpoint with explicit endpoint ID for SNI fallback)
+        value: "cloud,cloud-api"
+      - key: RENDER_HEARTBEAT_URL
+        value: "https://orionops-api.onrender.com/api/actuator/health"
+      # Neon PostgreSQL
       - key: SPRING_DATASOURCE_URL
         value: "jdbc:postgresql://ep-patient-star-aozxgghu.c-2.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&options=endpoint%3Dep-patient-star-aozxgghu"
       - key: SPRING_DATASOURCE_USERNAME
         value: neondb_owner
       - key: SPRING_DATASOURCE_PASSWORD
         sync: false
-      # Upstash Redis — set in Render dashboard
-      # Format: rediss://default:<password>@<host>:6380
+      # Upstash Redis
       - key: SPRING_DATA_REDIS_URL
         sync: false
       # Vercel frontend URL for CORS
       - key: FRONTEND_URL
         value: https://orionops.vercel.app
-      # JWT secret for local (non-Keycloak) authentication
+      # JWT secret for local authentication
       - key: APP_AUTH_JWT_SECRET
         value: "orionops-cloud-jwt-secret-key-2024-prod"
 
-  # ── OrionOps Keycloak (Identity Provider) ───────────────────────────────
+  # ── OrionOps Workflow (Flowable BPMN Engine) ─────────────────────────────
+  - type: web
+    name: orionops-workflow
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    dockerbuildargs:
+      SERVICE_PROFILE: cloud-workflow
+    plan: free
+    region: oregon
+    healthCheckPath: /api/actuator/health
+    envVars:
+      - key: PORT
+        value: "8080"
+      - key: SPRING_PROFILES_ACTIVE
+        value: "cloud,cloud-workflow"
+      - key: RENDER_HEARTBEAT_URL
+        value: "https://orionops-workflow.onrender.com/api/actuator/health"
+      - key: SPRING_DATASOURCE_URL
+        value: "jdbc:postgresql://ep-patient-star-aozxgghu.c-2.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&options=endpoint%3Dep-patient-star-aozxgghu"
+      - key: SPRING_DATASOURCE_USERNAME
+        value: neondb_owner
+      - key: SPRING_DATASOURCE_PASSWORD
+        sync: false
+      - key: SPRING_DATA_REDIS_URL
+        sync: false
+      - key: FRONTEND_URL
+        value: https://orionops.vercel.app
+      - key: APP_AUTH_JWT_SECRET
+        value: "orionops-cloud-jwt-secret-key-2024-prod"
+
+  # ── OrionOps Worker (Kafka Consumers + OpenSearch) ────────────────────────
+  - type: web
+    name: orionops-worker
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    dockerbuildargs:
+      SERVICE_PROFILE: cloud-worker
+    plan: free
+    region: oregon
+    healthCheckPath: /api/actuator/health
+    envVars:
+      - key: PORT
+        value: "8080"
+      - key: SPRING_PROFILES_ACTIVE
+        value: "cloud,cloud-worker"
+      - key: RENDER_HEARTBEAT_URL
+        value: "https://orionops-worker.onrender.com/api/actuator/health"
+      - key: SPRING_DATASOURCE_URL
+        value: "jdbc:postgresql://ep-patient-star-aozxgghu.c-2.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&options=endpoint%3Dep-patient-star-aozxgghu"
+      - key: SPRING_DATASOURCE_USERNAME
+        value: neondb_owner
+      - key: SPRING_DATASOURCE_PASSWORD
+        sync: false
+      - key: SPRING_DATA_REDIS_URL
+        sync: false
+      - key: FRONTEND_URL
+        value: https://orionops.vercel.app
+      - key: APP_AUTH_JWT_SECRET
+        value: "orionops-cloud-jwt-secret-key-2024-prod"
+
+  # ── OrionOps Notifier (Email, Slack, Teams, Webhooks) ───────────────────
+  - type: web
+    name: orionops-notifier
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    dockerbuildargs:
+      SERVICE_PROFILE: cloud-notifier
+    plan: free
+    region: oregon
+    healthCheckPath: /api/actuator/health
+    envVars:
+      - key: PORT
+        value: "8080"
+      - key: SPRING_PROFILES_ACTIVE
+        value: "cloud,cloud-notifier"
+      - key: RENDER_HEARTBEAT_URL
+        value: "https://orionops-notifier.onrender.com/api/actuator/health"
+      - key: SPRING_DATASOURCE_URL
+        value: "jdbc:postgresql://ep-patient-star-aozxgghu.c-2.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&options=endpoint%3Dep-patient-star-aozxgghu"
+      - key: SPRING_DATASOURCE_USERNAME
+        value: neondb_owner
+      - key: SPRING_DATASOURCE_PASSWORD
+        sync: false
+      - key: SPRING_DATA_REDIS_URL
+        sync: false
+      - key: FRONTEND_URL
+        value: https://orionops.vercel.app
+      - key: APP_AUTH_JWT_SECRET
+        value: "orionops-cloud-jwt-secret-key-2024-prod"
+
+  # ── OrionOps Connector (Outbound REST/SOAP) ──────────────────────────────
+  - type: web
+    name: orionops-connector
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    dockerbuildargs:
+      SERVICE_PROFILE: cloud-connector
+    plan: free
+    region: oregon
+    healthCheckPath: /api/actuator/health
+    envVars:
+      - key: PORT
+        value: "8080"
+      - key: SPRING_PROFILES_ACTIVE
+        value: "cloud,cloud-connector"
+      - key: RENDER_HEARTBEAT_URL
+        value: "https://orionops-connector.onrender.com/api/actuator/health"
+      - key: SPRING_DATASOURCE_URL
+        value: "jdbc:postgresql://ep-patient-star-aozxgghu.c-2.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&options=endpoint%3Dep-patient-star-aozxgghu"
+      - key: SPRING_DATASOURCE_USERNAME
+        value: neondb_owner
+      - key: SPRING_DATASOURCE_PASSWORD
+        sync: false
+      - key: SPRING_DATA_REDIS_URL
+        sync: false
+      - key: FRONTEND_URL
+        value: https://orionops.vercel.app
+      - key: APP_AUTH_JWT_SECRET
+        value: "orionops-cloud-jwt-secret-key-2024-prod"
+
+  # ── OrionOps Keycloak (Identity Provider) ─────────────────────────────────
   - type: web
     name: orionops-keycloak
     runtime: docker
@@ -43,12 +168,10 @@ services:
     region: oregon
     healthCheckPath: /health/ready
     envVars:
-      # Keycloak admin credentials
       - key: KEYCLOAK_ADMIN
         value: admin
       - key: KEYCLOAK_ADMIN_PASSWORD
         generateValue: true
-      # Neon PostgreSQL (direct endpoint with explicit endpoint ID for SNI fallback)
       - key: KC_DB
         value: postgres
       - key: KC_DB_URL
@@ -59,9 +182,7 @@ services:
         sync: false
       - key: KC_DB_SCHEMA
         value: keycloak
-      # Hostname (Render service URL)
       - key: KC_HOSTNAME
         value: orionops-keycloak.onrender.com
-      # Java memory (fit in free tier 512MB)
       - key: KC_JAVA_OPTS
         value: "-Xmx256m"

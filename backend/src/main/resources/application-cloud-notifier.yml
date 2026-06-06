@@ -1,0 +1,55 @@
+# ---------------------------------------------------------------------------
+# Cloud Notifier profile — Email, Slack, Teams, Webhooks, Monitoring, Entra ID
+# Activated via: SPRING_PROFILES_ACTIVE=cloud,cloud-notifier
+# ---------------------------------------------------------------------------
+
+spring:
+  kafka:
+    enabled: true
+  mail:
+    host: ${SMTP_HOST:smtp.gmail.com}
+    port: ${SMTP_PORT:587}
+    username: ${SMTP_USERNAME:}
+    password: ${SMTP_PASSWORD:}
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+
+flowable:
+  enabled: false
+
+opensearch:
+  enabled: false
+
+minio:
+  enabled: false
+
+orionops:
+  connector:
+    enabled: false
+  email:
+    enabled: true
+  chat:
+    enabled: true
+  webhook:
+    enabled: true
+  monitoring:
+    enabled: true
+  entra:
+    enabled: true
+  consumer:
+    incident:
+      enabled: true
+    change:
+      enabled: true
+    sla:
+      enabled: true
+  notification:
+    enabled: true
+  search:
+    enabled: false
+  render:
+    heartbeat:
+      enabled: true
+      url: ${RENDER_HEARTBEAT_URL:}
+      interval: 840000

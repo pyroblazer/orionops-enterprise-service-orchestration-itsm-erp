@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -29,6 +30,7 @@ import java.util.Map;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@ConditionalOnProperty(name = "orionops.chat.enabled", havingValue = "true")
 public class SlackIntegrationService {
 
     private final RestTemplate restTemplate;

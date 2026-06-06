@@ -4,6 +4,7 @@ import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import io.github.resilience4j.reactor.circuitbreaker.operator.CircuitBreakerOperator;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
@@ -24,6 +25,7 @@ import java.util.Map;
  */
 @Slf4j
 @Component
+@ConditionalOnBean(CircuitBreakerRegistry.class)
 public class RestConnector {
 
     private final WebClient webClient;

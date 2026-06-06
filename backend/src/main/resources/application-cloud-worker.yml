@@ -1,0 +1,47 @@
+# ---------------------------------------------------------------------------
+# Cloud Worker profile — Kafka consumers + OpenSearch indexing + Search API
+# Activated via: SPRING_PROFILES_ACTIVE=cloud,cloud-worker
+# ---------------------------------------------------------------------------
+
+spring:
+  kafka:
+    enabled: true
+
+flowable:
+  enabled: false
+
+opensearch:
+  enabled: true
+
+minio:
+  enabled: false
+
+orionops:
+  connector:
+    enabled: false
+  email:
+    enabled: false
+  chat:
+    enabled: false
+  webhook:
+    enabled: false
+  monitoring:
+    enabled: false
+  entra:
+    enabled: false
+  consumer:
+    incident:
+      enabled: true
+    change:
+      enabled: true
+    sla:
+      enabled: true
+  notification:
+    enabled: false
+  search:
+    enabled: true
+  render:
+    heartbeat:
+      enabled: true
+      url: ${RENDER_HEARTBEAT_URL:}
+      interval: 840000

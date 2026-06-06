@@ -9,6 +9,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.flowable.engine.RuntimeService;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -22,6 +24,7 @@ import java.util.UUID;
 @RequestMapping("/api/v1/workflows")
 @RequiredArgsConstructor
 @Tag(name = "Workflows", description = "Workflow management with Flowable BPMN engine")
+@ConditionalOnBean(RuntimeService.class)
 public class WorkflowController {
 
     private final WorkflowService workflowService;
