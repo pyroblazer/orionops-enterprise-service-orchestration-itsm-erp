@@ -4,8 +4,6 @@
 
 server:
   port: 8080
-  servlet:
-    context-path: /api
   shutdown: graceful
   tomcat:
     threads:
@@ -206,7 +204,7 @@ springdoc:
     operations-sorter: method
     tags-sorter: alpha
     try-it-out-enabled: true
-    oauth2-redirect-url: /api/swagger-ui/oauth2-redirect.html
+    oauth2-redirect-url: /swagger-ui/oauth2-redirect.html
 
 # ---------------------------------------------------------------------------
 # Application Auth (local JWT without Keycloak)
