@@ -24,6 +24,10 @@ server:
     accept-count: 10
 
 spring:
+  # --- Lazy init: defer bean creation to speed up cold start on free tier ---
+  main:
+    lazy-initialization: true
+
   # --- DataSource (Neon PostgreSQL) ---
   datasource:
     url: ${SPRING_DATASOURCE_URL}
@@ -136,7 +140,7 @@ otel:
 
 # --- Flowable: optimized for low-memory environment ---
 flowable:
-  database-schema-update: true
+  database-schema-update: false
   async-executor-activate: true
   async-executor-core-pool-size: 2
   async-executor-max-pool-size: 4
