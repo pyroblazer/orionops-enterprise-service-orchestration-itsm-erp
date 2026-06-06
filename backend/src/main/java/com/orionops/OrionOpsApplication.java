@@ -19,9 +19,7 @@ import org.springframework.context.annotation.Bean;
  * The architecture uses CQRS with Event Sourcing on core modules and standard
  * Spring Data JPA CRUD elsewhere.</p>
  */
-@SpringBootApplication(exclude = {
-    org.flowable.spring.boot.eventregistry.EventRegistryAutoConfiguration.EventRegistryKafkaConfiguration.class
-})
+@SpringBootApplication
 @EnableJpaAuditing
 @EnableJpaRepositories(considerNestedRepositories = true)
 @EnableAsync
