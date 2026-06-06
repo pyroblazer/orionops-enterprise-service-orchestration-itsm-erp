@@ -18,9 +18,9 @@ server:
   shutdown: graceful
   tomcat:
     threads:
-      max: 20
-      min-spare: 5
-    max-connections: 100
+      max: 10
+      min-spare: 2
+    max-connections: 50
     accept-count: 10
 
 spring:
@@ -142,13 +142,13 @@ otel:
 flowable:
   database-schema-update: false
   async-executor-activate: true
-  async-executor-core-pool-size: 2
-  async-executor-max-pool-size: 4
-  async-executor-queue-size: 50
-  async-executor-max-timer-jobs-per-acquisition: 5
-  async-executor-max-async-jobs-per-acquisition: 5
-  async-executor-wait-time-in-millis: 5000
-  async-executor-lock-wait-time-in-millis: 5000
+  async-executor-core-pool-size: 1
+  async-executor-max-pool-size: 2
+  async-executor-queue-size: 20
+  async-executor-max-timer-jobs-per-acquisition: 3
+  async-executor-max-async-jobs-per-acquisition: 3
+  async-executor-wait-time-in-millis: 10000
+  async-executor-lock-wait-time-in-millis: 10000
   enable-safe-xml: true
   history-level: audit
   async-history-enabled: false

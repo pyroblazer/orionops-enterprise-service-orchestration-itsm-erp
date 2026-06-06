@@ -32,13 +32,17 @@ USER orionops
 
 EXPOSE 8080
 
-# JVM tuned for 512MB free tier: heap capped at 384m via JAVA_OPTS
+# JVM tuned for 512MB free tier: heap+metaspace capped well below container limit
 # All config (DB URL, credentials, Redis) comes from Render env vars
 ENTRYPOINT ["sh", "-c", \
   "exec java \
     -XX:+UseG1GC \
     -XX:MaxGCPauseMillis=200 \
     -XX:+ParallelRefProcEnabled \
-    -XX:MaxRAMPercentage=75.0 \
+    -XX:+UseStringDeduplication \
+    -Xms64m \
+    -Xmx256m \
+    -XX:MaxMetaspaceSize=128m \
+    -XX:ReservedCodeCacheSize=64m \
     ${JAVA_OPTS} \
     -jar app.jar"]
