@@ -10,9 +10,32 @@
 -- All statements are idempotent: safe to run on a DB where the fix was already applied.
 -- ---------------------------------------------------------------------------
 
--- 1. Rename existing normalized FK tables out of the way (skip if already renamed or absent)
-ALTER TABLE IF EXISTS user_roles RENAME TO user_roles_fk;
-ALTER TABLE IF EXISTS user_groups RENAME TO user_groups_fk;
+-- 1. Rename existing normalized FK tables only if they haven't been renamed yet.
+--    Uses PL/pgSQL to check target table doesn't already exist before renaming.
+DO $$
+BEGIN
+    -- Rename user_roles → user_roles_fk only if user_roles has role_id column (FK table)
+    -- and user_roles_fk doesn't already exist
+    IF EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_name = 'user_roles' AND column_name = 'role_id'
+    ) AND NOT EXISTS (
+        SELECT 1 FROM information_schema.tables WHERE table_name = 'user_roles_fk'
+    ) THEN
+        ALTER TABLE user_roles RENAME TO user_roles_fk;
+    END IF;
+
+    -- Rename user_groups → user_groups_fk only if user_groups has group_id column (FK table)
+    -- and user_groups_fk doesn't already exist
+    IF EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_name = 'user_groups' AND column_name = 'group_id'
+    ) AND NOT EXISTS (
+        SELECT 1 FROM information_schema.tables WHERE table_name = 'user_groups_fk'
+    ) THEN
+        ALTER TABLE user_groups RENAME TO user_groups_fk;
+    END IF;
+END $$;
 
 -- 2. Create the @ElementCollection tables the JPA User entity expects (skip if exists)
 CREATE TABLE IF NOT EXISTS user_roles (

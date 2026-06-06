@@ -7,14 +7,18 @@ server:
   shutdown: graceful
   tomcat:
     threads:
-      max: 20
-      min-spare: 5
-    max-connections: 100
+      max: 10
+      min-spare: 2
+    max-connections: 50
     accept-count: 10
 
 spring:
   application:
     name: orionops-backend
+
+  # Lazy initialization — beans created on first use, cuts ~100MB startup spike
+  main:
+    lazy-initialization: true
 
   autoconfigure:
     exclude:
@@ -27,8 +31,8 @@ spring:
     password: ${POSTGRES_PASSWORD:orionops_dev}
     driver-class-name: org.postgresql.Driver
     hikari:
-      maximum-pool-size: 10
-      minimum-idle: 2
+      maximum-pool-size: 5
+      minimum-idle: 1
       idle-timeout: 300000
       connection-timeout: 20000
       max-lifetime: 1200000
@@ -46,6 +50,9 @@ spring:
         format_sql: true
         jdbc:
           time_zone: UTC
+          batch_size: 20
+        order_inserts: true
+        order_updates: true
         types:
           json_format_mapper: org.hibernate.type.jackson.JacksonJsonFormatMapper
 
@@ -58,9 +65,9 @@ spring:
       timeout: 5000
       lettuce:
         pool:
-          max-active: 8
-          max-idle: 4
-          min-idle: 2
+          max-active: 4
+          max-idle: 2
+          min-idle: 1
           max-wait: 2000
 
   # --- Kafka ---
@@ -115,13 +122,13 @@ spring:
 flowable:
   database-schema-update: true
   async-executor-activate: true
-  async-executor-core-pool-size: 2
-  async-executor-max-pool-size: 4
-  async-executor-queue-size: 50
-  async-executor-max-timer-jobs-per-acquisition: 5
-  async-executor-max-async-jobs-per-acquisition: 5
-  async-executor-wait-time-in-millis: 5000
-  async-executor-lock-wait-time-in-millis: 5000
+  async-executor-core-pool-size: 1
+  async-executor-max-pool-size: 2
+  async-executor-queue-size: 20
+  async-executor-max-timer-jobs-per-acquisition: 3
+  async-executor-max-async-jobs-per-acquisition: 3
+  async-executor-wait-time-in-millis: 10000
+  async-executor-lock-wait-time-in-millis: 10000
   process-definition-location-prefix: classpath*:/processes/
   history-level: audit
   async-history-enabled: false

@@ -109,7 +109,7 @@ public class KafkaConfig {
         ConcurrentKafkaListenerContainerFactory<String, Object> factory =
             new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory());
-        factory.setConcurrency(3);
+        factory.setConcurrency(1);
         factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.BATCH);
 
         DeadLetterPublishingRecoverer recoverer = new DeadLetterPublishingRecoverer(kafkaTemplate);

@@ -301,6 +301,13 @@
                             <artifactId>lombok</artifactId>
                         </exclude>
                     </excludes>
+                    <jvmArguments>
+                        -Xms64m -Xmx256m
+                        -XX:+UseG1GC
+                        -XX:+UseStringDeduplication
+                        -XX:MaxMetaspaceSize=128m
+                        -XX:ReservedCodeCacheSize=64m
+                    </jvmArguments>
                 </configuration>
             </plugin>
             <plugin>
