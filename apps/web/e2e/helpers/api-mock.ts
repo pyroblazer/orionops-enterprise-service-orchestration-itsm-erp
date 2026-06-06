@@ -734,3 +734,42 @@ export const mockCycleCounts = {
 export const mockAssetDetail = {
   data: { id: 'asset-001', name: 'Production Server', assetTag: 'AST-001', type: 'server', serialNumber: 'SN-12345', purchaseDate: '2025-01-15', purchaseValue: 15000, assignedTo: 'IT Ops', location: 'Data Center A', warrantyExpiry: '2028-01-15', status: 'in_use', bookValue: 11250, depreciationMethod: 'STRAIGHT_LINE', annualDepreciation: 3750, usefulLifeYears: 4 },
 };
+
+export const mockWorkflows = {
+  list: {
+    data: [
+      { id: 'wf-001', name: 'Incident Resolution', version: 1, status: 'ACTIVE', createdAt: new Date().toISOString() },
+      { id: 'wf-002', name: 'Change Approval', version: 3, status: 'ACTIVE', createdAt: new Date().toISOString() },
+      { id: 'wf-003', name: 'Service Request Fulfillment', version: 2, status: 'DRAFT', createdAt: new Date().toISOString() },
+    ],
+    total: 3,
+  },
+  detail: {
+    id: 'wf-001', name: 'Incident Resolution', version: 1, status: 'ACTIVE',
+    definition: '<?xml version="1.0" encoding="UTF-8"?><bpmn:definitions></bpmn:definitions>',
+    createdAt: new Date().toISOString(),
+  },
+  created: {
+    data: { id: 'wf-004', name: 'New Workflow', version: 1, status: 'DRAFT' },
+  },
+};
+
+export const mockTrialBalance = {
+  data: { debits: 150000, credits: 150000, balanced: true },
+};
+
+export const mockIncomeStatement = {
+  data: { revenue: 250000, expenses: 195000, netIncome: 55000 },
+};
+
+export const mockAuditExtended = {
+  list: {
+    data: [
+      { id: 'audit-001', action: 'CREATE_INCIDENT', userName: 'admin@orionops.com', entityType: 'Incident', resourceId: 'inc-001-resource', timestamp: new Date().toISOString(), ipAddress: '192.168.1.1', userId: 'u1' },
+      { id: 'audit-002', action: 'UPDATE_PROBLEM', userName: 'agent@orionops.com', entityType: 'Problem', resourceId: 'prob-001-resource', timestamp: new Date(Date.now() - 3600000).toISOString(), ipAddress: '192.168.1.2', userId: 'u2' },
+      { id: 'audit-003', action: 'DELETE_CHANGE', userName: 'admin@orionops.com', entityType: 'ChangeRequest', resourceId: 'chg-001-resource', timestamp: new Date(Date.now() - 7200000).toISOString(), ipAddress: '192.168.1.3', userId: 'u1' },
+    ],
+    total: 3,
+  },
+  page2: { data: [], total: 0 },
+};
