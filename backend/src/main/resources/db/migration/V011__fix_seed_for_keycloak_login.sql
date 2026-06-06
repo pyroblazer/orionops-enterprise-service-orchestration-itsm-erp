@@ -76,7 +76,7 @@ VALUES
      'a1a1a1a1-1111-1111-1111-111111111102', 'a1a1a1a1-1111-1111-1111-111111111103',
      sandbox_uuid('group_infra'), NULL, 'resolved_permanently',
      'Restored permissions from backup. Documented patch impact for future reference.',
-     NOW() - INTERVAL '20 days', NOW() - INTERVAL '19 days'))
+     NOW() - INTERVAL '20 days', NOW() - INTERVAL '19 days')
 ON CONFLICT (incident_number) DO NOTHING;
 
 -- ---- Additional Knowledge Articles ----
