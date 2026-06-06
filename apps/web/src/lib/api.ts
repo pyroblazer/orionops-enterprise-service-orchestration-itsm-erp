@@ -677,6 +677,9 @@ const KEYCLOAK_URL = process.env.NEXT_PUBLIC_KEYCLOAK_URL || 'http://localhost:8
 const KEYCLOAK_REALM = process.env.NEXT_PUBLIC_KEYCLOAK_REALM || 'orionops';
 const KEYCLOAK_CLIENT_ID = process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_ID || 'orionops-web';
 
+// Same-origin proxy that forwards to Keycloak server-side — avoids browser CORS
+const TOKEN_PROXY_URL = '/api/auth/token';
+
 function getAccessToken(): string | null {
   if (typeof window === 'undefined') return null;
   return localStorage.getItem('orionops_access_token');
@@ -736,7 +739,7 @@ apiClient.interceptors.response.use(
           client_id: KEYCLOAK_CLIENT_ID,
         });
         const response = await axios.post(
-          `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/token`,
+          TOKEN_PROXY_URL,
           params,
           { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
         );
@@ -1398,9 +1401,9 @@ export const auth = {
       // Backend unavailable, fall through to Keycloak
     }
 
-    // Fallback: Keycloak ROPC grant
+    // Fallback: Keycloak ROPC grant via same-origin proxy (avoids CORS)
     const res = await fetch(
-      `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/token`,
+      TOKEN_PROXY_URL,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },

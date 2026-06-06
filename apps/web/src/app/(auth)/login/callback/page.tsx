@@ -5,8 +5,6 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { auth, decodeJwtPayload } from '@/lib/api';
 import { Package, Loader2 } from 'lucide-react';
 
-const KEYCLOAK_URL = process.env.NEXT_PUBLIC_KEYCLOAK_URL || 'http://localhost:8180';
-const KEYCLOAK_REALM = process.env.NEXT_PUBLIC_KEYCLOAK_REALM || 'orionops';
 const KEYCLOAK_CLIENT_ID = process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_ID || 'orionops-web';
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1';
 
@@ -54,9 +52,9 @@ function CallbackHandler() {
       const redirectDestination = getCookieValue('orionops_redirect_after_auth') || '/dashboard';
 
       try {
-        // Exchange authorization code for tokens
+        // Exchange authorization code for tokens via same-origin proxy (avoids CORS)
         const tokenResponse = await fetch(
-          `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/token`,
+          '/api/auth/token',
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
