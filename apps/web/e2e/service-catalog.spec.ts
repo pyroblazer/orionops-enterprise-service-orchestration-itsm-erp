@@ -42,7 +42,7 @@ test.describe('Service Catalog', () => {
     await page.goto('/requests', { waitUntil: 'domcontentloaded' });
 
     const hardwareButton = page.getByText('Hardware', { exact: true }).first();
-    await hardwareButton.waitForElementState('visible');
+    await expect(hardwareButton).toBeVisible();
 
     await Promise.all([
       page.waitForNavigation(),

@@ -19,7 +19,7 @@ test.describe('Workflow Management', () => {
   });
 
   test('should show workflow table with column headers after clicking Workflows tab', async ({ page }) => {
-    await page.goto('/admin', { waitUntil: 'networkidle' });
+    await page.goto('/admin', { waitUntil: 'domcontentloaded' });
 
     const workflowsTab = page.getByRole('tab', { name: 'Workflows' });
     await workflowsTab.click();
@@ -31,7 +31,7 @@ test.describe('Workflow Management', () => {
   });
 
   test('should show workflow names from mock data', async ({ page }) => {
-    await page.goto('/admin', { waitUntil: 'networkidle' });
+    await page.goto('/admin', { waitUntil: 'domcontentloaded' });
 
     const workflowsTab = page.getByRole('tab', { name: 'Workflows' });
     await workflowsTab.click();
@@ -41,7 +41,7 @@ test.describe('Workflow Management', () => {
   });
 
   test('should show version numbers in workflow table', async ({ page }) => {
-    await page.goto('/admin', { waitUntil: 'networkidle' });
+    await page.goto('/admin', { waitUntil: 'domcontentloaded' });
 
     const workflowsTab = page.getByRole('tab', { name: 'Workflows' });
     await workflowsTab.click();
