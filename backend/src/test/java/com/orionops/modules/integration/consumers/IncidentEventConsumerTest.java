@@ -32,6 +32,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+import org.springframework.test.util.ReflectionTestUtils;
 
 /**
  * Unit tests for {@link IncidentEventConsumer}.
@@ -66,8 +67,11 @@ class IncidentEventConsumerTest {
 
     @BeforeEach
     void setUp() {
-        consumer = new IncidentEventConsumer(emailService, slackIntegrationService,
-                notificationService, userRepository, objectMapper, searchService);
+        consumer = new IncidentEventConsumer(userRepository, objectMapper);
+        ReflectionTestUtils.setField(consumer, "emailService", emailService);
+        ReflectionTestUtils.setField(consumer, "slackIntegrationService", slackIntegrationService);
+        ReflectionTestUtils.setField(consumer, "notificationService", notificationService);
+        ReflectionTestUtils.setField(consumer, "searchService", searchService);
         assigneeId = UUID.randomUUID();
         incidentId = UUID.randomUUID();
         reporterId = UUID.randomUUID();

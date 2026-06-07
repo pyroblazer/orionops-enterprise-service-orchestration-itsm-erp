@@ -32,6 +32,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+import org.springframework.test.util.ReflectionTestUtils;
 
 /**
  * Unit tests for {@link ChangeEventConsumer}.
@@ -64,8 +65,9 @@ class ChangeEventConsumerTest {
 
     @BeforeEach
     void setUp() {
-        consumer = new ChangeEventConsumer(emailService, notificationService,
-                userRepository, changeRequestRepository, objectMapper);
+        consumer = new ChangeEventConsumer(userRepository, changeRequestRepository, objectMapper);
+        ReflectionTestUtils.setField(consumer, "emailService", emailService);
+        ReflectionTestUtils.setField(consumer, "notificationService", notificationService);
         changeId = UUID.randomUUID();
         assigneeId = UUID.randomUUID();
         requesterId = UUID.randomUUID();

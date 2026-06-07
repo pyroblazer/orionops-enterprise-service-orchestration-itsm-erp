@@ -31,6 +31,7 @@ import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+import org.springframework.test.util.ReflectionTestUtils;
 
 /**
  * Unit tests for {@link SLAEventConsumer}.
@@ -65,8 +66,10 @@ class SLAEventConsumerTest {
 
     @BeforeEach
     void setUp() {
-        consumer = new SLAEventConsumer(emailService, slackIntegrationService,
-                notificationService, serviceRepository, userRepository, objectMapper);
+        consumer = new SLAEventConsumer(serviceRepository, userRepository, objectMapper);
+        ReflectionTestUtils.setField(consumer, "emailService", emailService);
+        ReflectionTestUtils.setField(consumer, "slackIntegrationService", slackIntegrationService);
+        ReflectionTestUtils.setField(consumer, "notificationService", notificationService);
         slaInstanceId = UUID.randomUUID();
         targetEntityId = UUID.randomUUID();
         ownerId = UUID.randomUUID();
