@@ -33,20 +33,22 @@ test.describe('Basic Navigation', () => {
 
   test('should show loading spinner on login callback page', async ({ page }) => {
     await page.goto('http://localhost:3002/login/callback');
+    await page.waitForLoadState('domcontentloaded');
+    await page.waitForTimeout(500);
 
     // Check if loading spinner is visible (may use different class names)
     const spinner = page.locator('.lucide-loader-circle, .animate-spin, svg[class*="loader"], [class*="spinner"]').first();
     if (await spinner.count() > 0) {
-      await expect(spinner).toBeVisible();
+      await expect(spinner).toBeVisible({ timeout: 5000 });
     }
     // Check loading text (may not appear if page processes too fast)
     const loadingText = page.getByText('Completing sign in');
     if (await loadingText.count() > 0) {
-      await expect(loadingText).toBeVisible();
+      await expect(loadingText).toBeVisible({ timeout: 5000 });
     }
     const sessionText = page.getByText('Securing your session...');
     if (await sessionText.count() > 0) {
-      await expect(sessionText).toBeVisible();
+      await expect(sessionText).toBeVisible({ timeout: 5000 });
     }
   });
 });
