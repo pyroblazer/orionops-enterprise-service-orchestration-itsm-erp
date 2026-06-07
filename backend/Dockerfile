@@ -24,8 +24,8 @@ RUN addgroup -S orionops && adduser -S orionops -G orionops
 
 WORKDIR /app
 
-# Service profile determines which beans load (cloud-api, cloud-workflow, etc.)
-ARG SERVICE_PROFILE=cloud-api
+# Service profile set at runtime via environment variable (default: cloud-api)
+ENV SERVICE_PROFILE=cloud-api
 ENV SPRING_PROFILES_ACTIVE=cloud,${SERVICE_PROFILE}
 
 COPY --from=build /app/target/*.jar app.jar

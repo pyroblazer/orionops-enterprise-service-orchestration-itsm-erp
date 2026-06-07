@@ -5,12 +5,12 @@ services:
     runtime: docker
     dockerfilePath: ./backend/Dockerfile
     dockerContext: ./backend
-    dockerBuildArgs:
-      SERVICE_PROFILE: cloud-api
     plan: free
     region: oregon
     healthCheckPath: /api/actuator/health
     envVars:
+      - key: SERVICE_PROFILE
+        value: cloud-api
       - key: PORT
         value: "8080"
       - key: SPRING_PROFILES_ACTIVE
@@ -45,6 +45,8 @@ services:
     region: oregon
     healthCheckPath: /api/actuator/health
     envVars:
+      - key: SERVICE_PROFILE
+        value: cloud-workflow
       - key: PORT
         value: "8080"
       - key: SPRING_PROFILES_ACTIVE
@@ -76,6 +78,8 @@ services:
     region: oregon
     healthCheckPath: /api/actuator/health
     envVars:
+      - key: SERVICE_PROFILE
+        value: cloud-worker
       - key: PORT
         value: "8080"
       - key: SPRING_PROFILES_ACTIVE
@@ -107,6 +111,8 @@ services:
     region: oregon
     healthCheckPath: /api/actuator/health
     envVars:
+      - key: SERVICE_PROFILE
+        value: cloud-notifier
       - key: PORT
         value: "8080"
       - key: SPRING_PROFILES_ACTIVE
@@ -138,6 +144,8 @@ services:
     region: oregon
     healthCheckPath: /api/actuator/health
     envVars:
+      - key: SERVICE_PROFILE
+        value: cloud-connector
       - key: PORT
         value: "8080"
       - key: SPRING_PROFILES_ACTIVE
