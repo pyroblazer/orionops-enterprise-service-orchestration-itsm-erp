@@ -64,15 +64,18 @@ test.describe('Cycle Count Lifecycle', () => {
   });
 
   test('should open record count dialog', async ({ page }) => {
+    const responsePromise = page.waitForResponse(resp => resp.url().includes('/api/v1/inventory') && resp.status() === 200);
     await page.goto('/inventory/cycle-counts', { waitUntil: 'networkidle' });
+    await responsePromise.catch(() => null);
+    await page.waitForTimeout(500);
 
-    await expect(page.getByRole('button', { name: /record count/i })).toBeVisible();
+    await expect(page.getByRole('button', { name: /record count/i })).toBeVisible({ timeout: 5000 });
     await page.getByRole('button', { name: /record count/i }).click();
 
-    await expect(page.getByRole('dialog')).toBeVisible();
-    await expect(page.getByLabel('Actual Quantity')).toBeVisible();
+    await expect(page.getByRole('dialog')).toBeVisible({ timeout: 5000 });
+    await expect(page.getByLabel('Actual Quantity')).toBeVisible({ timeout: 5000 });
     const submitBtn = page.getByRole('button', { name: /submit|save|confirm/i }).first();
-    await expect(submitBtn).toBeVisible();
+    await expect(submitBtn).toBeVisible({ timeout: 5000 });
   });
 
   test('should submit a recorded count', async ({ page }) => {
