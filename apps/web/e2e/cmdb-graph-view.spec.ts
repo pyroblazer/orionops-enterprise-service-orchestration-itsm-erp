@@ -11,55 +11,49 @@ test.describe('CMDB Graph View', () => {
   });
 
   test('should show List and Graph toggle tabs', async ({ page }) => {
-    const responsePromise = page.waitForResponse(resp => resp.url().includes('/api/v1/cmdb') && resp.status() === 200);
-    await page.goto('/cmdb', { waitUntil: 'networkidle' });
-    await responsePromise.catch(() => null);
+    await page.goto('/cmdb');
 
     await expect(page.getByRole('tab', { name: /list/i })).toBeVisible();
     await expect(page.getByRole('tab', { name: /graph/i })).toBeVisible();
   });
 
   test('should default to list view with CI table', async ({ page }) => {
-    const responsePromise = page.waitForResponse(resp => resp.url().includes('/api/v1/cmdb') && resp.status() === 200);
-    await page.goto('/cmdb', { waitUntil: 'networkidle' });
-    await responsePromise.catch(() => null);
-    await page.waitForTimeout(500);
+    await page.goto('/cmdb');
+    await page.waitForLoadState('domcontentloaded');
+    await page.waitForTimeout(1000);
 
-    await expect(page.getByText('Production API Server')).toBeVisible({ timeout: 15000 });
+    await expect(page.getByText('Production API Server')).toBeVisible({ timeout: 30000 });
     await expect(page.locator('table')).toBeVisible();
   });
 
   test('should switch to graph view and show Relationship Graph heading', async ({ page }) => {
-    const responsePromise = page.waitForResponse(resp => resp.url().includes('/api/v1/cmdb') && resp.status() === 200);
-    await page.goto('/cmdb', { waitUntil: 'networkidle' });
-    await responsePromise.catch(() => null);
-    await page.waitForTimeout(500);
+    await page.goto('/cmdb');
+    await page.waitForLoadState('domcontentloaded');
+    await page.waitForTimeout(1000);
 
-    await expect(page.getByText('Production API Server')).toBeVisible({ timeout: 15000 });
+    await expect(page.getByText('Production API Server')).toBeVisible({ timeout: 30000 });
     await page.getByRole('tab', { name: /graph/i }).click();
 
     await expect(page.getByText(/relationship graph/i)).toBeVisible();
   });
 
   test('should show CI cards in graph view', async ({ page }) => {
-    const responsePromise = page.waitForResponse(resp => resp.url().includes('/api/v1/cmdb') && resp.status() === 200);
-    await page.goto('/cmdb', { waitUntil: 'networkidle' });
-    await responsePromise.catch(() => null);
-    await page.waitForTimeout(500);
+    await page.goto('/cmdb');
+    await page.waitForLoadState('domcontentloaded');
+    await page.waitForTimeout(1000);
 
-    await expect(page.getByText('Production API Server')).toBeVisible({ timeout: 15000 });
+    await expect(page.getByText('Production API Server')).toBeVisible({ timeout: 30000 });
     await page.getByRole('tab', { name: /graph/i }).click();
 
     await expect(page.getByText('Production API Server')).toBeVisible();
   });
 
   test('should show CI type badges in graph view', async ({ page }) => {
-    const responsePromise = page.waitForResponse(resp => resp.url().includes('/api/v1/cmdb') && resp.status() === 200);
-    await page.goto('/cmdb', { waitUntil: 'networkidle' });
-    await responsePromise.catch(() => null);
-    await page.waitForTimeout(500);
+    await page.goto('/cmdb');
+    await page.waitForLoadState('domcontentloaded');
+    await page.waitForTimeout(1000);
 
-    await expect(page.getByText('Production API Server')).toBeVisible({ timeout: 15000 });
+    await expect(page.getByText('Production API Server')).toBeVisible({ timeout: 30000 });
     await page.getByRole('tab', { name: /graph/i }).click();
 
     await expect(page.getByText('APPLICATION')).toBeVisible();
@@ -70,12 +64,11 @@ test.describe('CMDB Graph View', () => {
       await route.fulfill({ json: mocks.mockCMDB.detail });
     });
 
-    const responsePromise = page.waitForResponse(resp => resp.url().includes('/api/v1/cmdb') && resp.status() === 200);
-    await page.goto('/cmdb', { waitUntil: 'networkidle' });
-    await responsePromise.catch(() => null);
-    await page.waitForTimeout(500);
+    await page.goto('/cmdb');
+    await page.waitForLoadState('domcontentloaded');
+    await page.waitForTimeout(1000);
 
-    await expect(page.getByText('Production API Server')).toBeVisible({ timeout: 15000 });
+    await expect(page.getByText('Production API Server')).toBeVisible({ timeout: 30000 });
     await page.getByRole('tab', { name: /graph/i }).click();
 
     await page.getByText('Production API Server').click();

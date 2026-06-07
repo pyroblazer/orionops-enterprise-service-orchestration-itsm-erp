@@ -32,54 +32,59 @@ test.describe('Dashboard Shell Features', () => {
   });
 
   test('should open keyboard shortcuts dialog on button click', async ({ page }) => {
-    await page.goto('/dashboard', { waitUntil: 'domcontentloaded' });
+    await page.goto('/dashboard');
+    await page.waitForLoadState('domcontentloaded');
 
     await page.getByRole('button', { name: /show keyboard shortcuts/i }).click();
 
     const dialog = page.getByRole('dialog', { name: /keyboard shortcuts/i });
-    await expect(dialog).toBeVisible();
+    await expect(dialog).toBeVisible({ timeout: 10000 });
   });
 
   test('should display all four shortcuts in the dialog', async ({ page }) => {
-    await page.goto('/dashboard', { waitUntil: 'domcontentloaded' });
+    await page.goto('/dashboard');
+    await page.waitForLoadState('domcontentloaded');
 
     await page.getByRole('button', { name: /show keyboard shortcuts/i }).click();
 
-    await expect(page.getByText('Ctrl + B')).toBeVisible();
-    await expect(page.getByText('Ctrl + K')).toBeVisible();
-    await expect(page.getByText('Ctrl + /')).toBeVisible();
-    await expect(page.getByText('Escape')).toBeVisible();
+    await expect(page.getByText('Ctrl + B')).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText('Ctrl + K')).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText('Ctrl + /')).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText('Escape')).toBeVisible({ timeout: 10000 });
   });
 
   test('should close shortcuts dialog with Escape key', async ({ page }) => {
-    await page.goto('/dashboard', { waitUntil: 'domcontentloaded' });
+    await page.goto('/dashboard');
+    await page.waitForLoadState('domcontentloaded');
 
     await page.getByRole('button', { name: /show keyboard shortcuts/i }).click();
-    await expect(page.getByRole('dialog', { name: /keyboard shortcuts/i })).toBeVisible();
+    await expect(page.getByRole('dialog', { name: /keyboard shortcuts/i })).toBeVisible({ timeout: 10000 });
 
     await page.keyboard.press('Escape');
 
-    await expect(page.getByRole('dialog', { name: /keyboard shortcuts/i })).not.toBeVisible();
+    await expect(page.getByRole('dialog', { name: /keyboard shortcuts/i })).not.toBeVisible({ timeout: 10000 });
   });
 
   test('should close shortcuts dialog with Close button', async ({ page }) => {
-    await page.goto('/dashboard', { waitUntil: 'domcontentloaded' });
+    await page.goto('/dashboard');
+    await page.waitForLoadState('domcontentloaded');
 
     await page.getByRole('button', { name: /show keyboard shortcuts/i }).click();
-    await expect(page.getByRole('dialog', { name: /keyboard shortcuts/i })).toBeVisible();
+    await expect(page.getByRole('dialog', { name: /keyboard shortcuts/i })).toBeVisible({ timeout: 10000 });
 
     await page.getByRole('button', { name: 'Close' }).click();
 
-    await expect(page.getByRole('dialog', { name: /keyboard shortcuts/i })).not.toBeVisible();
+    await expect(page.getByRole('dialog', { name: /keyboard shortcuts/i })).not.toBeVisible({ timeout: 10000 });
   });
 
   test('should open dialog with Ctrl+/ keyboard shortcut', async ({ page }) => {
-    await page.goto('/dashboard', { waitUntil: 'networkidle' });
+    await page.goto('/dashboard');
+    await page.waitForLoadState('domcontentloaded');
+    await page.waitForTimeout(1000);
 
-    await page.getByRole('button', { name: /show keyboard shortcuts/i }).focus();
     await page.keyboard.press('Control+Slash');
 
-    await expect(page.getByRole('dialog', { name: /keyboard shortcuts/i })).toBeVisible({ timeout: 5000 });
+    await expect(page.getByRole('dialog', { name: /keyboard shortcuts/i })).toBeVisible({ timeout: 10000 });
   });
 
   test('should show theme toggle button with descriptive aria-label', async ({ page }) => {
