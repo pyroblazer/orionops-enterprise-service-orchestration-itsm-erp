@@ -14,17 +14,21 @@ include:
   - path: backend/docker-compose.yml
 
 services:
-  # --- Backend (Java Spring Boot) -----------------------------------------
-  backend:
+  # --- Backend: Core API Service ---
+  api:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: orionops-backend
+    container_name: orionops-api
     ports:
       - "8080:8080"
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    env_file:
+      - .env
     environment:
+      SERVICE_PROFILE: cloud-api
+      SPRING_PROFILES_ACTIVE: cloud,cloud-api
       POSTGRES_HOST: postgres
       POSTGRES_PORT: 5432
       POSTGRES_DB: orionops
@@ -43,12 +47,97 @@ services:
       KEYCLOAK_REALM: orionops
       KEYCLOAK_CLIENT_ID: orionops-backend
       OPA_ENDPOINT: http://opa:8181
-      STRIPE_API_KEY: sk_test_placeholder
-      STRIPE_WEBHOOK_SECRET: whsec_placeholder
-      OTEL_EXPORTER_OTLP_ENDPOINT: http://localhost:4317
-      OTEL_TRACES_EXPORTER: otlp
-      OTEL_METRICS_EXPORTER: otlp
-      OTEL_LOGS_EXPORTER: otlp
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+      kafka-init:
+        condition: service_completed_successfully
+      minio-init:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8080/api/actuator/health/readiness || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 120s
+    networks:
+      - orionops-net
+
+  # --- Backend: Workflow Service (BPMN) ---
+  workflow:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: orionops-workflow
+    ports:
+      - "8081:8080"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    env_file:
+      - .env
+    environment:
+      SERVICE_PROFILE: cloud-workflow
+      SPRING_PROFILES_ACTIVE: cloud,cloud-workflow
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: orionops
+      POSTGRES_USER: orionops
+      POSTGRES_PASSWORD: orionops_dev
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      KEYCLOAK_AUTH_SERVER_URL: http://host.docker.internal:8081
+      KEYCLOAK_REALM: orionops
+      KEYCLOAK_CLIENT_ID: orionops-backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      kafka-init:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8080/api/actuator/health/readiness || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 120s
+    networks:
+      - orionops-net
+
+  # --- Backend: Worker Service (Event Processor) ---
+  worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: orionops-worker
+    ports:
+      - "8082:8080"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    env_file:
+      - .env
+    environment:
+      SERVICE_PROFILE: cloud-worker
+      SPRING_PROFILES_ACTIVE: cloud,cloud-worker
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: orionops
+      POSTGRES_USER: orionops
+      POSTGRES_PASSWORD: orionops_dev
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      OPENSEARCH_HOST: opensearch
+      OPENSEARCH_PORT: 9200
     depends_on:
       postgres:
         condition: service_healthy
@@ -58,11 +147,89 @@ services:
         condition: service_healthy
       opensearch:
         condition: service_healthy
-      keycloak:
+      kafka-init:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8080/api/actuator/health/readiness || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 120s
+    networks:
+      - orionops-net
+
+  # --- Backend: Notifier Service ---
+  notifier:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: orionops-notifier
+    ports:
+      - "8083:8080"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    env_file:
+      - .env
+    environment:
+      SERVICE_PROFILE: cloud-notifier
+      SPRING_PROFILES_ACTIVE: cloud,cloud-notifier
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: orionops
+      POSTGRES_USER: orionops
+      POSTGRES_PASSWORD: orionops_dev
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
         condition: service_healthy
       kafka-init:
         condition: service_completed_successfully
-      minio-init:
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8080/api/actuator/health/readiness || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 120s
+    networks:
+      - orionops-net
+
+  # --- Backend: Connector Service ---
+  connector:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: orionops-connector
+    ports:
+      - "8084:8080"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    env_file:
+      - .env
+    environment:
+      SERVICE_PROFILE: cloud-connector
+      SPRING_PROFILES_ACTIVE: cloud,cloud-connector
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: orionops
+      POSTGRES_USER: orionops
+      POSTGRES_PASSWORD: orionops_dev
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      kafka-init:
         condition: service_completed_successfully
     healthcheck:
       test: ["CMD-SHELL", "curl -sf http://localhost:8080/api/actuator/health/readiness || exit 1"]
