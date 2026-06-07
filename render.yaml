@@ -24,11 +24,11 @@ services:
         value: neondb_owner
       # Database and Auth secrets from environment group
       - key: SPRING_DATASOURCE_PASSWORD
-        fromGroup: orionops-secrets
+        value: ""
       - key: SPRING_DATA_REDIS_URL
-        fromGroup: orionops-secrets
+        value: ""
       - key: APP_AUTH_JWT_SECRET
-        fromGroup: orionops-secrets
+        value: ""
       # Vercel frontend URL for CORS
       - key: FRONTEND_URL
         value: https://orionops.vercel.app
@@ -56,11 +56,11 @@ services:
       - key: SPRING_DATASOURCE_USERNAME
         value: neondb_owner
       - key: SPRING_DATASOURCE_PASSWORD
-        fromGroup: orionops-secrets
+        value: ""
       - key: SPRING_DATA_REDIS_URL
-        fromGroup: orionops-secrets
+        value: ""
       - key: APP_AUTH_JWT_SECRET
-        fromGroup: orionops-secrets
+        value: ""
       - key: FRONTEND_URL
         value: https://orionops.vercel.app
 
@@ -87,11 +87,11 @@ services:
       - key: SPRING_DATASOURCE_USERNAME
         value: neondb_owner
       - key: SPRING_DATASOURCE_PASSWORD
-        fromGroup: orionops-secrets
+        value: ""
       - key: SPRING_DATA_REDIS_URL
-        fromGroup: orionops-secrets
+        value: ""
       - key: APP_AUTH_JWT_SECRET
-        fromGroup: orionops-secrets
+        value: ""
       - key: FRONTEND_URL
         value: https://orionops.vercel.app
 
@@ -118,11 +118,11 @@ services:
       - key: SPRING_DATASOURCE_USERNAME
         value: neondb_owner
       - key: SPRING_DATASOURCE_PASSWORD
-        fromGroup: orionops-secrets
+        value: ""
       - key: SPRING_DATA_REDIS_URL
-        fromGroup: orionops-secrets
+        value: ""
       - key: APP_AUTH_JWT_SECRET
-        fromGroup: orionops-secrets
+        value: ""
       - key: FRONTEND_URL
         value: https://orionops.vercel.app
 
@@ -149,11 +149,11 @@ services:
       - key: SPRING_DATASOURCE_USERNAME
         value: neondb_owner
       - key: SPRING_DATASOURCE_PASSWORD
-        fromGroup: orionops-secrets
+        value: ""
       - key: SPRING_DATA_REDIS_URL
-        fromGroup: orionops-secrets
+        value: ""
       - key: APP_AUTH_JWT_SECRET
-        fromGroup: orionops-secrets
+        value: ""
       - key: FRONTEND_URL
         value: https://orionops.vercel.app
 
@@ -170,7 +170,7 @@ services:
       - key: KEYCLOAK_ADMIN
         value: admin
       - key: KEYCLOAK_ADMIN_PASSWORD
-        fromGroup: orionops-secrets
+        value: ""
       - key: KC_DB
         value: postgres
       - key: KC_DB_URL
@@ -178,7 +178,7 @@ services:
       - key: KC_DB_USERNAME
         value: neondb_owner
       - key: KC_DB_PASSWORD
-        fromGroup: orionops-secrets
+        value: ""
       - key: KC_DB_SCHEMA
         value: keycloak
       - key: KC_HOSTNAME
