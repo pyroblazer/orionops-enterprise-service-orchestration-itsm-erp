@@ -39,8 +39,6 @@ services:
     runtime: docker
     dockerfilePath: ./backend/Dockerfile
     dockerContext: ./backend
-    dockerBuildArgs:
-      SERVICE_PROFILE: cloud-workflow
     plan: free
     region: oregon
     healthCheckPath: /api/actuator/health
@@ -72,8 +70,6 @@ services:
     runtime: docker
     dockerfilePath: ./backend/Dockerfile
     dockerContext: ./backend
-    dockerBuildArgs:
-      SERVICE_PROFILE: cloud-worker
     plan: free
     region: oregon
     healthCheckPath: /api/actuator/health
@@ -105,8 +101,6 @@ services:
     runtime: docker
     dockerfilePath: ./backend/Dockerfile
     dockerContext: ./backend
-    dockerBuildArgs:
-      SERVICE_PROFILE: cloud-notifier
     plan: free
     region: oregon
     healthCheckPath: /api/actuator/health
@@ -138,8 +132,6 @@ services:
     runtime: docker
     dockerfilePath: ./backend/Dockerfile
     dockerContext: ./backend
-    dockerBuildArgs:
-      SERVICE_PROFILE: cloud-connector
     plan: free
     region: oregon
     healthCheckPath: /api/actuator/health
