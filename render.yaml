@@ -32,7 +32,7 @@ services:
         value: https://orionops.vercel.app
       # JWT secret for local authentication
       - key: APP_AUTH_JWT_SECRET
-        value: "orionops-cloud-jwt-secret-key-2024-prod"
+        sync: false
 
   # ── OrionOps Workflow (Flowable BPMN Engine) ─────────────────────────────
   - type: web
@@ -63,7 +63,7 @@ services:
       - key: FRONTEND_URL
         value: https://orionops.vercel.app
       - key: APP_AUTH_JWT_SECRET
-        value: "orionops-cloud-jwt-secret-key-2024-prod"
+        sync: false
 
   # ── OrionOps Worker (Kafka Consumers + OpenSearch) ────────────────────────
   - type: web
@@ -94,7 +94,7 @@ services:
       - key: FRONTEND_URL
         value: https://orionops.vercel.app
       - key: APP_AUTH_JWT_SECRET
-        value: "orionops-cloud-jwt-secret-key-2024-prod"
+        sync: false
 
   # ── OrionOps Notifier (Email, Slack, Teams, Webhooks) ───────────────────
   - type: web
@@ -125,7 +125,7 @@ services:
       - key: FRONTEND_URL
         value: https://orionops.vercel.app
       - key: APP_AUTH_JWT_SECRET
-        value: "orionops-cloud-jwt-secret-key-2024-prod"
+        sync: false
 
   # ── OrionOps Connector (Outbound REST/SOAP) ──────────────────────────────
   - type: web
@@ -156,7 +156,7 @@ services:
       - key: FRONTEND_URL
         value: https://orionops.vercel.app
       - key: APP_AUTH_JWT_SECRET
-        value: "orionops-cloud-jwt-secret-key-2024-prod"
+        sync: false
 
   # ── OrionOps Keycloak (Identity Provider) ─────────────────────────────────
   - type: web
@@ -171,7 +171,7 @@ services:
       - key: KEYCLOAK_ADMIN
         value: admin
       - key: KEYCLOAK_ADMIN_PASSWORD
-        generateValue: true
+        sync: false
       - key: KC_DB
         value: postgres
       - key: KC_DB_URL
