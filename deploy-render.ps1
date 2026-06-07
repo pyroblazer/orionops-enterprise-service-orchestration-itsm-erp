@@ -70,35 +70,40 @@ if ($env_vars.ContainsKey('APP_AUTH_JWT_SECRET')) {
 
 Write-Host "`n✅ All required variables loaded`n"
 
-# Prepare environment group secrets
-$groupSecrets = @{
-    SPRING_DATASOURCE_PASSWORD = $env_vars['SPRING_DATASOURCE_PASSWORD']
-    KC_DB_PASSWORD = $env_vars['SPRING_DATASOURCE_PASSWORD']
-    SPRING_DATA_REDIS_URL = $env_vars['SPRING_DATA_REDIS_URL']
-    APP_AUTH_JWT_SECRET = $env_vars['APP_AUTH_JWT_SECRET']
-    KEYCLOAK_ADMIN_PASSWORD = $env_vars['KEYCLOAK_ADMIN_PASSWORD']
-}
-
-# Services list for reference (all use orionops-secrets group)
+# Services and secrets to configure
 $services = @(
-    "orionops-api",
-    "orionops-workflow",
-    "orionops-worker",
-    "orionops-notifier",
-    "orionops-connector",
-    "orionops-keycloak"
+    @{
+        name = "orionops-api"
+        vars = @('SPRING_DATASOURCE_PASSWORD', 'SPRING_DATA_REDIS_URL', 'APP_AUTH_JWT_SECRET')
+    },
+    @{
+        name = "orionops-workflow"
+        vars = @('SPRING_DATASOURCE_PASSWORD', 'SPRING_DATA_REDIS_URL', 'APP_AUTH_JWT_SECRET')
+    },
+    @{
+        name = "orionops-worker"
+        vars = @('SPRING_DATASOURCE_PASSWORD', 'SPRING_DATA_REDIS_URL', 'APP_AUTH_JWT_SECRET')
+    },
+    @{
+        name = "orionops-notifier"
+        vars = @('SPRING_DATASOURCE_PASSWORD', 'SPRING_DATA_REDIS_URL', 'APP_AUTH_JWT_SECRET')
+    },
+    @{
+        name = "orionops-connector"
+        vars = @('SPRING_DATASOURCE_PASSWORD', 'SPRING_DATA_REDIS_URL', 'APP_AUTH_JWT_SECRET')
+    },
+    @{
+        name = "orionops-keycloak"
+        vars = @('SPRING_DATASOURCE_PASSWORD', 'KEYCLOAK_ADMIN_PASSWORD')
+    }
 )
 
 # Confirmation before deploying
 if (-not $SkipConfirm) {
     Write-Host "⚠️  This will deploy/update all 6 services on Render:"
     foreach ($svc in $services) {
-        Write-Host "  - $svc"
+        Write-Host "  - $($svc.name)"
     }
-    Write-Host ""
-    Write-Host "Steps:"
-    Write-Host "  1. Create/update environment group: orionops-secrets"
-    Write-Host "  2. Deploy blueprint (services will redeploy)"
     Write-Host ""
     Write-Host "Brief downtime expected."
     Write-Host ""
@@ -109,27 +114,8 @@ if (-not $SkipConfirm) {
     }
 }
 
-# Create or update environment group
-Write-Host "`n📦 Creating/updating environment group: orionops-secrets..."
-
-# Build env-group set command with all secrets
-$envGroupCmd = "render env-group set orionops-secrets"
-foreach ($key in $groupSecrets.Keys) {
-    $value = $groupSecrets[$key]
-    $envGroupCmd += " `"$key=$value`""
-}
-
-Invoke-Expression $envGroupCmd
-
-if ($LASTEXITCODE -ne 0) {
-    Write-Error "❌ Failed to create/update environment group"
-    exit 1
-}
-
-Write-Host "✅ Environment group configured`n"
-
-# Deploy blueprint (group auto-attached to all services)
-Write-Host "🚀 Deploying render.yaml blueprint (--force)..."
+# Deploy blueprint (always force to ensure services match blueprint)
+Write-Host "`n🚀 Deploying render.yaml blueprint (--force)..."
 Invoke-Expression "render deploy --force"
 
 if ($LASTEXITCODE -ne 0) {
@@ -137,19 +123,41 @@ if ($LASTEXITCODE -ne 0) {
     exit 1
 }
 
-Write-Host "✅ Blueprint deployed with environment group`n"
+Write-Host "✅ Blueprint deployed`n"
+
+# Configure environment variables for each service
+Write-Host "⚙️  Configuring environment variables..."
+
+foreach ($service in $services) {
+    Write-Host "`n📌 $($service.name):"
+
+    foreach ($var in $service.vars) {
+        $value = $env_vars[$var]
+        $render_var = $var
+
+        # Map to Keycloak var names if needed
+        if ($service.name -eq "orionops-keycloak" -and $var -eq "SPRING_DATASOURCE_PASSWORD") {
+            $render_var = "KC_DB_PASSWORD"
+        }
+
+        Write-Host "  Setting $render_var..."
+        $cmd = "render env set $($service.name) $render_var `"$value`""
+        Invoke-Expression $cmd
+
+        if ($LASTEXITCODE -eq 0) {
+            Write-Host "    ✓ Set"
+        } else {
+            Write-Warning "    ⚠ May have failed (check Render dashboard)"
+        }
+    }
+}
 
 Write-Host "✅ Deployment complete!`n"
-Write-Host "🔍 Environment Group Status:"
-foreach ($key in $groupSecrets.Keys) {
-    Write-Host "  ✓ $key"
-}
-Write-Host ""
-Write-Host "📊 Dashboard:"
+Write-Host "🔍 Check service status:"
 Write-Host "  https://dashboard.render.com"
 Write-Host ""
 Write-Host "📋 Next steps:"
-Write-Host "  1. Monitor service deployments in Render dashboard"
-Write-Host "  2. Verify all 6 services show environment group attached"
+Write-Host "  1. Check each service status in Render dashboard"
+Write-Host "  2. Verify all 6 services are UP"
 Write-Host "  3. Check logs for database connectivity errors"
 Write-Host "  4. Test API: curl https://orionops-api.onrender.com/api/actuator/health"

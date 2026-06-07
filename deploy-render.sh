@@ -55,10 +55,11 @@ fi
 echo "📄 Loading secrets from $ENV_FILE..."
 export $(grep -v '^#' "$ENV_FILE" | xargs)
 
-# Validate and normalize required variables
+# Validate required variables
 required_vars=(
     "SPRING_DATASOURCE_PASSWORD"
     "SPRING_DATA_REDIS_URL"
+    "APP_AUTH_JWT_SECRET"
     "KEYCLOAK_ADMIN_PASSWORD"
 )
 
@@ -70,23 +71,19 @@ for var in "${required_vars[@]}"; do
     echo "  ✓ $var"
 done
 
-# Handle JWT secret (could be APP_AUTH_JWT_SECRET or JWT_SECRET)
-if [[ -z "${APP_AUTH_JWT_SECRET}" ]]; then
-    if [[ -n "${JWT_SECRET}" ]]; then
-        # Map JWT_SECRET to APP_AUTH_JWT_SECRET
-        export APP_AUTH_JWT_SECRET="$JWT_SECRET"
-        echo "  ✓ JWT_SECRET → APP_AUTH_JWT_SECRET"
-    else
-        echo "❌ Missing JWT secret (expected APP_AUTH_JWT_SECRET or JWT_SECRET)"
-        exit 1
-    fi
-else
-    echo "  ✓ APP_AUTH_JWT_SECRET"
-fi
-
 echo ""
 echo "✅ All required variables loaded"
 echo ""
+
+# Services list for reference
+services=(
+    "orionops-api"
+    "orionops-workflow"
+    "orionops-worker"
+    "orionops-notifier"
+    "orionops-connector"
+    "orionops-keycloak"
+)
 
 # Confirmation before deploying
 if [[ "$SKIP_CONFIRM" == false ]]; then
@@ -94,10 +91,6 @@ if [[ "$SKIP_CONFIRM" == false ]]; then
     for svc in "${services[@]}"; do
         echo "  - $svc"
     done
-    echo ""
-    echo "Steps:"
-    echo "  1. Create/update environment group: orionops-secrets"
-    echo "  2. Deploy blueprint (services will redeploy)"
     echo ""
     echo "Brief downtime expected."
     echo ""
@@ -108,35 +101,8 @@ if [[ "$SKIP_CONFIRM" == false ]]; then
     fi
 fi
 
-# Services list for reference (all use orionops-secrets group)
-services=(
-    "orionops-api"
-    "orionops-workflow"
-    "orionops-worker"
-    "orionops-notifier"
-    "orionops-connector"
-    "orionops-keycloak"
-)
-
-# Create or update environment group
-echo "📦 Creating/updating environment group: orionops-secrets..."
-
-render env-group set orionops-secrets \
-    "SPRING_DATASOURCE_PASSWORD=$SPRING_DATASOURCE_PASSWORD" \
-    "KC_DB_PASSWORD=$SPRING_DATASOURCE_PASSWORD" \
-    "SPRING_DATA_REDIS_URL=$SPRING_DATA_REDIS_URL" \
-    "APP_AUTH_JWT_SECRET=$APP_AUTH_JWT_SECRET" \
-    "KEYCLOAK_ADMIN_PASSWORD=$KEYCLOAK_ADMIN_PASSWORD"
-
-if [[ $? -ne 0 ]]; then
-    echo "❌ Failed to create/update environment group"
-    exit 1
-fi
-
-echo "✅ Environment group configured"
+# Deploy blueprint
 echo ""
-
-# Deploy blueprint (group auto-attached to all services)
 echo "🚀 Deploying render.yaml blueprint (--force)..."
 render deploy --force
 
@@ -145,23 +111,52 @@ if [[ $? -ne 0 ]]; then
     exit 1
 fi
 
-echo "✅ Blueprint deployed with environment group"
+echo "✅ Blueprint deployed"
 echo ""
 
+# Configure environment variables for each service
+echo "⚙️  Configuring environment variables..."
+
+# Service configurations
+declare -A service_vars
+service_vars[orionops-api]="SPRING_DATASOURCE_PASSWORD SPRING_DATA_REDIS_URL APP_AUTH_JWT_SECRET"
+service_vars[orionops-workflow]="SPRING_DATASOURCE_PASSWORD SPRING_DATA_REDIS_URL APP_AUTH_JWT_SECRET"
+service_vars[orionops-worker]="SPRING_DATASOURCE_PASSWORD SPRING_DATA_REDIS_URL APP_AUTH_JWT_SECRET"
+service_vars[orionops-notifier]="SPRING_DATASOURCE_PASSWORD SPRING_DATA_REDIS_URL APP_AUTH_JWT_SECRET"
+service_vars[orionops-connector]="SPRING_DATASOURCE_PASSWORD SPRING_DATA_REDIS_URL APP_AUTH_JWT_SECRET"
+service_vars[orionops-keycloak]="SPRING_DATASOURCE_PASSWORD KEYCLOAK_ADMIN_PASSWORD"
+
+for service in "${services[@]}"; do
+    echo ""
+    echo "📌 $service:"
+
+    for var in ${service_vars[$service]}; do
+        render_var="$var"
+
+        # Map to Keycloak var name if needed
+        if [[ "$service" == "orionops-keycloak" && "$var" == "SPRING_DATASOURCE_PASSWORD" ]]; then
+            render_var="KC_DB_PASSWORD"
+        fi
+
+        echo "  Setting $render_var..."
+        render env set "$service" "$render_var" "${!var}"
+
+        if [[ $? -eq 0 ]]; then
+            echo "    ✓ Set"
+        else
+            echo "    ⚠ May have failed (check Render dashboard)"
+        fi
+    done
+done
+
+echo ""
 echo "✅ Deployment complete!"
 echo ""
-echo "🔍 Environment Group Status:"
-echo "  ✓ SPRING_DATASOURCE_PASSWORD"
-echo "  ✓ KC_DB_PASSWORD"
-echo "  ✓ SPRING_DATA_REDIS_URL"
-echo "  ✓ APP_AUTH_JWT_SECRET"
-echo "  ✓ KEYCLOAK_ADMIN_PASSWORD"
-echo ""
-echo "📊 Dashboard:"
+echo "🔍 Check service status:"
 echo "  https://dashboard.render.com"
 echo ""
 echo "📋 Next steps:"
-echo "  1. Monitor service deployments in Render dashboard"
-echo "  2. Verify all 6 services show environment group attached"
+echo "  1. Check each service status in Render dashboard"
+echo "  2. Verify all 6 services are UP"
 echo "  3. Check logs for database connectivity errors"
 echo "  4. Test API: curl https://orionops-api.onrender.com/api/actuator/health"
