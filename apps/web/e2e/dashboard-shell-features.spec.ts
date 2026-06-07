@@ -74,12 +74,12 @@ test.describe('Dashboard Shell Features', () => {
   });
 
   test('should open dialog with Ctrl+/ keyboard shortcut', async ({ page }) => {
-    await page.goto('/dashboard', { waitUntil: 'domcontentloaded' });
+    await page.goto('/dashboard', { waitUntil: 'networkidle' });
 
+    await page.getByRole('button', { name: /show keyboard shortcuts/i }).focus();
     await page.keyboard.press('Control+Slash');
-    await page.waitForTimeout(500);
 
-    await expect(page.getByRole('dialog', { name: /keyboard shortcuts/i })).toBeVisible();
+    await expect(page.getByRole('dialog', { name: /keyboard shortcuts/i })).toBeVisible({ timeout: 5000 });
   });
 
   test('should show theme toggle button with descriptive aria-label', async ({ page }) => {

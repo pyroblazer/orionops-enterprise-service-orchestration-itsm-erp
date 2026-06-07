@@ -87,10 +87,10 @@ test.describe('CMDB - Configuration Management', () => {
   });
 
   test('CI type filter works', async ({ page }) => {
-    await page.goto('/cmdb');
+    await page.goto('/cmdb', { waitUntil: 'networkidle' });
     const typeFilter = page.locator('select[name*="type" i], button:has-text("Type")').first();
     if (await typeFilter.count() > 0) {
-      await expect(typeFilter).toBeVisible();
+      await expect(typeFilter).toBeVisible({ timeout: 5000 });
     }
   });
 
