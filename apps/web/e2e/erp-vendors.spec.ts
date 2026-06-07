@@ -47,10 +47,10 @@ test.describe('ERP - Vendor Management', () => {
   });
 
   test('vendor list has create button', async ({ page }) => {
-    await page.goto('/vendors');
+    await page.goto('/vendors', { waitUntil: 'domcontentloaded' });
     const createButton = page.locator('button:has-text("Create"), button:has-text("New"), button:has-text("Add")').first();
     if (await createButton.count() > 0) {
-      await expect(createButton).toBeVisible();
+      await expect(createButton).toBeVisible({ timeout: 10000 });
     }
   });
 

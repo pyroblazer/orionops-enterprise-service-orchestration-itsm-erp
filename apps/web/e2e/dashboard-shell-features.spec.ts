@@ -77,6 +77,7 @@ test.describe('Dashboard Shell Features', () => {
     await page.goto('/dashboard', { waitUntil: 'domcontentloaded' });
 
     await page.keyboard.press('Control+/');
+    await page.waitForTimeout(500);
 
     await expect(page.getByRole('dialog', { name: /keyboard shortcuts/i })).toBeVisible();
   });

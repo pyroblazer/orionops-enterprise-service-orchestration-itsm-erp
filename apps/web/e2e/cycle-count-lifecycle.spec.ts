@@ -5,6 +5,11 @@ import * as mocks from './helpers/api-mock';
 test.describe('Cycle Count Lifecycle', () => {
   test.beforeEach(async ({ page }) => {
     await injectMockAuth(page);
+    // Register general route FIRST (lowest LIFO priority)
+    await page.route('**/api/v1/inventory**', async (route) => {
+      await route.fulfill({ json: mocks.mockInventory });
+    });
+    // Register specific cycle-counts route AFTER (higher LIFO priority)
     await page.route('**/api/v1/inventory/cycle-counts**', async (route) => {
       const method = route.request().method();
       if (method === 'POST' && route.request().url().includes('/schedule')) {
@@ -15,15 +20,12 @@ test.describe('Cycle Count Lifecycle', () => {
       }
       return route.fulfill({ json: mocks.mockCycleCounts.list });
     });
-    await page.route('**/api/v1/inventory**', async (route) => {
-      await route.fulfill({ json: mocks.mockInventory });
-    });
   });
 
   test('should show Cycle Counting heading and Schedule Count button', async ({ page }) => {
     await page.goto('/inventory/cycle-counts', { waitUntil: 'domcontentloaded' });
 
-    await expect(page.getByText(/cycle count/i)).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Cycle Counting' })).toBeVisible();
     await expect(page.getByRole('button', { name: /schedule count/i })).toBeVisible();
   });
 

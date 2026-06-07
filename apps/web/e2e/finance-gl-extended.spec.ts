@@ -5,6 +5,11 @@ import * as mocks from './helpers/api-mock';
 test.describe('Finance General Ledger Extended', () => {
   test.beforeEach(async ({ page }) => {
     await injectMockAuth(page);
+    // Register general route FIRST (lowest LIFO priority)
+    await page.route('**/api/v1/finance**', async (route) => {
+      await route.fulfill({ json: mocks.mockFinance });
+    });
+    // Register specific GL route AFTER (higher LIFO priority)
     await page.route('**/api/v1/finance/gl/**', async (route) => {
       const url = route.request().url();
       if (url.includes('trial-balance')) {
@@ -14,9 +19,6 @@ test.describe('Finance General Ledger Extended', () => {
       } else {
         await route.fulfill({ json: mocks.mockGLAccounts });
       }
-    });
-    await page.route('**/api/v1/finance**', async (route) => {
-      await route.fulfill({ json: mocks.mockFinance });
     });
   });
 

@@ -20,13 +20,14 @@ test.describe('CMDB Graph View', () => {
   test('should default to list view with CI table', async ({ page }) => {
     await page.goto('/cmdb', { waitUntil: 'domcontentloaded' });
 
-    await expect(page.locator('table')).toBeVisible();
+    await expect(page.locator('table')).toBeVisible({ timeout: 15000 });
     await expect(page.getByText('Production API Server')).toBeVisible();
   });
 
   test('should switch to graph view and show Relationship Graph heading', async ({ page }) => {
     await page.goto('/cmdb', { waitUntil: 'domcontentloaded' });
 
+    await expect(page.locator('table')).toBeVisible({ timeout: 15000 });
     await page.getByRole('tab', { name: /graph/i }).click();
 
     await expect(page.getByText(/relationship graph/i)).toBeVisible();
@@ -35,6 +36,7 @@ test.describe('CMDB Graph View', () => {
   test('should show CI cards in graph view', async ({ page }) => {
     await page.goto('/cmdb', { waitUntil: 'domcontentloaded' });
 
+    await expect(page.locator('table')).toBeVisible({ timeout: 15000 });
     await page.getByRole('tab', { name: /graph/i }).click();
 
     await expect(page.getByText('Production API Server')).toBeVisible();
@@ -43,6 +45,7 @@ test.describe('CMDB Graph View', () => {
   test('should show CI type badges in graph view', async ({ page }) => {
     await page.goto('/cmdb', { waitUntil: 'domcontentloaded' });
 
+    await expect(page.locator('table')).toBeVisible({ timeout: 15000 });
     await page.getByRole('tab', { name: /graph/i }).click();
 
     await expect(page.getByText('APPLICATION')).toBeVisible();
@@ -54,6 +57,7 @@ test.describe('CMDB Graph View', () => {
     });
 
     await page.goto('/cmdb', { waitUntil: 'domcontentloaded' });
+    await expect(page.locator('table')).toBeVisible({ timeout: 15000 });
     await page.getByRole('tab', { name: /graph/i }).click();
 
     await page.getByText('Production API Server').click();

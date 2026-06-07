@@ -44,10 +44,8 @@ test.describe('Service Catalog', () => {
     const hardwareButton = page.getByRole('button', { name: /request hardware/i });
     await expect(hardwareButton).toBeVisible();
 
-    await Promise.all([
-      page.waitForNavigation(),
-      hardwareButton.click()
-    ]);
+    await hardwareButton.click();
+    await page.waitForURL(/\/requests\/(new|\?)/, { timeout: 10000 });
 
     expect(page.url()).toContain('category=hardware');
   });

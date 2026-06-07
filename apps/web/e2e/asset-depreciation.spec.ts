@@ -5,6 +5,11 @@ import * as mocks from './helpers/api-mock';
 test.describe('Asset Depreciation Detail', () => {
   test.beforeEach(async ({ page }) => {
     await injectMockAuth(page);
+    // Register general route FIRST (lowest LIFO priority)
+    await page.route('**/api/v1/inventory**', async (route) => {
+      await route.fulfill({ json: mocks.mockInventory });
+    });
+    // Register specific asset-001 routes AFTER (higher LIFO priority)
     await page.route('**/api/v1/inventory/assets/asset-001**', async (route) => {
       await route.fulfill({ json: mocks.mockAssetDetail });
     });
@@ -24,9 +29,6 @@ test.describe('Asset Depreciation Detail', () => {
     });
     await page.route('**/api/v1/inventory/assets/asset-001/book-value**', async (route) => {
       await route.fulfill({ json: { data: 11250 } });
-    });
-    await page.route('**/api/v1/inventory**', async (route) => {
-      await route.fulfill({ json: mocks.mockInventory });
     });
   });
 
