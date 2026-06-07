@@ -41,7 +41,7 @@ test.describe('Service Catalog', () => {
   test('should navigate to /requests/new with category on Hardware card click', async ({ page }) => {
     await page.goto('/requests', { waitUntil: 'domcontentloaded' });
 
-    const hardwareButton = page.getByText('Hardware', { exact: true }).first();
+    const hardwareButton = page.getByRole('button', { name: /request hardware/i });
     await expect(hardwareButton).toBeVisible();
 
     await Promise.all([
@@ -49,7 +49,7 @@ test.describe('Service Catalog', () => {
       hardwareButton.click()
     ]);
 
-    expect(page.url()).toContain('category');
+    expect(page.url()).toContain('category=hardware');
   });
 
   test('should switch to My Requests list on toggle', async ({ page }) => {
