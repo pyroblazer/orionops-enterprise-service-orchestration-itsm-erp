@@ -22,17 +22,16 @@ services:
         value: "jdbc:postgresql://ep-patient-star-aozxgghu.c-2.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&options=endpoint%3Dep-patient-star-aozxgghu"
       - key: SPRING_DATASOURCE_USERNAME
         value: neondb_owner
+      # Database and Auth secrets from environment group
       - key: SPRING_DATASOURCE_PASSWORD
-        sync: false
-      # Upstash Redis
+        fromGroup: orionops-secrets
       - key: SPRING_DATA_REDIS_URL
-        sync: false
+        fromGroup: orionops-secrets
+      - key: APP_AUTH_JWT_SECRET
+        fromGroup: orionops-secrets
       # Vercel frontend URL for CORS
       - key: FRONTEND_URL
         value: https://orionops.vercel.app
-      # JWT secret for local authentication
-      - key: APP_AUTH_JWT_SECRET
-        sync: false
 
   # ── OrionOps Workflow (Flowable BPMN Engine) ─────────────────────────────
   - type: web
@@ -57,13 +56,13 @@ services:
       - key: SPRING_DATASOURCE_USERNAME
         value: neondb_owner
       - key: SPRING_DATASOURCE_PASSWORD
-        sync: false
+        fromGroup: orionops-secrets
       - key: SPRING_DATA_REDIS_URL
-        sync: false
+        fromGroup: orionops-secrets
+      - key: APP_AUTH_JWT_SECRET
+        fromGroup: orionops-secrets
       - key: FRONTEND_URL
         value: https://orionops.vercel.app
-      - key: APP_AUTH_JWT_SECRET
-        sync: false
 
   # ── OrionOps Worker (Kafka Consumers + OpenSearch) ────────────────────────
   - type: web
@@ -88,13 +87,13 @@ services:
       - key: SPRING_DATASOURCE_USERNAME
         value: neondb_owner
       - key: SPRING_DATASOURCE_PASSWORD
-        sync: false
+        fromGroup: orionops-secrets
       - key: SPRING_DATA_REDIS_URL
-        sync: false
+        fromGroup: orionops-secrets
+      - key: APP_AUTH_JWT_SECRET
+        fromGroup: orionops-secrets
       - key: FRONTEND_URL
         value: https://orionops.vercel.app
-      - key: APP_AUTH_JWT_SECRET
-        sync: false
 
   # ── OrionOps Notifier (Email, Slack, Teams, Webhooks) ───────────────────
   - type: web
@@ -119,13 +118,13 @@ services:
       - key: SPRING_DATASOURCE_USERNAME
         value: neondb_owner
       - key: SPRING_DATASOURCE_PASSWORD
-        sync: false
+        fromGroup: orionops-secrets
       - key: SPRING_DATA_REDIS_URL
-        sync: false
+        fromGroup: orionops-secrets
+      - key: APP_AUTH_JWT_SECRET
+        fromGroup: orionops-secrets
       - key: FRONTEND_URL
         value: https://orionops.vercel.app
-      - key: APP_AUTH_JWT_SECRET
-        sync: false
 
   # ── OrionOps Connector (Outbound REST/SOAP) ──────────────────────────────
   - type: web
@@ -150,13 +149,13 @@ services:
       - key: SPRING_DATASOURCE_USERNAME
         value: neondb_owner
       - key: SPRING_DATASOURCE_PASSWORD
-        sync: false
+        fromGroup: orionops-secrets
       - key: SPRING_DATA_REDIS_URL
-        sync: false
+        fromGroup: orionops-secrets
+      - key: APP_AUTH_JWT_SECRET
+        fromGroup: orionops-secrets
       - key: FRONTEND_URL
         value: https://orionops.vercel.app
-      - key: APP_AUTH_JWT_SECRET
-        sync: false
 
   # ── OrionOps Keycloak (Identity Provider) ─────────────────────────────────
   - type: web
@@ -171,7 +170,7 @@ services:
       - key: KEYCLOAK_ADMIN
         value: admin
       - key: KEYCLOAK_ADMIN_PASSWORD
-        sync: false
+        fromGroup: orionops-secrets
       - key: KC_DB
         value: postgres
       - key: KC_DB_URL
@@ -179,7 +178,7 @@ services:
       - key: KC_DB_USERNAME
         value: neondb_owner
       - key: KC_DB_PASSWORD
-        sync: false
+        fromGroup: orionops-secrets
       - key: KC_DB_SCHEMA
         value: keycloak
       - key: KC_HOSTNAME
