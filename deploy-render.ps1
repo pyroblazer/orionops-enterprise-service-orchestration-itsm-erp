@@ -5,7 +5,7 @@
 # 3. Configures environment variables for each service
 
 param(
-    [switch]$Force = $false,
+    [switch]$SkipConfirm = $false,
     [string]$EnvFile = ".env"
 )
 
@@ -77,15 +77,28 @@ $services = @(
     }
 )
 
-# Deploy blueprint
-Write-Host "🚀 Deploying render.yaml blueprint..."
-$deploy_cmd = "render deploy"
-if ($Force) {
-    $deploy_cmd += " --force"
+# Confirmation before deploying
+if (-not $SkipConfirm) {
+    Write-Host "⚠️  This will forcefully update all 6 services on Render:"
+    Write-Host "  - orionops-api"
+    Write-Host "  - orionops-workflow"
+    Write-Host "  - orionops-worker"
+    Write-Host "  - orionops-notifier"
+    Write-Host "  - orionops-connector"
+    Write-Host "  - orionops-keycloak"
+    Write-Host ""
+    Write-Host "Services will redeploy (brief downtime expected)."
+    Write-Host ""
+    $response = Read-Host "Continue with deployment? (yes/no)"
+    if ($response -ne "yes") {
+        Write-Host "❌ Deployment cancelled"
+        exit 0
+    }
 }
 
-Write-Host "  Running: $deploy_cmd"
-Invoke-Expression $deploy_cmd
+# Deploy blueprint (always force to ensure services match blueprint)
+Write-Host "`n🚀 Deploying render.yaml blueprint (--force)..."
+Invoke-Expression "render deploy --force"
 
 if ($LASTEXITCODE -ne 0) {
     Write-Error "❌ Blueprint deployment failed"
