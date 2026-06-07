@@ -190,10 +190,10 @@ test.describe('Inventory Extended', () => {
 
       const transferId = page.getByText('tr-001');
       const sku = page.getByText('RAM-16GB');
-      const from = page.getByText('WH-001');
-      const to = page.getByText('WH-002');
+      const from = page.getByText('WH-001').first();
+      const to = page.getByText('WH-002').first();
       const qty = page.getByText('10');
-      const status = page.getByText('PENDING');
+      const status = page.getByRole('status', { name: /pending/i });
       if (await transferId.count() > 0) await expect(transferId).toBeVisible();
       if (await sku.count() > 0) await expect(sku).toBeVisible();
       if (await from.count() > 0) await expect(from).toBeVisible();

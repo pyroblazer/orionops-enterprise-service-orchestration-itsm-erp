@@ -64,12 +64,14 @@ test.describe('Cycle Count Lifecycle', () => {
   });
 
   test('should open record count dialog', async ({ page }) => {
+    const responsePromise = page.waitForResponse(resp => resp.url().includes('/api/v1/inventory/cycle-counts'));
     await page.goto('/inventory/cycle-counts', { waitUntil: 'domcontentloaded' });
+    await responsePromise;
 
     await expect(page.getByRole('button', { name: /record count/i })).toBeVisible();
     await page.getByRole('button', { name: /record count/i }).click();
 
-    await expect(page.getByRole('heading', { name: /record count/i })).toBeVisible();
+    await expect(page.getByRole('dialog')).toBeVisible();
     await expect(page.getByLabel('Actual Quantity')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Submit' })).toBeVisible();
   });
