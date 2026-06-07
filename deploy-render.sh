@@ -7,7 +7,7 @@ set -e
 
 # Defaults
 SKIP_CONFIRM=false
-ENV_FILE=".env"
+ENV_FILE=""
 
 # Parse arguments
 while [[ $# -gt 0 ]]; do
@@ -28,14 +28,26 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# Check if .env exists
+# Auto-detect .env file (prefer .env.local, then .env)
+if [[ -z "$ENV_FILE" ]]; then
+    if [[ -f ".env.local" ]]; then
+        ENV_FILE=".env.local"
+    elif [[ -f ".env" ]]; then
+        ENV_FILE=".env"
+    else
+        echo "❌ Neither .env.local nor .env found"
+        echo "Use existing .env.local or create .env with:"
+        echo "  SPRING_DATASOURCE_PASSWORD=..."
+        echo "  SPRING_DATA_REDIS_URL=..."
+        echo "  APP_AUTH_JWT_SECRET=..."
+        echo "  KEYCLOAK_ADMIN_PASSWORD=..."
+        exit 1
+    fi
+fi
+
+# Check if selected file exists
 if [[ ! -f "$ENV_FILE" ]]; then
     echo "❌ $ENV_FILE file not found"
-    echo "Create $ENV_FILE with these variables:"
-    echo "  SPRING_DATASOURCE_PASSWORD=..."
-    echo "  SPRING_DATA_REDIS_URL=..."
-    echo "  APP_AUTH_JWT_SECRET=..."
-    echo "  KEYCLOAK_ADMIN_PASSWORD=admin"
     exit 1
 fi
 
@@ -43,11 +55,10 @@ fi
 echo "📄 Loading secrets from $ENV_FILE..."
 export $(grep -v '^#' "$ENV_FILE" | xargs)
 
-# Validate required variables
+# Validate and normalize required variables
 required_vars=(
     "SPRING_DATASOURCE_PASSWORD"
     "SPRING_DATA_REDIS_URL"
-    "APP_AUTH_JWT_SECRET"
     "KEYCLOAK_ADMIN_PASSWORD"
 )
 
@@ -58,6 +69,20 @@ for var in "${required_vars[@]}"; do
     fi
     echo "  ✓ $var"
 done
+
+# Handle JWT secret (could be APP_AUTH_JWT_SECRET or JWT_SECRET)
+if [[ -z "${APP_AUTH_JWT_SECRET}" ]]; then
+    if [[ -n "${JWT_SECRET}" ]]; then
+        # Map JWT_SECRET to APP_AUTH_JWT_SECRET
+        export APP_AUTH_JWT_SECRET="$JWT_SECRET"
+        echo "  ✓ JWT_SECRET → APP_AUTH_JWT_SECRET"
+    else
+        echo "❌ Missing JWT secret (expected APP_AUTH_JWT_SECRET or JWT_SECRET)"
+        exit 1
+    fi
+else
+    echo "  ✓ APP_AUTH_JWT_SECRET"
+fi
 
 echo ""
 echo "✅ All required variables loaded"

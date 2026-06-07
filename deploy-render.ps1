@@ -6,17 +6,28 @@
 
 param(
     [switch]$SkipConfirm = $false,
-    [string]$EnvFile = ".env"
+    [string]$EnvFile = ""
 )
 
-# Check if .env exists
+# Auto-detect .env file (prefer .env.local, then .env)
+if ([string]::IsNullOrEmpty($EnvFile)) {
+    if (Test-Path ".env.local") {
+        $EnvFile = ".env.local"
+    } elseif (Test-Path ".env") {
+        $EnvFile = ".env"
+    } else {
+        Write-Error "❌ Neither .env.local nor .env found"
+        Write-Host "Use existing .env.local or create .env with:"
+        Write-Host "  SPRING_DATASOURCE_PASSWORD=..."
+        Write-Host "  SPRING_DATA_REDIS_URL=..."
+        Write-Host "  APP_AUTH_JWT_SECRET=..."
+        Write-Host "  KEYCLOAK_ADMIN_PASSWORD=..."
+        exit 1
+    }
+}
+
 if (-not (Test-Path $EnvFile)) {
-    Write-Error "❌ .env file not found at $EnvFile"
-    Write-Host "Create .env with these variables:"
-    Write-Host "  SPRING_DATASOURCE_PASSWORD=..."
-    Write-Host "  SPRING_DATA_REDIS_URL=..."
-    Write-Host "  APP_AUTH_JWT_SECRET=..."
-    Write-Host "  KEYCLOAK_ADMIN_PASSWORD=admin"
+    Write-Error "❌ $EnvFile file not found"
     exit 1
 }
 
@@ -32,11 +43,10 @@ Get-Content $EnvFile | ForEach-Object {
     }
 }
 
-# Validate required variables
+# Validate and normalize required variables
 $required = @(
     'SPRING_DATASOURCE_PASSWORD',
     'SPRING_DATA_REDIS_URL',
-    'APP_AUTH_JWT_SECRET',
     'KEYCLOAK_ADMIN_PASSWORD'
 )
 
@@ -45,6 +55,17 @@ foreach ($var in $required) {
         Write-Error "❌ Missing required variable: $var"
         exit 1
     }
+}
+
+# Handle JWT secret (could be APP_AUTH_JWT_SECRET or JWT_SECRET)
+if ($env_vars.ContainsKey('APP_AUTH_JWT_SECRET')) {
+    # Already set, use as-is
+} elseif ($env_vars.ContainsKey('JWT_SECRET')) {
+    # Map JWT_SECRET to APP_AUTH_JWT_SECRET
+    $env_vars['APP_AUTH_JWT_SECRET'] = $env_vars['JWT_SECRET']
+} else {
+    Write-Error "❌ Missing JWT secret (expected APP_AUTH_JWT_SECRET or JWT_SECRET)"
+    exit 1
 }
 
 Write-Host "`n✅ All required variables loaded`n"
