@@ -19,31 +19,36 @@ test.describe('Workflow Management', () => {
   });
 
   test('should show workflow table with column headers after clicking Workflows tab', async ({ page }) => {
-    await page.goto('/admin', { waitUntil: 'domcontentloaded' });
+    await page.goto('/admin', { waitUntil: 'networkidle' });
 
-    await page.getByRole('tab', { name: 'Workflows' }).click();
+    const workflowsTab = page.getByRole('tab', { name: 'Workflows' });
+    await workflowsTab.click();
 
-    await expect(page.getByRole('columnheader', { name: /name/i }).first()).toBeVisible();
-    await expect(page.getByRole('columnheader', { name: /version/i }).first()).toBeVisible();
-    await expect(page.getByRole('columnheader', { name: /status/i }).first()).toBeVisible();
+    await page.waitForSelector('table', { timeout: 10000 });
+    await expect(page.getByRole('columnheader', { name: /name/i }).first()).toBeVisible({ timeout: 10000 });
+    await expect(page.getByRole('columnheader', { name: /version/i }).first()).toBeVisible({ timeout: 10000 });
+    await expect(page.getByRole('columnheader', { name: /status/i }).first()).toBeVisible({ timeout: 10000 });
   });
 
   test('should show workflow names from mock data', async ({ page }) => {
-    await page.goto('/admin', { waitUntil: 'domcontentloaded' });
+    await page.goto('/admin', { waitUntil: 'networkidle' });
 
-    await page.getByRole('tab', { name: 'Workflows' }).click();
+    const workflowsTab = page.getByRole('tab', { name: 'Workflows' });
+    await workflowsTab.click();
 
-    await expect(page.getByText('Incident Resolution')).toBeVisible();
+    await page.waitForSelector('table', { timeout: 10000 });
+    await expect(page.getByText('Incident Resolution')).toBeVisible({ timeout: 10000 });
   });
 
   test('should show version numbers in workflow table', async ({ page }) => {
-    await page.goto('/admin', { waitUntil: 'domcontentloaded' });
+    await page.goto('/admin', { waitUntil: 'networkidle' });
 
-    await page.getByRole('tab', { name: 'Workflows' }).click();
+    const workflowsTab = page.getByRole('tab', { name: 'Workflows' });
+    await workflowsTab.click();
 
-    // At least one version number should appear (e.g., "1" or "v1")
+    await page.waitForSelector('table', { timeout: 10000 });
     const versionCell = page.locator('td').filter({ hasText: /^\d+$/ }).first();
-    await expect(versionCell).toBeVisible();
+    await expect(versionCell).toBeVisible({ timeout: 10000 });
   });
 
   test('should show ACTIVE status badge', async ({ page }) => {

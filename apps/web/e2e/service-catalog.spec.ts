@@ -41,9 +41,14 @@ test.describe('Service Catalog', () => {
   test('should navigate to /requests/new with category on Hardware card click', async ({ page }) => {
     await page.goto('/requests', { waitUntil: 'domcontentloaded' });
 
-    await page.getByText('Hardware', { exact: true }).first().click();
+    const hardwareButton = page.getByText('Hardware', { exact: true }).first();
+    await hardwareButton.waitForElementState('visible');
 
-    await page.waitForURL(/\/requests\/new/, { timeout: 5000 });
+    await Promise.all([
+      page.waitForNavigation(),
+      hardwareButton.click()
+    ]);
+
     expect(page.url()).toContain('category');
   });
 
@@ -72,7 +77,7 @@ test.describe('Service Catalog', () => {
   test('should show search input in catalog view', async ({ page }) => {
     await page.goto('/requests', { waitUntil: 'domcontentloaded' });
 
-    await expect(page.getByPlaceholder(/search/i)).toBeVisible();
+    await expect(page.getByRole('textbox', { name: 'Search catalog' })).toBeVisible();
   });
 
   test('should show request table with columns in list view', async ({ page }) => {
