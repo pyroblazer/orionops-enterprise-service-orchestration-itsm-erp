@@ -60,7 +60,7 @@ test.describe('Finance General Ledger Extended', () => {
 
     await page.getByRole('button', { name: 'Trial Balance' }).click();
 
-    await expect(page.getByText(/\$?150,?000/)).toBeVisible();
+    await expect(page.getByText(/\$?150,?000/).first()).toBeVisible();
     await expect(page.getByText(/balanced/i)).toBeVisible();
   });
 
@@ -90,7 +90,7 @@ test.describe('Finance General Ledger Extended', () => {
   test('should show additional account types', async ({ page }) => {
     await page.goto('/finance/gl', { waitUntil: 'domcontentloaded' });
 
-    await expect(page.getByText('LIABILITY')).toBeVisible();
-    await expect(page.getByText('REVENUE')).toBeVisible();
+    await expect(page.getByText('LIABILITY').first()).toBeVisible();
+    await expect(page.getByText('REVENUE').first()).toBeVisible();
   });
 });

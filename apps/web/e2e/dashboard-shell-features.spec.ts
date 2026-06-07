@@ -76,7 +76,7 @@ test.describe('Dashboard Shell Features', () => {
   test('should open dialog with Ctrl+/ keyboard shortcut', async ({ page }) => {
     await page.goto('/dashboard', { waitUntil: 'domcontentloaded' });
 
-    await page.keyboard.press('Control+/');
+    await page.keyboard.press('Control+Slash');
     await page.waitForTimeout(500);
 
     await expect(page.getByRole('dialog', { name: /keyboard shortcuts/i })).toBeVisible();

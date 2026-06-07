@@ -69,7 +69,7 @@ test.describe('Cycle Count Lifecycle', () => {
     await expect(page.getByRole('button', { name: /record count/i })).toBeVisible();
     await page.getByRole('button', { name: /record count/i }).click();
 
-    await expect(page.getByText(/record count/i)).toBeVisible();
+    await expect(page.getByRole('heading', { name: /record count/i })).toBeVisible();
     await expect(page.getByLabel('Actual Quantity')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Submit' })).toBeVisible();
   });
