@@ -17,32 +17,36 @@ env:
   PNPM_VERSION: 9.15.0
 
 # ---------------------------------------------------------------------------
-# Dependency graph (all independent chains run in parallel):
+# Dependency graph (multi-module backend in parallel):
 #
-#  backend-unit-tests        ─┐
-#  backend-integration-tests ─┤ (no deps — each self-compiles via Maven cache)
-#  backend-workflow-tests    ─┤
-#                             │
-#  web-lint-typecheck ──► web-unit-tests   ─┐
-#                     ──► web-a11y-tests   ─┤
-#  web-build          ──► web-e2e-tests    ─┤ (matrix ×2, fail-fast: false)
-#                                           │
-#  mobile-tests                            ─┤
-#  ai-tests                                ─┤
-#                                           ▼
-#                                       ci-status (gate)
+#  common-build ─────────────────────────────────────────────────────┐
+#                                                                     ▼
+#  backend-api-tests                                                ─┐
+#  backend-worker-tests                                             ─┤
+#  backend-workflow-tests                                           ─┤
+#  backend-notifier-tests (unit only)                               ─┤
+#  backend-connector-tests (unit only)                              ─┤
+#                                                                   │
+#  web-lint-typecheck ──► web-unit-tests   ─┐                      │
+#                     ──► web-a11y-tests   ─┤                      │
+#  web-build          ──► web-e2e-tests    ─┤ (matrix ×2)         │
+#                                           │                      │
+#  mobile-tests                            ─┤ ──────────────┐      │
+#  ai-tests                                ─┤              │      │
+#                                                           ▼      ▼
+#                                                      ci-status (gate)
 # ---------------------------------------------------------------------------
 jobs:
 
   # =========================================================================
-  # BACKEND - Unit Tests  (no compile gate — self-compiles, Maven cache ~15s)
+  # BACKEND COMMON - Build & Cache
   # =========================================================================
-  backend-unit-tests:
-    name: Backend Unit Tests
+  common-build:
+    name: Backend Common Build
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: backend
+        working-directory: backend/common
     steps:
       - uses: actions/checkout@v4
         with:
@@ -55,32 +59,29 @@ jobs:
           distribution: temurin
           cache: maven
 
-      - name: Compile
-        run: mvn compile -B -q
-
-      - name: Run unit tests
+      - name: Build common module
         env:
           MAVEN_OPTS: "-Xmx512m -XX:MaxMetaspaceSize=200m -XX:+UseG1GC"
-        run: mvn test -B -Dtest.excludedGroups=docker -Dspring.profiles.active=test
+        run: |
+          cd ../.. && mvn clean install -pl common -DskipTests -B
 
-      - name: Upload unit test results
-        if: always()
-        continue-on-error: true
+      - name: Upload common JAR
         uses: actions/upload-artifact@v4
         with:
-          name: backend-unit-test-results
-          path: backend/target/surefire-reports/
-          retention-days: 7
+          name: common-jar
+          path: backend/common/target/*.jar
+          retention-days: 1
 
   # =========================================================================
-  # BACKEND - Integration Tests  (no compile gate — self-compiles)
+  # BACKEND API - Unit + Integration + Contract Tests
   # =========================================================================
-  backend-integration-tests:
-    name: Backend Integration Tests
+  backend-api-tests:
+    name: Service API Tests
     runs-on: ubuntu-latest
+    needs: [common-build]
     defaults:
       run:
-        working-directory: backend
+        working-directory: backend/service-api
 
     services:
       postgres:
@@ -144,10 +145,13 @@ jobs:
           distribution: temurin
           cache: maven
 
-      - name: Compile
-        run: mvn compile -B -q
+      - name: Download common JAR
+        uses: actions/download-artifact@v4
+        with:
+          name: common-jar
+          path: ~/.m2/repository/com/orionops/orionops-common/0.1.0-SNAPSHOT/
 
-      - name: Run integration tests
+      - name: Run API tests (unit + integration + contract)
         env:
           SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/orionops_test
           SPRING_DATASOURCE_USERNAME: test
@@ -156,26 +160,68 @@ jobs:
           SPRING_DATA_REDIS_PORT: "6379"
           SPRING_KAFKA_BOOTSTRAP_SERVERS: localhost:9092
           MAVEN_OPTS: "-Xmx512m -XX:MaxMetaspaceSize=200m -XX:+UseG1GC"
-        run: mvn verify -B -Dtest.includedGroups=docker -Dtest="*IT" -Dspring.profiles.active=test
+        run: |
+          cd ../.. && mvn verify -pl service-api -DskipTests=false -Dspring.profiles.active=test -B
 
-      - name: Upload integration test results
+      - name: Upload API test results
         if: always()
         continue-on-error: true
         uses: actions/upload-artifact@v4
         with:
-          name: backend-integration-test-results
-          path: backend/target/surefire-reports/
+          name: api-test-results
+          path: backend/service-api/target/surefire-reports/
           retention-days: 7
 
   # =========================================================================
-  # BACKEND - Workflow Simulation Tests  (no compile gate — self-compiles)
+  # BACKEND WORKER - Unit + Integration Tests
   # =========================================================================
-  backend-workflow-tests:
-    name: Backend Workflow Tests
+  backend-worker-tests:
+    name: Service Worker Tests
     runs-on: ubuntu-latest
+    needs: [common-build]
     defaults:
       run:
-        working-directory: backend
+        working-directory: backend/service-worker
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: orionops_test
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U test"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+      zookeeper:
+        image: confluentinc/cp-zookeeper:7.7.1
+        env:
+          ZOOKEEPER_CLIENT_PORT: 2181
+        ports:
+          - 2181:2181
+
+      kafka:
+        image: confluentinc/cp-kafka:7.7.1
+        env:
+          KAFKA_BROKER_ID: 1
+          KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+          KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+          KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+          KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+          KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+          KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+        ports:
+          - 9092:9092
+        options: >-
+          --health-cmd="kafka-topics --bootstrap-server localhost:9092 --list"
+          --health-interval=15s
+          --health-timeout=10s
+          --health-retries=5
 
     steps:
       - uses: actions/checkout@v4
@@ -189,21 +235,177 @@ jobs:
           distribution: temurin
           cache: maven
 
-      - name: Compile
-        run: mvn compile -B -q
+      - name: Download common JAR
+        uses: actions/download-artifact@v4
+        with:
+          name: common-jar
+          path: ~/.m2/repository/com/orionops/orionops-common/0.1.0-SNAPSHOT/
 
-      - name: Run workflow simulation tests
+      - name: Run worker tests (unit + integration)
         env:
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/orionops_test
+          SPRING_DATASOURCE_USERNAME: test
+          SPRING_DATASOURCE_PASSWORD: test
+          SPRING_KAFKA_BOOTSTRAP_SERVERS: localhost:9092
           MAVEN_OPTS: "-Xmx512m -XX:MaxMetaspaceSize=200m -XX:+UseG1GC"
-        run: mvn test -B -Dtest.includedGroups=docker -Dtest="*WorkflowTest" -Dspring.profiles.active=test
+        run: |
+          cd ../.. && mvn verify -pl service-worker -DskipTests=false -Dspring.profiles.active=test -B
+
+      - name: Upload worker test results
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: worker-test-results
+          path: backend/service-worker/target/surefire-reports/
+          retention-days: 7
+
+  # =========================================================================
+  # BACKEND WORKFLOW - Unit + Workflow Simulation Tests
+  # =========================================================================
+  backend-workflow-tests:
+    name: Service Workflow Tests
+    runs-on: ubuntu-latest
+    needs: [common-build]
+    defaults:
+      run:
+        working-directory: backend/service-workflow
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: orionops_test
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U test"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: temurin
+          cache: maven
+
+      - name: Download common JAR
+        uses: actions/download-artifact@v4
+        with:
+          name: common-jar
+          path: ~/.m2/repository/com/orionops/orionops-common/0.1.0-SNAPSHOT/
+
+      - name: Run workflow tests (unit + simulation)
+        env:
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/orionops_test
+          SPRING_DATASOURCE_USERNAME: test
+          SPRING_DATASOURCE_PASSWORD: test
+          MAVEN_OPTS: "-Xmx512m -XX:MaxMetaspaceSize=200m -XX:+UseG1GC"
+        run: |
+          cd ../.. && mvn verify -pl service-workflow -DskipTests=false -Dspring.profiles.active=test -B
 
       - name: Upload workflow test results
         if: always()
         continue-on-error: true
         uses: actions/upload-artifact@v4
         with:
-          name: backend-workflow-test-results
-          path: backend/target/surefire-reports/
+          name: workflow-test-results
+          path: backend/service-workflow/target/surefire-reports/
+          retention-days: 7
+
+  # =========================================================================
+  # BACKEND NOTIFIER - Unit Tests Only
+  # =========================================================================
+  backend-notifier-tests:
+    name: Service Notifier Tests
+    runs-on: ubuntu-latest
+    needs: [common-build]
+    defaults:
+      run:
+        working-directory: backend/service-notifier
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: temurin
+          cache: maven
+
+      - name: Download common JAR
+        uses: actions/download-artifact@v4
+        with:
+          name: common-jar
+          path: ~/.m2/repository/com/orionops/orionops-common/0.1.0-SNAPSHOT/
+
+      - name: Run notifier unit tests
+        env:
+          MAVEN_OPTS: "-Xmx512m -XX:MaxMetaspaceSize=200m -XX:+UseG1GC"
+        run: |
+          cd ../.. && mvn test -pl service-notifier -B -Dtest.excludedGroups=docker -Dspring.profiles.active=test
+
+      - name: Upload notifier test results
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: notifier-test-results
+          path: backend/service-notifier/target/surefire-reports/
+          retention-days: 7
+
+  # =========================================================================
+  # BACKEND CONNECTOR - Unit Tests Only
+  # =========================================================================
+  backend-connector-tests:
+    name: Service Connector Tests
+    runs-on: ubuntu-latest
+    needs: [common-build]
+    defaults:
+      run:
+        working-directory: backend/service-connector
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: temurin
+          cache: maven
+
+      - name: Download common JAR
+        uses: actions/download-artifact@v4
+        with:
+          name: common-jar
+          path: ~/.m2/repository/com/orionops/orionops-common/0.1.0-SNAPSHOT/
+
+      - name: Run connector unit tests
+        env:
+          MAVEN_OPTS: "-Xmx512m -XX:MaxMetaspaceSize=200m -XX:+UseG1GC"
+        run: |
+          cd ../.. && mvn test -pl service-connector -B -Dtest.excludedGroups=docker -Dspring.profiles.active=test
+
+      - name: Upload connector test results
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: connector-test-results
+          path: backend/service-connector/target/surefire-reports/
           retention-days: 7
 
   # =========================================================================
@@ -341,7 +543,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [web-build]
     strategy:
-      fail-fast: false          # both shards run even if one fails — see all results
+      fail-fast: false
       matrix:
         shard: [1, 2]
     steps:
@@ -488,9 +690,12 @@ jobs:
     name: CI Status
     runs-on: ubuntu-latest
     needs:
-      - backend-unit-tests
-      - backend-integration-tests
+      - common-build
+      - backend-api-tests
+      - backend-worker-tests
       - backend-workflow-tests
+      - backend-notifier-tests
+      - backend-connector-tests
       - web-lint-typecheck
       - web-build
       - web-unit-tests

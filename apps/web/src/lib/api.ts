@@ -9,6 +9,7 @@ export interface ApiError {
   code: string;
   statusCode: number;
   details?: Record<string, unknown>;
+  coldStart?: boolean;
 }
 
 export interface PaginatedResponse<T> {
@@ -706,7 +707,7 @@ function clearTokens(): void {
 
 const apiClient: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 30000,
+  timeout: 90000,
   headers: { 'Content-Type': 'application/json' },
 });
 
@@ -723,6 +724,18 @@ apiClient.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
     const originalRequest = error.config as AxiosRequestConfig & { _retry?: boolean };
+
+    // Detect Render cold-start (502/503 or connection refused)
+    const isColdStart =
+      !error.response ||
+      error.response.status === 502 ||
+      error.response.status === 503;
+
+    if (isColdStart) {
+      // Dynamically import to avoid circular deps
+      const { useColdStartStore } = await import('@/stores/cold-start-store');
+      useColdStartStore.getState().setWaking(true);
+    }
 
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
@@ -759,6 +772,7 @@ apiClient.interceptors.response.use(
       code: (error.response?.data as Record<string, string>)?.code || 'UNKNOWN_ERROR',
       statusCode: error.response?.status || 500,
       details: error.response?.data as Record<string, unknown> | undefined,
+      coldStart: isColdStart,
     };
     return Promise.reject(apiError);
   }
