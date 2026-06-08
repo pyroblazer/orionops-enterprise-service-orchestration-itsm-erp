@@ -1,50 +1,20 @@
 package com.orionops.modules.integration.consumers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.orionops.modules.auth.entity.User;
-import com.orionops.modules.auth.repository.UserRepository;
-import com.orionops.modules.change.entity.ChangeRequest;
-import com.orionops.modules.change.repository.ChangeRequestRepository;
-import com.orionops.modules.change.event.ChangeApprovedEvent;
-import com.orionops.modules.change.event.ChangeImplementedEvent;
-import com.orionops.modules.change.event.ChangeRejectedEvent;
-import com.orionops.modules.integration.email.EmailService;
-import com.orionops.modules.notification.service.NotificationService;
+import com.orionops.common.event.ChangeEventPayload;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-
-/**
- * Kafka event consumer for change management domain events.
- *
- * <p>Processes events from all change topics (orionops.change.*) and triggers
- * appropriate notifications. Handles the full change lifecycle including
- * approval notifications, rejection notifications, implementation completion,
- * and CMDB status updates.</p>
- */
 @Slf4j
 @Component
 @ConditionalOnProperty(name = "orionops.consumer.change.enabled", havingValue = "true")
 @RequiredArgsConstructor
 public class ChangeEventConsumer {
 
-    private final UserRepository userRepository;
-    private final ChangeRequestRepository changeRequestRepository;
     private final ObjectMapper objectMapper;
-
-    @Autowired(required = false)
-    private EmailService emailService;
-
-    @Autowired(required = false)
-    private NotificationService notificationService;
 
     /**
      * Consumes change events from Kafka topics matching "orionops.change.*".

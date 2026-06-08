@@ -1,7 +1,10 @@
 com\orionops\common\dto\ApiResponse.class
+com\orionops\common\event\SLAEventPayload.class
+com\orionops\common\event\IncidentEventPayload.class
 com\orionops\common\auditing\BaseEntity.class
 com\orionops\common\event\DomainEvent.class
 com\orionops\common\tenant\TenantResolutionFilter.class
+com\orionops\common\event\ChangeEventPayload.class
 com\orionops\common\tenant\TenantContextHolder.class
 com\orionops\common\event\BaseEvent.class
 com\orionops\common\dto\ApiResponse$ApiResponseBuilder.class
