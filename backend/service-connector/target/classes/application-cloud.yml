@@ -1,0 +1,166 @@
+# ---------------------------------------------------------------------------
+# OrionOps - Cloud Profile for Render + Free SaaS
+# Activated via SPRING_PROFILES_ACTIVE=cloud
+#
+# Replaces local infrastructure with free cloud services:
+#   - Neon PostgreSQL (replaces local PostgreSQL)
+#   - Upstash Redis (replaces local Redis, TLS URL format)
+#   - Disables Kafka (uses in-process ApplicationEventPublisher)
+#   - Disables OpenSearch (uses PostgreSQL full-text)
+#   - Disables MinIO (object storage not needed for MVP)
+#   - Keycloak on Render (issues JWTs, validated via JWK endpoint)
+#   - Disables OPA (uses Spring Security RBAC)
+#   - Disables OpenTelemetry export
+# ---------------------------------------------------------------------------
+
+server:
+  port: ${PORT:8080}
+  shutdown: graceful
+  tomcat:
+    threads:
+      max: 10
+      min-spare: 2
+    max-connections: 50
+    accept-count: 10
+
+spring:
+  # --- Lazy init: defer bean creation to speed up cold start on free tier ---
+  main:
+    lazy-initialization: true
+
+  # --- DataSource (Neon PostgreSQL) ---
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    hikari:
+      maximum-pool-size: 3
+      minimum-idle: 1
+      idle-timeout: 300000
+      connection-timeout: 20000
+      max-lifetime: 1200000
+
+  # --- JPA / Hibernate ---
+  jpa:
+    properties:
+      hibernate:
+        jdbc:
+          batch_size: 10
+          fetch_size: 50
+        order_inserts: true
+        order_updates: true
+
+  # --- Redis (Upstash, TLS URL format: rediss://default:<pass>@<host>:6380) ---
+  data:
+    redis:
+      url: ${SPRING_DATA_REDIS_URL}
+      timeout: 5000
+      lettuce:
+        pool:
+          max-active: 3
+          max-idle: 1
+          min-idle: 0
+          max-wait: 2000
+
+  # --- Disable Kafka (use in-process ApplicationEventPublisher) ---
+  kafka:
+    bootstrap-servers: ""
+
+  # --- Flyway ---
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    schemas: public
+    baseline-on-migrate: true
+    baseline-version: "12"
+    validate-on-migrate: true
+    clean-disabled: true
+
+  # --- Disable unnecessary autoconfiguration ---
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration
+      - org.flowable.spring.boot.eventregistry.EventRegistryAutoConfiguration
+      - org.springdoc.openapi.springdoc.SpringDocConfiguration
+      - org.springdoc.openapi.springdoc.SpringDocWebMvcConfiguration
+
+  # --- OAuth2 Resource Server: validates JWTs from Keycloak via JWK endpoint ---
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: "https://orionops-keycloak.onrender.com/realms/orionops"
+
+# --- CORS: allow Vercel frontend ---
+app:
+  cors:
+    allowed-origins:
+      - ${FRONTEND_URL:https://orionops.vercel.app}
+      - https://orionops.vercel.app
+  auth:
+    jwt-secret: ${APP_AUTH_JWT_SECRET:}
+
+# --- Platform URL for integration links (Slack, Teams) ---
+orionops:
+  platform:
+    base-url: https://orionops.vercel.app
+
+# --- Keycloak (Render instance) ---
+keycloak:
+  enabled: true
+  auth-server-url: "https://orionops-keycloak.onrender.com"
+  realm: "orionops"
+  client-id: "orionops-backend"
+  client-secret: ""
+  resourceserver:
+    jwt:
+      issuer-uri: "https://orionops-keycloak.onrender.com/realms/orionops"
+      jwk-set-uri: "https://orionops-keycloak.onrender.com/realms/orionops/protocol/openid-connect/certs"
+
+# --- Disable OpenSearch ---
+opensearch:
+  enabled: false
+
+# --- Disable MinIO ---
+minio:
+  enabled: false
+
+# --- Disable OPA ---
+opa:
+  enabled: false
+
+# --- Disable OpenTelemetry export ---
+otel:
+  traces:
+    exporter: none
+  metrics:
+    exporter: none
+  logs:
+    exporter: none
+
+# --- Flowable: optimized for low-memory environment ---
+flowable:
+  database-schema-update: false
+  async-executor-activate: true
+  async-executor-core-pool-size: 1
+  async-executor-max-pool-size: 2
+  async-executor-queue-size: 20
+  async-executor-max-timer-jobs-per-acquisition: 3
+  async-executor-max-async-jobs-per-acquisition: 3
+  async-executor-wait-time-in-millis: 10000
+  async-executor-lock-wait-time-in-millis: 10000
+  enable-safe-xml: true
+  history-level: audit
+  async-history-enabled: false
+
+# --- Logging (reduce verbosity for cloud) ---
+logging:
+  level:
+    root: WARN
+    com.orionops: INFO
+    org.springframework.web: WARN
+    org.springframework.security: WARN
+    org.hibernate: WARN
+    org.flowable: WARN
+  charset:
+    console: UTF-8

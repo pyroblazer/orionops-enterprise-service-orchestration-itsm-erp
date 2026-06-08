@@ -35,6 +35,10 @@ public class WebhookService {
         log.info("Delivering webhook: webhookId={}, eventType={}", webhookId, eventType);
     }
 
+    public void triggerWebhook(String webhookId, java.util.Map<String, Object> payload) {
+        log.info("Triggering webhook: webhookId={}, payload={}", webhookId, payload);
+    }
+
     private String generateSecret() {
         return UUID.randomUUID().toString().replace("-", "");
     }

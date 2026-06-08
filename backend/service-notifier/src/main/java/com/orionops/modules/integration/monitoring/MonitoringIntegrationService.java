@@ -24,4 +24,9 @@ public class MonitoringIntegrationService {
     public void processMonitoringAlert(String alertPayload) {
         log.info("Processing monitoring alert: {}", alertPayload);
     }
+
+    public Object ingestAlert(java.util.Map<String, Object> alertData) {
+        log.info("Ingesting monitoring alert: {}", alertData);
+        return java.util.Map.of("status", "processed");
+    }
 }
