@@ -59,17 +59,17 @@ jobs:
           distribution: temurin
           cache: maven
 
-      - name: Build common module
+      - name: Build all backend modules
         env:
           MAVEN_OPTS: "-Xmx512m -XX:MaxMetaspaceSize=200m -XX:+UseG1GC"
         run: |
-          mvn clean install -pl common -DskipTests -B
+          mvn clean install -DskipTests -B
 
-      - name: Upload common JAR
+      - name: Upload Maven repository (parent + common POMs and JARs)
         uses: actions/upload-artifact@v4
         with:
-          name: common-jar
-          path: backend/common/target/*.jar
+          name: backend-m2-repo
+          path: ~/.m2/repository/com/orionops/
           retention-days: 1
 
   # =========================================================================
@@ -145,11 +145,11 @@ jobs:
           distribution: temurin
           cache: maven
 
-      - name: Download common JAR
+      - name: Download Maven repository
         uses: actions/download-artifact@v4
         with:
-          name: common-jar
-          path: ~/.m2/repository/com/orionops/orionops-common/0.1.0-SNAPSHOT/
+          name: backend-m2-repo
+          path: ~/.m2/repository/com/orionops/
 
       - name: Run API tests (unit + integration + contract)
         env:
@@ -235,11 +235,11 @@ jobs:
           distribution: temurin
           cache: maven
 
-      - name: Download common JAR
+      - name: Download Maven repository
         uses: actions/download-artifact@v4
         with:
-          name: common-jar
-          path: ~/.m2/repository/com/orionops/orionops-common/0.1.0-SNAPSHOT/
+          name: backend-m2-repo
+          path: ~/.m2/repository/com/orionops/
 
       - name: Run worker tests (unit + integration)
         env:
@@ -298,11 +298,11 @@ jobs:
           distribution: temurin
           cache: maven
 
-      - name: Download common JAR
+      - name: Download Maven repository
         uses: actions/download-artifact@v4
         with:
-          name: common-jar
-          path: ~/.m2/repository/com/orionops/orionops-common/0.1.0-SNAPSHOT/
+          name: backend-m2-repo
+          path: ~/.m2/repository/com/orionops/
 
       - name: Run workflow tests (unit + simulation)
         env:
@@ -344,11 +344,11 @@ jobs:
           distribution: temurin
           cache: maven
 
-      - name: Download common JAR
+      - name: Download Maven repository
         uses: actions/download-artifact@v4
         with:
-          name: common-jar
-          path: ~/.m2/repository/com/orionops/orionops-common/0.1.0-SNAPSHOT/
+          name: backend-m2-repo
+          path: ~/.m2/repository/com/orionops/
 
       - name: Run notifier unit tests
         env:
@@ -387,11 +387,11 @@ jobs:
           distribution: temurin
           cache: maven
 
-      - name: Download common JAR
+      - name: Download Maven repository
         uses: actions/download-artifact@v4
         with:
-          name: common-jar
-          path: ~/.m2/repository/com/orionops/orionops-common/0.1.0-SNAPSHOT/
+          name: backend-m2-repo
+          path: ~/.m2/repository/com/orionops/
 
       - name: Run connector unit tests
         env:
