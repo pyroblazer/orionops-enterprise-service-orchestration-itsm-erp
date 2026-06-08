@@ -1,21 +1,12 @@
 package com.orionops.modules.integration.consumers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.orionops.modules.auth.entity.User;
-import com.orionops.modules.auth.repository.UserRepository;
-import com.orionops.modules.cmdb.entity.Service;
-import com.orionops.modules.cmdb.repository.ServiceRepository;
 import com.orionops.modules.sla.event.SLABreachEvent;
 import com.orionops.modules.sla.event.SLACreatedEvent;
-import com.orionops.modules.integration.chat.SlackIntegrationService;
-import com.orionops.modules.integration.email.EmailService;
-import com.orionops.modules.notification.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
@@ -34,18 +25,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class SLAEventConsumer {
 
-    private final ServiceRepository serviceRepository;
-    private final UserRepository userRepository;
     private final ObjectMapper objectMapper;
-
-    @Autowired(required = false)
-    private EmailService emailService;
-
-    @Autowired(required = false)
-    private SlackIntegrationService slackIntegrationService;
-
-    @Autowired(required = false)
-    private NotificationService notificationService;
 
     /**
      * Consumes SLA events from Kafka topics matching "orionops.sla.*".
@@ -154,25 +134,12 @@ public class SLAEventConsumer {
     /**
      * Handles SLA creation events.
      *
-     * <p>When a new SLA instance is created, this handler:
-     * - Logs the SLA start for audit purposes
-     * - Updates SLA tracking metrics
-     * </p>
-     *
      * @param eventJson the raw JSON event payload
      */
     private void handleSLACreated(String eventJson) throws Exception {
         SLACreatedEvent event = objectMapper.readValue(eventJson, SLACreatedEvent.class);
-        log.info("Processing SLA_CREATED: slaInstanceId={}, targetEntityId={}, targetType={}",
+        log.info("SLA_CREATED: slaInstanceId={}, targetEntityId={}, targetType={}",
                 event.getSlaInstanceId(), event.getTargetEntityId(), event.getTargetType());
-
-        // Log SLA start for audit
-        log.info("SLA tracking started: instance={}, definition={}, target={}/{}",
-                event.getSlaInstanceId(), event.getSlaDefinitionId(),
-                event.getTargetType(), event.getTargetEntityId());
-
-        // Update SLA metrics (active SLA count by target type)
-        log.info("SLA metrics updated: new active SLA for target type {}", event.getTargetType());
     }
 
     // ---- Private helpers ----
@@ -192,45 +159,4 @@ public class SLAEventConsumer {
         return "UNKNOWN";
     }
 
-    /**
-     * Resolves the email address for the service owner of a target entity.
-     * Looks up the CMDB Service by ID, then resolves the owner user's email.
-     *
-     * @param targetEntityId the target entity's UUID (typically a Service ID)
-     * @return the service owner's email address
-     */
-    private String resolveServiceOwnerEmail(java.util.UUID targetEntityId) {
-        return serviceRepository.findById(targetEntityId)
-                .filter(s -> s.getOwner() != null)
-                .flatMap(s -> {
-                    try {
-                        java.util.UUID ownerId = java.util.UUID.fromString(s.getOwner());
-                        return userRepository.findById(ownerId).map(User::getEmail);
-                    } catch (IllegalArgumentException e) {
-                        return userRepository.findByUsername(s.getOwner())
-                                .map(User::getEmail);
-                    }
-                })
-                .orElseGet(() -> {
-                    log.warn("Service owner email not found for targetEntityId={}, using fallback", targetEntityId);
-                    return "service-owner-" + targetEntityId + "@orionops.io";
-                });
-    }
-
-    /**
-     * Resolves the owner user ID from a CMDB Service entity.
-     * The owner field is a String that may contain a UUID or a username.
-     *
-     * @param service the CMDB service entity
-     * @return the owner's user UUID, or null if not resolvable
-     */
-    private java.util.UUID resolveOwnerUserId(Service service) {
-        try {
-            return java.util.UUID.fromString(service.getOwner());
-        } catch (IllegalArgumentException e) {
-            return userRepository.findByUsername(service.getOwner())
-                    .map(User::getId)
-                    .orElse(null);
-        }
-    }
 }
