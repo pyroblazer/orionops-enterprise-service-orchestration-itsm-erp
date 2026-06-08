@@ -3,7 +3,7 @@ services:
   - type: web
     name: orionops-api
     runtime: docker
-    dockerfilePath: ./backend/Dockerfile
+    dockerfilePath: ./backend/service-api/Dockerfile
     dockerContext: ./backend
     plan: free
     region: oregon
@@ -37,7 +37,7 @@ services:
   - type: web
     name: orionops-workflow
     runtime: docker
-    dockerfilePath: ./backend/Dockerfile
+    dockerfilePath: ./backend/service-workflow/Dockerfile
     dockerContext: ./backend
     plan: free
     region: oregon
@@ -68,7 +68,7 @@ services:
   - type: web
     name: orionops-worker
     runtime: docker
-    dockerfilePath: ./backend/Dockerfile
+    dockerfilePath: ./backend/service-worker/Dockerfile
     dockerContext: ./backend
     plan: free
     region: oregon
@@ -99,7 +99,7 @@ services:
   - type: web
     name: orionops-notifier
     runtime: docker
-    dockerfilePath: ./backend/Dockerfile
+    dockerfilePath: ./backend/service-notifier/Dockerfile
     dockerContext: ./backend
     plan: free
     region: oregon
@@ -130,7 +130,7 @@ services:
   - type: web
     name: orionops-connector
     runtime: docker
-    dockerfilePath: ./backend/Dockerfile
+    dockerfilePath: ./backend/service-connector/Dockerfile
     dockerContext: ./backend
     plan: free
     region: oregon
