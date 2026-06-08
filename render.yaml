@@ -1,27 +1,3 @@
-environmentGroups:
-  - name: shared-db
-    envVars:
-      - key: DATABASE_URL
-        value: postgresql://neondb_owner:npg_Xe37ItjcQVqH@ep-polished-breeze-ao925c2w-pooler.c-2.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require
-      - key: SPRING_DATASOURCE_URL
-        value: "jdbc:postgresql://ep-polished-breeze-ao925c2w-pooler.c-2.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
-      - key: SPRING_DATASOURCE_USERNAME
-        value: neondb_owner
-      - key: SPRING_DATASOURCE_PASSWORD
-        value: npg_Xe37ItjcQVqH
-      - key: SPRING_DATA_REDIS_URL
-        value: rediss://default:AaLJAAIgcDFkOTdkZDhiZjY0YmQ0ZjNkYTg1OTc3Yjg4YmEyNzAwNA@desired-silkworm-41673.upstash.io:6380
-      - key: APP_AUTH_JWT_SECRET
-        value: supersecretjwt@@supersecretjwt@@
-      - key: FRONTEND_URL
-        value: https://orionops.vercel.app
-      - key: KC_DB_URL
-        value: "jdbc:postgresql://ep-polished-breeze-ao925c2w-pooler.c-2.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
-      - key: KC_DB_USERNAME
-        value: neondb_owner
-      - key: KC_DB_PASSWORD
-        value: npg_Xe37ItjcQVqH
-
 services:
   # ── OrionOps API (Core REST API) ──────────────────────────────────────────
   - type: web
