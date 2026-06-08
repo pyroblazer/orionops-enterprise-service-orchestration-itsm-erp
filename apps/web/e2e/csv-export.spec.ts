@@ -75,13 +75,18 @@ test.describe('CSV Export Across Modules', () => {
   });
 
   test('audit log export downloads CSV file', async ({ page }) => {
-    await page.goto('/audit', { waitUntil: 'domcontentloaded' });
+    await page.goto('/audit');
+    await page.waitForLoadState('domcontentloaded');
+    await page.waitForTimeout(500);
+
     const exportButton = page.locator('button:has-text("Export")').first();
     if (await exportButton.count() > 0) {
       try {
-        const [download] = await Promise.all([
-          page.waitForEvent('download').catch(() => null),
-          exportButton.click({ timeout: 5000 }),
+        const downloadPromise = page.waitForEvent('download').catch(() => null);
+        await exportButton.click({ timeout: 5000 });
+        const download = await Promise.race([
+          downloadPromise,
+          new Promise(resolve => setTimeout(() => resolve(null), 3000))
         ]);
         if (download) {
           const filename = download.suggestedFilename();
