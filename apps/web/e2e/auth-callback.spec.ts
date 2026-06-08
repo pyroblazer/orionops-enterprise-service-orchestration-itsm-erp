@@ -9,20 +9,22 @@ test.describe('Authentication Callback Flow', () => {
   test('should show loading spinner on mount', async ({ page }) => {
     const callbackUrl = 'http://localhost:3002/login/callback?code=mock-auth-code&state=mock-state-value';
     await page.goto(callbackUrl);
+    await page.waitForLoadState('domcontentloaded');
+    await page.waitForTimeout(500);
 
     // Check for loading spinner using various class name patterns
     const spinner = page.locator('.lucide-loader-2, .animate-spin, svg[class*="loader"], [class*="spinner"]').first();
     if (await spinner.count() > 0) {
-      await expect(spinner).toBeVisible();
+      await expect(spinner).toBeVisible({ timeout: 5000 });
     }
     // Check loading text — may not appear if page processes too fast
     const loadingText = page.getByText('Completing sign in');
     if (await loadingText.count() > 0) {
-      await expect(loadingText).toBeVisible();
+      await expect(loadingText).toBeVisible({ timeout: 5000 });
     }
     const sessionText = page.getByText('Securing your session...');
     if (await sessionText.count() > 0) {
-      await expect(sessionText).toBeVisible();
+      await expect(sessionText).toBeVisible({ timeout: 5000 });
     }
   });
 
