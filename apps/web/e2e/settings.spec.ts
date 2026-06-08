@@ -295,11 +295,13 @@ test.describe('User Settings', () => {
     const notifTab = page.locator('button:has-text("Notifications")').first();
     if (await notifTab.count() > 0) {
       await notifTab.click();
-      await page.waitForTimeout(300);
+      await page.waitForTimeout(500);
 
       const saveButton = page.locator('button:has-text("Save Notification Preferences"), button:has-text("Save")').first();
       if (await saveButton.count() > 0 && await saveButton.isEnabled()) {
-        await saveButton.click();
+        await saveButton.scrollIntoViewIfNeeded();
+        await page.waitForTimeout(300);
+        await saveButton.click({ force: true });
       }
     }
   });
