@@ -142,11 +142,12 @@ test.describe('Cross-Module Navigation', () => {
     );
 
     await page.goto('/problems/new', { waitUntil: 'domcontentloaded' });
+    await waitForColdStartBannerToDismiss(page);
     // The back button is a ghost button with ArrowLeft icon
     const backBtn = page.locator('button').filter({ has: page.locator('svg') }).first();
     if (await backBtn.count() > 0) {
       try {
-        await backBtn.click();
+        await backBtn.click({ force: true });
         await page.waitForURL('**/problems', { timeout: 5000 });
       } catch {
         // Navigation may not complete in some cases
