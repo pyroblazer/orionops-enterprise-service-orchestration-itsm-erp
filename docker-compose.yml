@@ -254,7 +254,7 @@ services:
       NEXT_PUBLIC_KEYCLOAK_REALM: orionops
       NEXT_PUBLIC_KEYCLOAK_CLIENT_ID: orionops-web
     depends_on:
-      backend:
+      api:
         condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "curl -sf http://localhost:3000 || exit 1"]
