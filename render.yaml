@@ -99,6 +99,36 @@ services:
       - key: RENDER_HEARTBEAT_URL
         value: "https://orionops-connector.onrender.com/api/actuator/health"
 
+  # ── OrionOps AI (Python FastAPI) ────────────────────────────────────────────
+  - type: web
+    name: orionops-ai
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: ./apps/ai
+    plan: free
+    region: oregon
+    healthCheckPath: /health
+    envVars:
+      - key: LOG_LEVEL
+        value: info
+      - key: PORT
+        value: "8000"
+
+  # ── MinIO (S3-Compatible Object Storage) ─────────────────────────────────────
+  - type: web
+    name: orionops-minio
+    image: minio/minio:latest
+    plan: free
+    region: oregon
+    healthCheckPath: /minio/health/live
+    envVars:
+      - key: MINIO_ROOT_USER
+        value: minioadmin
+      - key: MINIO_ROOT_PASSWORD
+        value: minioadmin
+      - key: MINIO_BROWSER_REDIRECT_URL
+        value: "https://orionops-minio.onrender.com"
+
   # ── OrionOps Keycloak (Identity Provider) ─────────────────────────────────
   - type: web
     name: orionops-keycloak
