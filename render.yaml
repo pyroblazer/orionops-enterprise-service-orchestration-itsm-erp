@@ -1,3 +1,27 @@
+environmentGroups:
+  - name: shared-db
+    envVars:
+      - key: DATABASE_URL
+        value: postgresql://neondb_owner:npg_Xe37ItjcQVqH@ep-polished-breeze-ao925c2w-pooler.c-2.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require
+      - key: SPRING_DATASOURCE_URL
+        value: "jdbc:postgresql://ep-polished-breeze-ao925c2w-pooler.c-2.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
+      - key: SPRING_DATASOURCE_USERNAME
+        value: neondb_owner
+      - key: SPRING_DATASOURCE_PASSWORD
+        value: npg_Xe37ItjcQVqH
+      - key: SPRING_DATA_REDIS_URL
+        value: rediss://default:AaLJAAIgcDFkOTdkZDhiZjY0YmQ0ZjNkYTg1OTc3Yjg4YmEyNzAwNA@desired-silkworm-41673.upstash.io:6380
+      - key: APP_AUTH_JWT_SECRET
+        value: supersecretjwt@@supersecretjwt@@
+      - key: FRONTEND_URL
+        value: https://orionops.vercel.app
+      - key: KC_DB_URL
+        value: "jdbc:postgresql://ep-polished-breeze-ao925c2w-pooler.c-2.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
+      - key: KC_DB_USERNAME
+        value: neondb_owner
+      - key: KC_DB_PASSWORD
+        value: npg_Xe37ItjcQVqH
+
 services:
   # ── OrionOps API (Core REST API) ──────────────────────────────────────────
   - type: web
@@ -9,6 +33,7 @@ services:
     region: oregon
     healthCheckPath: /api/actuator/health
     envVars:
+      - fromGroup: shared-db
       - key: SERVICE_PROFILE
         value: cloud-api
       - key: PORT
@@ -17,21 +42,6 @@ services:
         value: "cloud,cloud-api"
       - key: RENDER_HEARTBEAT_URL
         value: "https://orionops-api.onrender.com/api/actuator/health"
-      # Neon PostgreSQL
-      - key: SPRING_DATASOURCE_URL
-        value: "jdbc:postgresql://ep-patient-star-aozxgghu.c-2.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&options=endpoint%3Dep-patient-star-aozxgghu"
-      - key: SPRING_DATASOURCE_USERNAME
-        value: neondb_owner
-      # Database and Auth secrets from environment group
-      - key: SPRING_DATASOURCE_PASSWORD
-        value: npg_yNcLaf7ovG9E
-      - key: SPRING_DATA_REDIS_URL
-        value: rediss://default:AaLJAAIgcDFkOTdkZDhiZjY0YmQ0ZjNkYTg1OTc3Yjg4YmEyNzAwNA@desired-silkworm-41673.upstash.io:6380
-      - key: APP_AUTH_JWT_SECRET
-        value: supersecretjwt@@supersecretjwt@@
-      # Vercel frontend URL for CORS
-      - key: FRONTEND_URL
-        value: https://orionops.vercel.app
 
   # ── OrionOps Workflow (Flowable BPMN Engine) ─────────────────────────────
   - type: web
@@ -43,6 +53,7 @@ services:
     region: oregon
     healthCheckPath: /api/actuator/health
     envVars:
+      - fromGroup: shared-db
       - key: SERVICE_PROFILE
         value: cloud-workflow
       - key: PORT
@@ -51,18 +62,6 @@ services:
         value: "cloud,cloud-workflow"
       - key: RENDER_HEARTBEAT_URL
         value: "https://orionops-workflow.onrender.com/api/actuator/health"
-      - key: SPRING_DATASOURCE_URL
-        value: "jdbc:postgresql://ep-patient-star-aozxgghu.c-2.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&options=endpoint%3Dep-patient-star-aozxgghu"
-      - key: SPRING_DATASOURCE_USERNAME
-        value: neondb_owner
-      - key: SPRING_DATASOURCE_PASSWORD
-        value: npg_yNcLaf7ovG9E
-      - key: SPRING_DATA_REDIS_URL
-        value: rediss://default:AaLJAAIgcDFkOTdkZDhiZjY0YmQ0ZjNkYTg1OTc3Yjg4YmEyNzAwNA@desired-silkworm-41673.upstash.io:6380
-      - key: APP_AUTH_JWT_SECRET
-        value: supersecretjwt@@supersecretjwt@@
-      - key: FRONTEND_URL
-        value: https://orionops.vercel.app
 
   # ── OrionOps Worker (Kafka Consumers + OpenSearch) ────────────────────────
   - type: web
@@ -74,6 +73,7 @@ services:
     region: oregon
     healthCheckPath: /api/actuator/health
     envVars:
+      - fromGroup: shared-db
       - key: SERVICE_PROFILE
         value: cloud-worker
       - key: PORT
@@ -82,18 +82,6 @@ services:
         value: "cloud,cloud-worker"
       - key: RENDER_HEARTBEAT_URL
         value: "https://orionops-worker.onrender.com/api/actuator/health"
-      - key: SPRING_DATASOURCE_URL
-        value: "jdbc:postgresql://ep-patient-star-aozxgghu.c-2.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&options=endpoint%3Dep-patient-star-aozxgghu"
-      - key: SPRING_DATASOURCE_USERNAME
-        value: neondb_owner
-      - key: SPRING_DATASOURCE_PASSWORD
-        value: npg_yNcLaf7ovG9E
-      - key: SPRING_DATA_REDIS_URL
-        value: rediss://default:AaLJAAIgcDFkOTdkZDhiZjY0YmQ0ZjNkYTg1OTc3Yjg4YmEyNzAwNA@desired-silkworm-41673.upstash.io:6380
-      - key: APP_AUTH_JWT_SECRET
-        value: supersecretjwt@@supersecretjwt@@
-      - key: FRONTEND_URL
-        value: https://orionops.vercel.app
 
   # ── OrionOps Notifier (Email, Slack, Teams, Webhooks) ───────────────────
   - type: web
@@ -105,6 +93,7 @@ services:
     region: oregon
     healthCheckPath: /api/actuator/health
     envVars:
+      - fromGroup: shared-db
       - key: SERVICE_PROFILE
         value: cloud-notifier
       - key: PORT
@@ -113,18 +102,6 @@ services:
         value: "cloud,cloud-notifier"
       - key: RENDER_HEARTBEAT_URL
         value: "https://orionops-notifier.onrender.com/api/actuator/health"
-      - key: SPRING_DATASOURCE_URL
-        value: "jdbc:postgresql://ep-patient-star-aozxgghu.c-2.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&options=endpoint%3Dep-patient-star-aozxgghu"
-      - key: SPRING_DATASOURCE_USERNAME
-        value: neondb_owner
-      - key: SPRING_DATASOURCE_PASSWORD
-        value: npg_yNcLaf7ovG9E
-      - key: SPRING_DATA_REDIS_URL
-        value: rediss://default:AaLJAAIgcDFkOTdkZDhiZjY0YmQ0ZjNkYTg1OTc3Yjg4YmEyNzAwNA@desired-silkworm-41673.upstash.io:6380
-      - key: APP_AUTH_JWT_SECRET
-        value: supersecretjwt@@supersecretjwt@@
-      - key: FRONTEND_URL
-        value: https://orionops.vercel.app
 
   # ── OrionOps Connector (Outbound REST/SOAP) ──────────────────────────────
   - type: web
@@ -136,6 +113,7 @@ services:
     region: oregon
     healthCheckPath: /api/actuator/health
     envVars:
+      - fromGroup: shared-db
       - key: SERVICE_PROFILE
         value: cloud-connector
       - key: PORT
@@ -144,18 +122,6 @@ services:
         value: "cloud,cloud-connector"
       - key: RENDER_HEARTBEAT_URL
         value: "https://orionops-connector.onrender.com/api/actuator/health"
-      - key: SPRING_DATASOURCE_URL
-        value: "jdbc:postgresql://ep-patient-star-aozxgghu.c-2.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&options=endpoint%3Dep-patient-star-aozxgghu"
-      - key: SPRING_DATASOURCE_USERNAME
-        value: neondb_owner
-      - key: SPRING_DATASOURCE_PASSWORD
-        value: npg_yNcLaf7ovG9E
-      - key: SPRING_DATA_REDIS_URL
-        value: rediss://default:AaLJAAIgcDFkOTdkZDhiZjY0YmQ0ZjNkYTg1OTc3Yjg4YmEyNzAwNA@desired-silkworm-41673.upstash.io:6380
-      - key: APP_AUTH_JWT_SECRET
-        value: supersecretjwt@@supersecretjwt@@
-      - key: FRONTEND_URL
-        value: https://orionops.vercel.app
 
   # ── OrionOps Keycloak (Identity Provider) ─────────────────────────────────
   - type: web
@@ -167,18 +133,13 @@ services:
     region: oregon
     healthCheckPath: /health/ready
     envVars:
+      - fromGroup: shared-db
       - key: KEYCLOAK_ADMIN
         value: admin
       - key: KEYCLOAK_ADMIN_PASSWORD
         value: admin
       - key: KC_DB
         value: postgres
-      - key: KC_DB_URL
-        value: "jdbc:postgresql://ep-patient-star-aozxgghu.c-2.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&options=endpoint%3Dep-patient-star-aozxgghu"
-      - key: KC_DB_USERNAME
-        value: neondb_owner
-      - key: KC_DB_PASSWORD
-        value: npg_yNcLaf7ovG9E
       - key: KC_DB_SCHEMA
         value: keycloak
       - key: KC_HOSTNAME
