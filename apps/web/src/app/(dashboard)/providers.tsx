@@ -35,11 +35,6 @@ const queryClient = new QueryClient({
   },
 });
 
-// Clear cold-start flag on successful query
-queryClient.getDefaultOptions().queries!.onSuccess = () => {
-  useColdStartStore.getState().setWaking(false);
-};
-
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>

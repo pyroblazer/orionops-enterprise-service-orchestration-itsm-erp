@@ -81,7 +81,7 @@ jobs:
     needs: [common-build]
     defaults:
       run:
-        working-directory: backend/service-api
+        working-directory: backend
 
     services:
       postgres:
@@ -161,7 +161,7 @@ jobs:
           SPRING_KAFKA_BOOTSTRAP_SERVERS: localhost:9092
           MAVEN_OPTS: "-Xmx512m -XX:MaxMetaspaceSize=200m -XX:+UseG1GC"
         run: |
-          cd ../.. && mvn verify -pl service-api -DskipTests=false -Dspring.profiles.active=test -B
+          mvn verify -pl service-api -DskipTests=false -Dspring.profiles.active=test -B
 
       - name: Upload API test results
         if: always()
@@ -181,7 +181,7 @@ jobs:
     needs: [common-build]
     defaults:
       run:
-        working-directory: backend/service-worker
+        working-directory: backend
 
     services:
       postgres:
@@ -249,7 +249,7 @@ jobs:
           SPRING_KAFKA_BOOTSTRAP_SERVERS: localhost:9092
           MAVEN_OPTS: "-Xmx512m -XX:MaxMetaspaceSize=200m -XX:+UseG1GC"
         run: |
-          cd ../.. && mvn verify -pl service-worker -DskipTests=false -Dspring.profiles.active=test -B
+          mvn verify -pl service-worker -DskipTests=false -Dspring.profiles.active=test -B
 
       - name: Upload worker test results
         if: always()
@@ -269,7 +269,7 @@ jobs:
     needs: [common-build]
     defaults:
       run:
-        working-directory: backend/service-workflow
+        working-directory: backend
 
     services:
       postgres:
@@ -311,7 +311,7 @@ jobs:
           SPRING_DATASOURCE_PASSWORD: test
           MAVEN_OPTS: "-Xmx512m -XX:MaxMetaspaceSize=200m -XX:+UseG1GC"
         run: |
-          cd ../.. && mvn verify -pl service-workflow -DskipTests=false -Dspring.profiles.active=test -B
+          mvn verify -pl service-workflow -DskipTests=false -Dspring.profiles.active=test -B
 
       - name: Upload workflow test results
         if: always()
@@ -331,7 +331,7 @@ jobs:
     needs: [common-build]
     defaults:
       run:
-        working-directory: backend/service-notifier
+        working-directory: backend
     steps:
       - uses: actions/checkout@v4
         with:
@@ -354,7 +354,7 @@ jobs:
         env:
           MAVEN_OPTS: "-Xmx512m -XX:MaxMetaspaceSize=200m -XX:+UseG1GC"
         run: |
-          cd ../.. && mvn test -pl service-notifier -B -Dtest.excludedGroups=docker -Dspring.profiles.active=test
+          mvn test -pl service-notifier -B -Dtest.excludedGroups=docker -Dspring.profiles.active=test
 
       - name: Upload notifier test results
         if: always()
@@ -374,7 +374,7 @@ jobs:
     needs: [common-build]
     defaults:
       run:
-        working-directory: backend/service-connector
+        working-directory: backend
     steps:
       - uses: actions/checkout@v4
         with:
@@ -397,7 +397,7 @@ jobs:
         env:
           MAVEN_OPTS: "-Xmx512m -XX:MaxMetaspaceSize=200m -XX:+UseG1GC"
         run: |
-          cd ../.. && mvn test -pl service-connector -B -Dtest.excludedGroups=docker -Dspring.profiles.active=test
+          mvn test -pl service-connector -B -Dtest.excludedGroups=docker -Dspring.profiles.active=test
 
       - name: Upload connector test results
         if: always()

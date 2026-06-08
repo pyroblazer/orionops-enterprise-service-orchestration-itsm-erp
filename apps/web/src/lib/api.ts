@@ -721,7 +721,16 @@ apiClient.interceptors.request.use(
 );
 
 apiClient.interceptors.response.use(
-  (response) => response,
+  async (response) => {
+    // Clear cold-start flag on successful response
+    try {
+      const { useColdStartStore } = await import('@/stores/cold-start-store');
+      useColdStartStore.getState().setWaking(false);
+    } catch (e) {
+      // Ignore if cold-start store can't be imported
+    }
+    return response;
+  },
   async (error: AxiosError) => {
     const originalRequest = error.config as AxiosRequestConfig & { _retry?: boolean };
 

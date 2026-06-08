@@ -5,7 +5,7 @@ import { useColdStartStore } from '@/stores/cold-start-store';
 import { Progress } from '@/components/ui/progress';
 
 export function ColdStartBanner() {
-  const isWaking = useColdStartStore((state) => state.isWaking);
+  const isWaking = useColdStartStore((state: { isWaking: boolean }) => state.isWaking);
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
