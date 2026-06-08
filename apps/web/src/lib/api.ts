@@ -726,7 +726,7 @@ apiClient.interceptors.response.use(
     try {
       const { useColdStartStore } = await import('@/stores/cold-start-store');
       useColdStartStore.getState().setWaking(false);
-    } catch (e) {
+    } catch {
       // Ignore if cold-start store can't be imported
     }
     return response;

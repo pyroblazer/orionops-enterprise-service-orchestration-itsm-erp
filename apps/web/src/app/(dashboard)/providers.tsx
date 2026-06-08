@@ -1,7 +1,6 @@
 'use client';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { useColdStartStore } from '@/stores/cold-start-store';
 import { ColdStartBanner } from '@/components/cold-start-banner';
 
 interface ColdStartError {
