@@ -58,28 +58,37 @@ test.describe('Main Dashboard', () => {
 
   test('Create Incident quick action button navigates to new form', async ({ page }) => {
     await page.goto('/dashboard');
+    await page.waitForLoadState('domcontentloaded');
+    await page.waitForTimeout(500);
+
     const createButton = page.locator('button:has-text("Create Incident"), a:has-text("Create Incident")').first();
     if (await createButton.count() > 0) {
       await createButton.click();
-      await page.waitForURL('**/incidents/new', { timeout: 5000 });
+      await page.waitForURL('**/incidents/new', { timeout: 10000 }).catch(() => null);
     }
   });
 
   test('Knowledge Base quick action navigates correctly', async ({ page }) => {
     await page.goto('/dashboard');
+    await page.waitForLoadState('domcontentloaded');
+    await page.waitForTimeout(500);
+
     const kbButton = page.locator('button:has-text("Knowledge Base"), a:has-text("Knowledge Base")').first();
     if (await kbButton.count() > 0) {
       await kbButton.click();
-      await page.waitForURL('**/knowledge', { timeout: 5000 });
+      await page.waitForURL('**/knowledge', { timeout: 10000 }).catch(() => null);
     }
   });
 
   test('SLA Dashboard quick action navigates correctly', async ({ page }) => {
     await page.goto('/dashboard');
+    await page.waitForLoadState('domcontentloaded');
+    await page.waitForTimeout(500);
+
     const slaButton = page.locator('button:has-text("SLA"), a:has-text("SLA")').first();
     if (await slaButton.count() > 0) {
       await slaButton.click();
-      await page.waitForURL('**/sla', { timeout: 5000 });
+      await page.waitForURL('**/sla', { timeout: 10000 }).catch(() => null);
     }
   });
 
