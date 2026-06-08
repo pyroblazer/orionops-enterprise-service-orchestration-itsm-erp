@@ -35,8 +35,19 @@ public class WebhookService {
         log.info("Delivering webhook: webhookId={}, eventType={}", webhookId, eventType);
     }
 
-    public void triggerWebhook(String webhookId, java.util.Map<String, Object> payload) {
-        log.info("Triggering webhook: webhookId={}, payload={}", webhookId, payload);
+    public void triggerWebhook(String webhookId, java.util.Map<String, ?> payload) {
+        log.info("Triggering webhook: webhookId={}", webhookId);
+        if (payload == null) {
+            log.warn("No payload provided for webhook");
+            return;
+        }
+
+        try {
+            // Send webhook to endpoint
+            log.info("Webhook triggered with payload size: {}", payload.size());
+        } catch (Exception e) {
+            log.error("Failed to trigger webhook: {}", e.getMessage(), e);
+        }
     }
 
     private String generateSecret() {
