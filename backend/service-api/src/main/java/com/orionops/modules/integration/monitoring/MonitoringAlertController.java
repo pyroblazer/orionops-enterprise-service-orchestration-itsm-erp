@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,6 +22,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/v1/integrations/monitoring")
 @RequiredArgsConstructor
+@ConditionalOnProperty(name = "orionops.monitoring.enabled", havingValue = "true")
 @Tag(name = "Monitoring Integration", description = "Monitoring system webhook endpoints")
 public class MonitoringAlertController {
 

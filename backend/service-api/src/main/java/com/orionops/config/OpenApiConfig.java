@@ -25,10 +25,10 @@ import java.util.List;
 @Configuration
 public class OpenApiConfig {
 
-    @Value("${keycloak.auth-server-url}")
+    @Value("${keycloak.auth-server-url:http://localhost:8081}")
     private String keycloakAuthServerUrl;
 
-    @Value("${keycloak.realm}")
+    @Value("${keycloak.realm:orionops}")
     private String keycloakRealm;
 
     @Bean

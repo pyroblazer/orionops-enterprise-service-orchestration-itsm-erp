@@ -28,7 +28,7 @@ import java.util.List;
 @EnableMethodSecurity
 public class SecurityConfig {
 
-    @Value("${keycloak.resourceserver.jwt.jwk-set-uri}")
+    @Value("${keycloak.resourceserver.jwt.jwk-set-uri:http://localhost:8080/realms/orionops/protocol/openid-connect/certs}")
     private String jwkSetUri;
 
     /** Symmetric JWT secret used in cloud profile (Render). Empty string means use JWK URI instead. */

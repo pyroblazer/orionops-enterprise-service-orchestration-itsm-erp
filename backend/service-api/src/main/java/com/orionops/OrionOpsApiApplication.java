@@ -15,7 +15,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableJpaRepositories(considerNestedRepositories = true)
 @ComponentScan(basePackages = {
     "com.orionops.modules",
-    "com.orionops.config"
+    "com.orionops.config",
+    "com.orionops.common"
 })
 public class OrionOpsApiApplication {
 
