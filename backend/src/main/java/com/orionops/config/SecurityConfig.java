@@ -87,19 +87,37 @@ public class SecurityConfig {
             // Skip validation for password-login tokens (issuer is "orionops-local")
             hmacDecoder.setJwtValidator(jwt -> {});
 
-            // If Keycloak decoder is available, create a delegating decoder
+            // If Keycloak decoder is available, create a delegating decoder that checks issuer
             if (keycloakDecoder != null) {
                 final JwtDecoder finalKeycloakDecoder = keycloakDecoder;
                 return token -> {
+                    // Check if token is from password login or Keycloak based on issuer claim
                     try {
-                        // Decode with HMAC first (for password-login tokens)
+                        // First, do a basic decode to check the issuer
+                        String[] parts = token.split("\\.");
+                        if (parts.length == 3) {
+                            String payload = parts[1];
+                            payload += "=".repeat((4 - payload.length() % 4) % 4);
+                            byte[] decoded = java.util.Base64.getUrlDecoder().decode(payload);
+                            String json = new String(decoded, StandardCharsets.UTF_8);
+                            if (json.contains("\"iss\":\"orionops-local\"")) {
+                                // Password-login token - use HMAC
+                                return hmacDecoder.decode(token);
+                            }
+                        }
+                    } catch (Exception e) {
+                        // If inspection fails, fall through to decoders
+                    }
+
+                    try {
+                        // Try HMAC first (password-login tokens)
                         return hmacDecoder.decode(token);
-                    } catch (Throwable e1) {
+                    } catch (Exception e1) {
                         try {
-                            // If HMAC fails, try Keycloak (for SSO tokens)
+                            // Fall back to Keycloak (for SSO tokens)
                             return finalKeycloakDecoder.decode(token);
-                        } catch (Throwable e2) {
-                            // Re-throw the original HMAC error if both fail
+                        } catch (Exception e2) {
+                            // Re-throw original error
                             throw e1;
                         }
                     }
