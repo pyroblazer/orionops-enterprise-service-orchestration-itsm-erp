@@ -68,14 +68,51 @@ public class SecurityConfig {
 
     @Bean
     public JwtDecoder jwtDecoder() {
-        // Cloud profile: use symmetric HMAC-SHA256 key from JWT_SECRET env var
+        // Support both password-login (HMAC) and Keycloak (JWK) tokens
+        JwtDecoder keycloakDecoder = null;
+        try {
+            keycloakDecoder = NimbusJwtDecoder.withJwkSetUri(jwkSetUri).build();
+        } catch (Exception e) {
+            // JWK endpoint not available, fall through to HMAC
+        }
+
         if (StringUtils.hasText(jwtSecret)) {
+            // HMAC decoder for password-login tokens
             SecretKeySpec key = new SecretKeySpec(
                 jwtSecret.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
-            return NimbusJwtDecoder.withSecretKey(key).build();
+            NimbusJwtDecoder hmacDecoder = NimbusJwtDecoder.withSecretKey(key).build();
+            // Skip all validation for password-login tokens
+            hmacDecoder.setJwtValidator(jwt -> {});
+
+            // If Keycloak decoder is available, create a delegating decoder
+            if (keycloakDecoder != null) {
+                final JwtDecoder finalKeycloakDecoder = keycloakDecoder;
+                return token -> {
+                    try {
+                        // Decode with HMAC first (for password-login tokens)
+                        return hmacDecoder.decode(token);
+                    } catch (Throwable e1) {
+                        try {
+                            // If HMAC fails, try Keycloak (for SSO tokens)
+                            return finalKeycloakDecoder.decode(token);
+                        } catch (Throwable e2) {
+                            // Re-throw the original HMAC error if both fail
+                            throw e1;
+                        }
+                    }
+                };
+            }
+            // Only HMAC available
+            return hmacDecoder;
         }
-        // Local/k8s profile: use Keycloak JWK endpoint
-        return NimbusJwtDecoder.withJwkSetUri(jwkSetUri).build();
+
+        // Only Keycloak JWK available
+        if (keycloakDecoder != null) {
+            return keycloakDecoder;
+        }
+
+        // Fallback: dummy decoder (should not reach here in normal operation)
+        throw new IllegalStateException("No JWT decoder available: set jwk-set-uri or jwt-secret");
     }
 
     @Bean
