@@ -78,10 +78,13 @@ public class SecurityConfig {
 
         if (StringUtils.hasText(jwtSecret)) {
             // HMAC decoder for password-login tokens
-            SecretKeySpec key = new SecretKeySpec(
-                jwtSecret.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
+            // Must match the 32-byte key truncation in JwtTokenProvider
+            byte[] secretBytes = jwtSecret.getBytes(StandardCharsets.UTF_8);
+            byte[] keyBytes = new byte[32];
+            System.arraycopy(secretBytes, 0, keyBytes, 0, Math.min(secretBytes.length, 32));
+            SecretKeySpec key = new SecretKeySpec(keyBytes, "HmacSHA256");
             NimbusJwtDecoder hmacDecoder = NimbusJwtDecoder.withSecretKey(key).build();
-            // Skip all validation for password-login tokens
+            // Skip validation for password-login tokens (issuer is "orionops-local")
             hmacDecoder.setJwtValidator(jwt -> {});
 
             // If Keycloak decoder is available, create a delegating decoder
