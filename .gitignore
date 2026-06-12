@@ -13,6 +13,7 @@ web-build/
 
 # Java
 backend/target/
+backend/*/target/
 *.class
 *.jar
 *.war
