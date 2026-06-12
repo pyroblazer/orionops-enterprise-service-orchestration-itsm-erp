@@ -1,0 +1,119 @@
+# ---------------------------------------------------------------------------
+# OrionOps - Local Development Profile
+# Default configuration for local development
+# ---------------------------------------------------------------------------
+
+server:
+  port: 8080
+  shutdown: graceful
+
+spring:
+  application:
+    name: orionops-service-api
+
+  # --- DataSource (Local PostgreSQL) ---
+  datasource:
+    url: jdbc:postgresql://localhost:5432/orionops
+    username: postgres
+    password: postgres
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      idle-timeout: 600000
+      connection-timeout: 30000
+
+  # --- JPA / Hibernate ---
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQL15Dialect
+        jdbc:
+          batch_size: 20
+          fetch_size: 100
+        order_inserts: true
+        order_updates: true
+
+  # --- Flyway Database Migrations ---
+  flyway:
+    enabled: true
+    baseline-on-migrate: false
+    out-of-order: false
+
+  # --- Redis Cache (local) ---
+  redis:
+    host: localhost
+    port: 6379
+    timeout: 3000
+    jedis:
+      pool:
+        max-active: 10
+        min-idle: 2
+
+  # --- Security: OAuth2 Resource Server ---
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: "http://localhost:8085/realms/orionops"
+
+# --- App Configuration ---
+app:
+  cors:
+    allowed-origins:
+      - http://localhost:3000
+      - http://localhost:3001
+      - http://localhost:19006
+  auth:
+    jwt-secret: "orionops-local-dev-secret-must-be-at-least-32-characters-long-for-hmac"
+    jwt-expiration: 1800
+    refresh-token-expiration: 604800
+
+# --- Keycloak Configuration ---
+keycloak:
+  enabled: true
+  auth-server-url: "http://localhost:8085"
+  realm: "orionops"
+  client-id: "orionops-backend"
+  client-secret: ""
+  resourceserver:
+    jwt:
+      issuer-uri: "http://localhost:8085/realms/orionops"
+      jwk-set-uri: "http://localhost:8085/realms/orionops/protocol/openid-connect/certs"
+
+# --- Kafka (local) ---
+kafka:
+  bootstrap-servers: localhost:9092
+  topics:
+    domain-events: domain-events
+    commands: commands
+
+# --- OpenSearch (local) ---
+opensearch:
+  host: localhost
+  port: 9200
+  username: admin
+  password: admin
+  scheme: https
+  verify-certs: false
+
+# --- Logging ---
+logging:
+  level:
+    root: INFO
+    com.orionops: DEBUG
+    org.springframework.security: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %logger{36} - %msg%n"
+
+# --- Actuator ---
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
