@@ -57,9 +57,11 @@ function LoginFormContent() {
         if (!syncRes.ok) console.warn('User sync failed, but login succeeded');
       }
 
-      // Set auth cookie
+      // Set auth cookie for middleware
       document.cookie = 'orionops_authenticated=true; path=/; max-age=1800; SameSite=Lax';
-      router.replace('/dashboard');
+
+      // Redirect to dashboard - middleware will see the cookie since it's set before navigation
+      router.push('/dashboard');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed.');
       setLoading(false);

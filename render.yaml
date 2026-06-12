@@ -150,5 +150,7 @@ services:
         value: keycloak
       - key: KC_HOSTNAME
         value: orionops-keycloak.onrender.com
+      - key: KC_FRONTEND_URL
+        value: "https://orionops-keycloak.onrender.com"
       - key: KC_JAVA_OPTS
         value: "-Xmx256m"

@@ -149,9 +149,11 @@ public class AuthService {
         }
 
         try {
-            String token = jwtTokenProvider.generateToken(user);
+            String accessToken = jwtTokenProvider.generateToken(user);
+            String refreshToken = jwtTokenProvider.generateRefreshToken(user);
             LoginResponse response = LoginResponse.builder()
-                    .accessToken(token)
+                    .accessToken(accessToken)
+                    .refreshToken(refreshToken)
                     .tokenType("Bearer")
                     .expiresIn(jwtTokenProvider.getExpirationSeconds())
                     .build();
