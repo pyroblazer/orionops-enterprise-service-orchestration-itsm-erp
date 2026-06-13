@@ -55,7 +55,7 @@ export default function ChangesListPage() {
   const totalPages = data?.totalPages ?? 1;
 
   const handleFilterChange = useCallback(
-    (key: keyof FilterParams, value: string) => {
+    (key: keyof FilterParams, value: string | null) => {
       setFilters((prev) => ({ ...prev, [key]: value || undefined, page: 1 }));
     },
     []
