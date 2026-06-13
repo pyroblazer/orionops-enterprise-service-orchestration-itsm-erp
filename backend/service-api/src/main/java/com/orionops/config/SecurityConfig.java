@@ -70,8 +70,10 @@ public class SecurityConfig {
     public JwtDecoder jwtDecoder() {
         // Cloud profile: use symmetric HMAC-SHA256 key from JWT_SECRET env var
         if (StringUtils.hasText(jwtSecret)) {
-            SecretKeySpec key = new SecretKeySpec(
-                jwtSecret.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
+            byte[] secretBytes = jwtSecret.getBytes(StandardCharsets.UTF_8);
+            byte[] keyBytes = new byte[32];
+            System.arraycopy(secretBytes, 0, keyBytes, 0, Math.min(secretBytes.length, 32));
+            SecretKeySpec key = new SecretKeySpec(keyBytes, "HmacSHA256");
             return NimbusJwtDecoder.withSecretKey(key).build();
         }
         // Local/k8s profile: use Keycloak JWK endpoint

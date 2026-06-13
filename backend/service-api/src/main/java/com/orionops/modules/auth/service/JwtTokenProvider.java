@@ -31,6 +31,9 @@ public class JwtTokenProvider {
     @Value("${app.auth.jwt-expiration:1800}")
     private long jwtExpirationSeconds;
 
+    @Value("${app.auth.refresh-token-expiration:604800}")
+    private long refreshTokenExpirationSeconds;
+
     /**
      * Generates a signed JWT for the given user.
      * The subject claim is set to the user's keycloakId so that
@@ -73,7 +76,42 @@ public class JwtTokenProvider {
         return signedJWT.serialize();
     }
 
+    /**
+     * Generates a refresh token with longer expiration time.
+     */
+    public String generateRefreshToken(User user) throws Exception {
+        byte[] secretBytes = jwtSecret.getBytes(StandardCharsets.UTF_8);
+        byte[] keyBytes = new byte[32];
+        System.arraycopy(secretBytes, 0, keyBytes, 0, Math.min(secretBytes.length, 32));
+
+        JWSSigner signer = new MACSigner(keyBytes);
+
+        Date now = new Date();
+        Date expiry = new Date(now.getTime() + refreshTokenExpirationSeconds * 1000);
+
+        JWTClaimsSet claims = new JWTClaimsSet.Builder()
+                .subject(user.getKeycloakId())
+                .claim("type", "refresh")
+                .issuer("orionops-local")
+                .issueTime(now)
+                .expirationTime(expiry)
+                .build();
+
+        SignedJWT signedJWT = new SignedJWT(
+                new JWSHeader.Builder(JWSAlgorithm.HS256)
+                        .type(JOSEObjectType.JWT)
+                        .build(),
+                claims);
+
+        signedJWT.sign(signer);
+        return signedJWT.serialize();
+    }
+
     public long getExpirationSeconds() {
         return jwtExpirationSeconds;
+    }
+
+    public long getRefreshTokenExpirationSeconds() {
+        return refreshTokenExpirationSeconds;
     }
 }
