@@ -54,9 +54,11 @@ export function DashboardShell({
   const { theme: currentTheme, setTheme } = useTheme();
   const { showTutorial, startTutorial, handleTutorialClose } = useTutorialState();
 
-  const { data: notifications } = useNotifications();
-  const markAllRead = useMarkAllNotificationsRead();
-  const unreadCount = notifications?.filter((n) => !n.read).length ?? 0;
+  // TODO: Fix notifications service - currently returns 500
+  const data: any = [];
+  const notifications = data;
+  const markAllRead = () => {};
+  const unreadCount = notifications?.filter((n: any) => !n.read).length ?? 0;
 
   useEffect(() => {
     const loadCurrentUser = async () => {
