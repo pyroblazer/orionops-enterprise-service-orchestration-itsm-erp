@@ -80,7 +80,8 @@ services:
       dockerfile: ./service-workflow/Dockerfile
     container_name: orionops-workflow
     ports:
-      - "8081:8080"
+      # Host 8081 is taken by Keycloak; expose workflow on 8085 instead.
+      - "8085:8080"
     extra_hosts:
       - "host.docker.internal:host-gateway"
     env_file:
