@@ -1,0 +1,47 @@
+# ---------------------------------------------------------------------------
+# Cloud Connector profile — Outbound REST/SOAP connectors
+# Activated via: SPRING_PROFILES_ACTIVE=cloud,cloud-connector
+# ---------------------------------------------------------------------------
+
+spring:
+  kafka:
+    enabled: true
+
+flowable:
+  enabled: false
+
+opensearch:
+  enabled: false
+
+minio:
+  enabled: false
+
+orionops:
+  connector:
+    enabled: true
+  email:
+    enabled: false
+  chat:
+    enabled: false
+  webhook:
+    enabled: false
+  monitoring:
+    enabled: false
+  entra:
+    enabled: false
+  consumer:
+    incident:
+      enabled: false
+    change:
+      enabled: false
+    sla:
+      enabled: false
+  notification:
+    enabled: false
+  search:
+    enabled: false
+  render:
+    heartbeat:
+      enabled: true
+      url: ${RENDER_HEARTBEAT_URL:}
+      interval: 840000

@@ -9,6 +9,7 @@ export interface ApiError {
   code: string;
   statusCode: number;
   details?: Record<string, unknown>;
+  coldStart?: boolean;
 }
 
 export interface PaginatedResponse<T> {
@@ -706,7 +707,7 @@ function clearTokens(): void {
 
 const apiClient: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 30000,
+  timeout: 90000,
   headers: { 'Content-Type': 'application/json' },
 });
 
@@ -720,34 +721,82 @@ apiClient.interceptors.request.use(
 );
 
 apiClient.interceptors.response.use(
-  (response) => response,
+  async (response) => {
+    // Clear cold-start flag on successful response
+    try {
+      const { useColdStartStore } = await import('@/stores/cold-start-store');
+      useColdStartStore.getState().setWaking(false);
+    } catch {
+      // Ignore if cold-start store can't be imported
+    }
+    return response;
+  },
   async (error: AxiosError) => {
     const originalRequest = error.config as AxiosRequestConfig & { _retry?: boolean };
 
+    // Detect Render cold-start (502/503 or connection refused)
+    const isColdStart =
+      !error.response ||
+      error.response.status === 502 ||
+      error.response.status === 503;
+
+    if (isColdStart) {
+      // Dynamically import to avoid circular deps
+      const { useColdStartStore } = await import('@/stores/cold-start-store');
+      useColdStartStore.getState().setWaking(true);
+    }
+
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
-      const refreshToken = getRefreshToken();
-      if (!refreshToken) {
-        clearTokens();
-        if (typeof window !== 'undefined') window.location.href = '/login';
-        return Promise.reject(error);
-      }
+      const accessToken = getAccessToken();
+      let isKeycloakToken = false;
+
+      // Check if this is a Keycloak token by examining the issuer claim
       try {
-        const params = new URLSearchParams({
-          grant_type: 'refresh_token',
-          refresh_token: refreshToken,
-          client_id: KEYCLOAK_CLIENT_ID,
-        });
-        const response = await axios.post(
-          TOKEN_PROXY_URL,
-          params,
-          { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
-        );
-        const { access_token, refresh_token: newRefreshToken } = response.data;
-        setTokens(access_token, newRefreshToken);
-        if (originalRequest.headers) originalRequest.headers.Authorization = `Bearer ${access_token}`;
-        return apiClient(originalRequest);
+        if (accessToken) {
+          const parts = accessToken.split('.');
+          if (parts.length === 3) {
+            let payload = parts[1];
+            payload += '='.repeat((4 - payload.length % 4) % 4);
+            const decoded = JSON.parse(atob(payload));
+            isKeycloakToken = decoded.iss && decoded.iss.includes('keycloak');
+          }
+        }
       } catch {
+        // If we can't decode, assume Keycloak
+        isKeycloakToken = true;
+      }
+
+      // Only try to refresh Keycloak tokens via ROPC
+      if (isKeycloakToken) {
+        const refreshToken = getRefreshToken();
+        if (!refreshToken) {
+          clearTokens();
+          if (typeof window !== 'undefined') window.location.href = '/login';
+          return Promise.reject(error);
+        }
+        try {
+          const params = new URLSearchParams({
+            grant_type: 'refresh_token',
+            refresh_token: refreshToken,
+            client_id: KEYCLOAK_CLIENT_ID,
+          });
+          const response = await axios.post(
+            TOKEN_PROXY_URL,
+            params,
+            { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
+          );
+          const { access_token, refresh_token: newRefreshToken } = response.data;
+          setTokens(access_token, newRefreshToken);
+          if (originalRequest.headers) originalRequest.headers.Authorization = `Bearer ${access_token}`;
+          return apiClient(originalRequest);
+        } catch {
+          clearTokens();
+          if (typeof window !== 'undefined') window.location.href = '/login';
+          return Promise.reject(error);
+        }
+      } else {
+        // Password-login tokens can't be refreshed, just logout
         clearTokens();
         if (typeof window !== 'undefined') window.location.href = '/login';
         return Promise.reject(error);
@@ -759,6 +808,7 @@ apiClient.interceptors.response.use(
       code: (error.response?.data as Record<string, string>)?.code || 'UNKNOWN_ERROR',
       statusCode: error.response?.status || 500,
       details: error.response?.data as Record<string, unknown> | undefined,
+      coldStart: isColdStart,
     };
     return Promise.reject(apiError);
   }
@@ -1097,7 +1147,7 @@ export const api = {
 
   // --- Users ---
   getCurrentUser: () =>
-    apiClient.get<ApiResponse<User>>('/users/me'),
+    apiClient.get<ApiResponse<User>>('/auth/me'),
   getUsers: (params?: FilterParams) =>
     apiClient.get<PaginatedResponse<User>>('/users', { params }),
   updateUser: (id: string, data: Partial<User>) =>
@@ -1391,9 +1441,9 @@ export const auth = {
       });
       if (res.ok) {
         const json = await res.json();
-        const { accessToken } = json.data || json;
+        const { accessToken, refreshToken } = json.data || json;
         if (accessToken) {
-          auth.setTokens(accessToken);
+          auth.setTokens(accessToken, refreshToken);
           return;
         }
       }

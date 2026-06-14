@@ -1,0 +1,15 @@
+com\orionops\config\RenderHeartbeatConfig.class
+com\orionops\modules\search\service\SearchService.class
+com\orionops\OrionOpsWorkerApplication.class
+com\orionops\modules\integration\consumers\SLAEventConsumer.class
+com\orionops\modules\search\dto\SearchRequest$SearchRequestBuilder.class
+com\orionops\modules\search\controller\SearchController.class
+com\orionops\modules\search\dto\SearchResponse.class
+com\orionops\modules\integration\consumers\IncidentEventConsumer.class
+com\orionops\modules\search\dto\SearchRequest.class
+com\orionops\config\SecurityConfig.class
+com\orionops\modules\search\dto\SearchResponse$SearchResponseBuilder.class
+com\orionops\config\OpenSearchConfig.class
+com\orionops\config\CachingConfig.class
+com\orionops\config\KafkaConfig.class
+com\orionops\modules\integration\consumers\ChangeEventConsumer.class

@@ -15,17 +15,77 @@ jobs:
     runs-on: ubuntu-latest
     name: Keep Render Services Alive
     steps:
-      - name: Ping Backend Service
+      - name: Ping API Service
         continue-on-error: true
         run: |
-          echo "🔄 Pinging Backend Service: ${{ env.BACKEND_URL }}"
+          echo "🔄 Pinging API Service"
           for i in {1..3}; do
-            STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "${{ env.BACKEND_URL }}/api/actuator/health")
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "https://orionops-api.onrender.com/api/actuator/health")
             if [ "$STATUS" = "200" ] || [ "$STATUS" = "503" ]; then
-              echo "✅ Backend service is alive (attempt $i, status $STATUS)"
+              echo "✅ API service is alive (attempt $i, status $STATUS)"
               break
             else
-              echo "⚠️ Backend health check attempt $i failed (status $STATUS), retrying..."
+              echo "⚠️ API health check attempt $i failed (status $STATUS), retrying..."
+              sleep 2
+            fi
+          done
+
+      - name: Ping Worker Service
+        continue-on-error: true
+        run: |
+          echo "🔄 Pinging Worker Service"
+          for i in {1..3}; do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "https://orionops-worker.onrender.com/api/actuator/health")
+            if [ "$STATUS" = "200" ] || [ "$STATUS" = "503" ]; then
+              echo "✅ Worker service is alive (attempt $i, status $STATUS)"
+              break
+            else
+              echo "⚠️ Worker health check attempt $i failed (status $STATUS), retrying..."
+              sleep 2
+            fi
+          done
+
+      - name: Ping Workflow Service
+        continue-on-error: true
+        run: |
+          echo "🔄 Pinging Workflow Service"
+          for i in {1..3}; do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "https://orionops-workflow.onrender.com/api/actuator/health")
+            if [ "$STATUS" = "200" ] || [ "$STATUS" = "503" ]; then
+              echo "✅ Workflow service is alive (attempt $i, status $STATUS)"
+              break
+            else
+              echo "⚠️ Workflow health check attempt $i failed (status $STATUS), retrying..."
+              sleep 2
+            fi
+          done
+
+      - name: Ping Notifier Service
+        continue-on-error: true
+        run: |
+          echo "🔄 Pinging Notifier Service"
+          for i in {1..3}; do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "https://orionops-notifier.onrender.com/api/actuator/health")
+            if [ "$STATUS" = "200" ] || [ "$STATUS" = "503" ]; then
+              echo "✅ Notifier service is alive (attempt $i, status $STATUS)"
+              break
+            else
+              echo "⚠️ Notifier health check attempt $i failed (status $STATUS), retrying..."
+              sleep 2
+            fi
+          done
+
+      - name: Ping Connector Service
+        continue-on-error: true
+        run: |
+          echo "🔄 Pinging Connector Service"
+          for i in {1..3}; do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "https://orionops-connector.onrender.com/api/actuator/health")
+            if [ "$STATUS" = "200" ] || [ "$STATUS" = "503" ]; then
+              echo "✅ Connector service is alive (attempt $i, status $STATUS)"
+              break
+            else
+              echo "⚠️ Connector health check attempt $i failed (status $STATUS), retrying..."
               sleep 2
             fi
           done
@@ -45,28 +105,18 @@ jobs:
             fi
           done
 
-      - name: Fallback Ping - Backend
-        continue-on-error: true
-        run: |
-          echo "🔄 Fallback: Pinging Backend root endpoint"
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "${{ env.BACKEND_URL }}/")
-          echo "Backend root status: $STATUS"
-
-      - name: Fallback Ping - Keycloak
-        continue-on-error: true
-        run: |
-          echo "🔄 Fallback: Pinging Keycloak root endpoint"
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "${{ env.KEYCLOAK_URL }}/")
-          echo "Keycloak root status: $STATUS"
-
       - name: Summary
         run: |
           echo "═══════════════════════════════════════════════════════"
           echo "🎯 Render Services Heartbeat Completed"
           echo "═══════════════════════════════════════════════════════"
           echo "⏰ Time: $(date -u +'%Y-%m-%d %H:%M:%S UTC')"
-          echo "✅ Backend: ${{ env.BACKEND_URL }}"
-          echo "✅ Keycloak: ${{ env.KEYCLOAK_URL }}"
+          echo "✅ API Service:       https://orionops-api.onrender.com"
+          echo "✅ Worker Service:    https://orionops-worker.onrender.com"
+          echo "✅ Workflow Service:  https://orionops-workflow.onrender.com"
+          echo "✅ Notifier Service:  https://orionops-notifier.onrender.com"
+          echo "✅ Connector Service: https://orionops-connector.onrender.com"
+          echo "✅ Keycloak:          ${{ env.KEYCLOAK_URL }}"
           echo "═══════════════════════════════════════════════════════"
           echo ""
           echo "📌 Services pinged every 10 minutes to prevent Render"

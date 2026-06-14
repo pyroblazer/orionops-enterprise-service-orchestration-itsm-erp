@@ -1,0 +1,47 @@
+# ---------------------------------------------------------------------------
+# Cloud API profile — Core REST API (lightweight, no heavy integrations)
+# Activated via: SPRING_PROFILES_ACTIVE=cloud,cloud-api
+# ---------------------------------------------------------------------------
+
+spring:
+  kafka:
+    enabled: true    # Producer only — publishes domain events
+
+flowable:
+  enabled: false
+
+opensearch:
+  enabled: false
+
+minio:
+  enabled: false
+
+orionops:
+  connector:
+    enabled: false
+  email:
+    enabled: false
+  chat:
+    enabled: false
+  webhook:
+    enabled: false
+  monitoring:
+    enabled: false
+  entra:
+    enabled: false
+  consumer:
+    incident:
+      enabled: false
+    change:
+      enabled: false
+    sla:
+      enabled: false
+  notification:
+    enabled: true
+  search:
+    enabled: true
+  render:
+    heartbeat:
+      enabled: true
+      url: ${RENDER_HEARTBEAT_URL:}
+      interval: 840000

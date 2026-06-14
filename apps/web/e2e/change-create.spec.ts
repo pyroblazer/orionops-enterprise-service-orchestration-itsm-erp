@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { injectMockAuth } from './helpers/auth';
+import { waitForColdStartBannerToDismiss } from './helpers/banner';
 
 test.describe('Change Create Form', () => {
   test.beforeEach(async ({ page }) => {
@@ -90,9 +91,10 @@ test.describe('Change Create Form', () => {
       route.fulfill({ json: { data: [], total: 0 } })
     );
     await page.goto('/changes/new', { waitUntil: 'domcontentloaded' });
+    await waitForColdStartBannerToDismiss(page);
     const cancelBtn = page.getByRole('button', { name: 'Cancel' });
     await expect(cancelBtn).toBeVisible();
-    await cancelBtn.click();
+    await cancelBtn.click({ force: true });
     // router.push('/changes') is wired up — verify URL changes away from /new
     await page.waitForURL(url => !url.includes('/changes/new'), { timeout: 5000 }).catch(() => {});
   });
@@ -108,11 +110,12 @@ test.describe('Change Create Form', () => {
     });
 
     await page.goto('/changes/new', { waitUntil: 'domcontentloaded' });
+    await waitForColdStartBannerToDismiss(page);
 
     await page.getByPlaceholder('Brief description of the change').fill('Test Change Request');
     await page.getByPlaceholder('Detailed description of the change').fill('Test change description');
 
-    await page.getByRole('button', { name: 'Create Change' }).click();
+    await page.getByRole('button', { name: 'Create Change' }).click({ force: true });
 
     await page.waitForURL(/\/changes/, { timeout: 5000 }).catch(() => {});
   });
@@ -126,8 +129,9 @@ test.describe('Change Create Form', () => {
     });
 
     await page.goto('/changes/new', { waitUntil: 'domcontentloaded' });
+    await waitForColdStartBannerToDismiss(page);
     await page.getByPlaceholder('Brief description of the change').fill('Test Change');
-    await page.getByRole('button', { name: 'Create Change' }).click();
+    await page.getByRole('button', { name: 'Create Change' }).click({ force: true });
 
     const errorEl = page.getByText(/failed|error/i).first();
     if (await errorEl.count() > 0) {

@@ -21,7 +21,7 @@
   "ssoSessionMaxLifespan": 36000,
   "offlineSessionIdleTimeout": 2592000,
   "attributes": {
-    "frontendUrl": "https://orionops-keycloak.onrender.com"
+    "frontendUrl": "${KC_FRONTEND_URL}"
   },
   "roles": {
     "realm": [

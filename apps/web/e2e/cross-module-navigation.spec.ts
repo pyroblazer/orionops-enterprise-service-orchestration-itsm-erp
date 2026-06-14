@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { injectMockAuth } from './helpers/auth';
+import { waitForColdStartBannerToDismiss } from './helpers/banner';
 import * as mocks from './helpers/api-mock';
 
 test.describe('Cross-Module Navigation', () => {
@@ -141,11 +142,12 @@ test.describe('Cross-Module Navigation', () => {
     );
 
     await page.goto('/problems/new', { waitUntil: 'domcontentloaded' });
+    await waitForColdStartBannerToDismiss(page);
     // The back button is a ghost button with ArrowLeft icon
     const backBtn = page.locator('button').filter({ has: page.locator('svg') }).first();
     if (await backBtn.count() > 0) {
       try {
-        await backBtn.click();
+        await backBtn.click({ force: true });
         await page.waitForURL('**/problems', { timeout: 5000 });
       } catch {
         // Navigation may not complete in some cases
@@ -159,9 +161,10 @@ test.describe('Cross-Module Navigation', () => {
     );
 
     await page.goto('/changes/new', { waitUntil: 'domcontentloaded' });
+    await waitForColdStartBannerToDismiss(page);
     const cancelBtn = page.getByRole('button', { name: 'Cancel' });
     if (await cancelBtn.count() > 0) {
-      await cancelBtn.click();
+      await cancelBtn.click({ force: true });
       // router.push('/changes') is wired up — verify URL changes away from /new
       await page.waitForURL(url => !url.includes('/changes/new'), { timeout: 5000 }).catch(() => {});
     }

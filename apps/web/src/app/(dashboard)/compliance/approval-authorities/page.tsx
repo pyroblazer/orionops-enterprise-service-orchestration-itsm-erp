@@ -43,7 +43,7 @@ export default function ApprovalAuthoritiesPage() {
       });
     },
     onError: () => {
-      console.error('Error checking authority');
+      // Error is handled by React Query
     },
   });
 
@@ -52,10 +52,9 @@ export default function ApprovalAuthoritiesPage() {
       api.setApprovalAuthority(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['compliance', 'approval-authorities'] });
-      console.log('Authority set successfully');
     },
     onError: () => {
-      console.error('Error setting authority');
+      // Error is handled by React Query
     },
   });
 

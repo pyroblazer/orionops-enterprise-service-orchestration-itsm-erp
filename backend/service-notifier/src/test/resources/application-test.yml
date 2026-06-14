@@ -1,0 +1,85 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/orionops_test
+    username: test
+    password: test
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+  kafka:
+    enabled: false
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: test-group
+      auto-offset-reset: earliest
+    producer:
+      bootstrap-servers: localhost:9092
+    admin:
+      properties:
+        bootstrap.servers: localhost:9092
+  data:
+    redis:
+      host: localhost
+      port: 6379
+  flyway:
+    enabled: false
+  mail:
+    host: localhost
+    port: 3025
+    username: test
+    password: test
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+  autoconfigure:
+    exclude:
+      - org.flowable.spring.boot.eventregistry.EventRegistryAutoConfiguration
+      - org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
+
+flowable:
+  async-executor-activate: false
+  database-schema-update: true
+
+keycloak:
+  realm: orionops-test
+  resource: orionops-api-test
+  auth-server-url: http://localhost:8081/auth
+  credentials:
+    secret: test-secret
+  bearer-only: true
+  resourceserver:
+    jwt:
+      jwk-set-uri: http://localhost:8081/auth/realms/orionops-test/protocol/openid-connect/certs
+
+opa:
+  url: http://localhost:8181
+  enabled: false
+
+stripe:
+  api-key: sk_test_key
+  webhook-secret: whsec_test_secret
+
+opensearch:
+  host: localhost
+  port: 9200
+  protocol: http
+  username: admin
+  password: admin
+
+minio:
+  endpoint: http://localhost:9000
+  access-key: minioadmin
+  secret-key: minioadmin
+  bucket: orionops-test
+
+logging:
+  level:
+    com.orionops: DEBUG
+    org.springframework: WARN
+
+app:
+  auth:
+    jwt-secret: test-secret-key-that-is-at-least-256-bits-long-for-hmac-sha

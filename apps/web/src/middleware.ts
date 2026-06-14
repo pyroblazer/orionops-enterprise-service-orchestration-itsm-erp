@@ -20,22 +20,9 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Protected routes: check auth cookie (set by /login/callback after token exchange)
-  const authCookie = request.cookies.get('orionops_authenticated');
-  if (!authCookie || authCookie.value !== 'true') {
-    const loginUrl = new URL('/login', request.url);
-    loginUrl.searchParams.set('from', pathname);
-    const response = NextResponse.redirect(loginUrl);
-    // Store the destination path in a response cookie so /login/callback can retrieve it
-    response.cookies.set('orionops_redirect_after_auth', pathname, {
-      path: '/',
-      httpOnly: true,
-      sameSite: 'lax',
-      maxAge: 600, // 10 minutes
-    });
-    return response;
-  }
-
+  // Let client-side handle auth protection via token validation
+  // Middleware only needs to handle public/protected path routing
+  // Client will check localStorage for JWT token and redirect to /login if missing
   return NextResponse.next();
 }
 

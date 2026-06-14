@@ -99,19 +99,19 @@ test.describe('Workflow Management', () => {
     await page.waitForLoadState('domcontentloaded');
     await page.waitForTimeout(1000);
 
-    const workflowsTab = page.getByRole('tab', { name: 'Workflows' });
-    if (await workflowsTab.count() > 0) {
-      await workflowsTab.click();
-      await page.waitForTimeout(500);
+    const workflowsTab = page.locator('button:has-text("Workflows")').first();
+    // Wait for the admin page to finish compiling/hydrating (first-visit is slow).
+    await expect(workflowsTab).toBeVisible({ timeout: 15000 });
+    await workflowsTab.click();
+    await page.waitForTimeout(500);
 
-      const uploadBtn = page.getByRole('button', { name: /upload bpmn/i });
-      if (await uploadBtn.count() > 0) {
-        await expect(uploadBtn).toBeVisible({ timeout: 10000 });
-      }
-      const fileInput = page.locator('input[type="file"][accept*="bpmn"]');
-      if (await fileInput.count() > 0) {
-        await expect(fileInput).toBeAttached();
-      }
+    const uploadBtn = page.locator('button:has-text("Upload BPMN"), button:has-text("Upload")').first();
+    if (await uploadBtn.count() > 0) {
+      await expect(uploadBtn).toBeVisible({ timeout: 10000 });
+    }
+    const fileInput = page.locator('input[type="file"][accept*="bpmn"]');
+    if (await fileInput.count() > 0) {
+      await expect(fileInput).toBeAttached();
     }
   });
 

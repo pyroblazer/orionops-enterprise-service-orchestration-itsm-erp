@@ -5,6 +5,14 @@ import * as mocks from './helpers/api-mock';
 test.describe('Inventory Cycle Counts', () => {
   test.beforeEach(async ({ page }) => {
     await injectMockAuth(page);
+    // Catch-all for unmocked API calls FIRST (lowest LIFO priority)
+    await page.route('**/api/v1/**', async (route) => {
+      await route.fulfill({ json: { data: [], total: 0 } });
+    });
+    // Specific cycle-counts route AFTER (higher LIFO priority)
+    await page.route('**/api/v1/inventory/cycle-counts**', async (route) => {
+      return route.fulfill({ json: mocks.mockCycleCounts.list });
+    });
   });
 
   test('should show loading skeleton during fetch', async ({ page }) => {
@@ -51,7 +59,10 @@ test.describe('Inventory Cycle Counts', () => {
   });
 
   test('should show empty state when no counts exist', async ({ page }) => {
-    // The page currently uses local state (empty array), so no data rows appear
+    // Override the beforeEach mock to return an empty list (registered last → wins).
+    await page.route('**/api/v1/inventory/cycle-counts**', async (route) => {
+      return route.fulfill({ json: { data: [], total: 0 } });
+    });
     await page.goto('/inventory/cycle-counts', { waitUntil: 'domcontentloaded' });
     // Table should exist but with no data rows
     const table = page.locator('table');

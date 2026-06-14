@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { injectMockAuth } from './helpers/auth';
+import { waitForColdStartBannerToDismiss } from './helpers/banner';
 
 test.describe('Service Request Create Form', () => {
   test.beforeEach(async ({ page }) => {
@@ -67,9 +68,10 @@ test.describe('Service Request Create Form', () => {
       route.fulfill({ json: { data: [], total: 0 } })
     );
     await page.goto('/requests/new', { waitUntil: 'domcontentloaded' });
+    await waitForColdStartBannerToDismiss(page);
     const cancelBtn = page.getByRole('button', { name: 'Cancel' });
     await expect(cancelBtn).toBeVisible();
-    await cancelBtn.click();
+    await cancelBtn.click({ force: true });
     // router.push('/requests') is wired up — verify URL changes away from /new
     await page.waitForURL(url => !url.includes('/requests/new'), { timeout: 5000 }).catch(() => {});
   });
@@ -85,11 +87,12 @@ test.describe('Service Request Create Form', () => {
     });
 
     await page.goto('/requests/new', { waitUntil: 'domcontentloaded' });
+    await waitForColdStartBannerToDismiss(page);
 
     await page.getByPlaceholder('Brief description of the request').fill('Test Service Request');
     await page.getByPlaceholder('Detailed description of what you need').fill('I need a new laptop');
 
-    await page.getByRole('button', { name: 'Submit Request' }).click();
+    await page.getByRole('button', { name: 'Submit Request' }).click({ force: true });
 
     await page.waitForURL(/\/requests/, { timeout: 5000 }).catch(() => {});
   });
@@ -103,8 +106,9 @@ test.describe('Service Request Create Form', () => {
     });
 
     await page.goto('/requests/new', { waitUntil: 'domcontentloaded' });
+    await waitForColdStartBannerToDismiss(page);
     await page.getByPlaceholder('Brief description of the request').fill('Test Request');
-    await page.getByRole('button', { name: 'Submit Request' }).click();
+    await page.getByRole('button', { name: 'Submit Request' }).click({ force: true });
 
     const errorEl = page.getByText(/failed|error/i).first();
     if (await errorEl.count() > 0) {

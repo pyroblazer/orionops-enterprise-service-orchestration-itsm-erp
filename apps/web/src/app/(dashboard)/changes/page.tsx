@@ -55,7 +55,7 @@ export default function ChangesListPage() {
   const totalPages = data?.totalPages ?? 1;
 
   const handleFilterChange = useCallback(
-    (key: keyof FilterParams, value: string) => {
+    (key: keyof FilterParams, value: string | null) => {
       setFilters((prev) => ({ ...prev, [key]: value || undefined, page: 1 }));
     },
     []
@@ -133,12 +133,12 @@ export default function ChangesListPage() {
             aria-label="Search changes"
           />
         </div>
-        <Select value={filters.status || ''} onValueChange={(v) => handleFilterChange('status', v)}>
+        <Select value={filters.status || 'all'} onValueChange={(v) => handleFilterChange('status', v === 'all' ? null : v)}>
           <SelectTrigger className="w-40">
             <SelectValue placeholder="All statuses" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All</SelectItem>
+            <SelectItem value="all">All</SelectItem>
             <SelectItem value="draft">Draft</SelectItem>
             <SelectItem value="submitted">Submitted</SelectItem>
             <SelectItem value="approved">Approved</SelectItem>
@@ -148,12 +148,12 @@ export default function ChangesListPage() {
             <SelectItem value="failed">Failed</SelectItem>
           </SelectContent>
         </Select>
-        <Select value={filters.priority || ''} onValueChange={(v) => handleFilterChange('priority', v)}>
+        <Select value={filters.priority || 'all'} onValueChange={(v) => handleFilterChange('priority', v === 'all' ? null : v)}>
           <SelectTrigger className="w-40">
             <SelectValue placeholder="All types" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All types</SelectItem>
+            <SelectItem value="all">All types</SelectItem>
             <SelectItem value="standard">Standard</SelectItem>
             <SelectItem value="normal">Normal</SelectItem>
             <SelectItem value="emergency">Emergency</SelectItem>

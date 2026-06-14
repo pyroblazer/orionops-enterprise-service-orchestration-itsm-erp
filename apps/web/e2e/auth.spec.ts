@@ -8,7 +8,7 @@ test.describe('Authentication Flow', () => {
     // The app should redirect to login when not authenticated
     const url = page.url();
     // Either on login page or still redirecting
-    const isOnLoginPage = url.includes('/login') || url.includes('localhost:3000/');
+    const isOnLoginPage = url.includes('/login') || url.includes('localhost:3002/') || url.includes('localhost:3000/');
     expect(isOnLoginPage).toBe(true);
   });
 
