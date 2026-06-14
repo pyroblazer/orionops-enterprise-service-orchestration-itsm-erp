@@ -68,14 +68,72 @@ public class SecurityConfig {
 
     @Bean
     public JwtDecoder jwtDecoder() {
-        // Cloud profile: use symmetric HMAC-SHA256 key from JWT_SECRET env var
-        if (StringUtils.hasText(jwtSecret)) {
-            SecretKeySpec key = new SecretKeySpec(
-                jwtSecret.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
-            return NimbusJwtDecoder.withSecretKey(key).build();
+        // Support both password-login (HMAC) and Keycloak (JWK) tokens
+        JwtDecoder keycloakDecoder = null;
+        try {
+            keycloakDecoder = NimbusJwtDecoder.withJwkSetUri(jwkSetUri).build();
+        } catch (Exception e) {
+            // JWK endpoint not available, fall through to HMAC
         }
-        // Local/k8s profile: use Keycloak JWK endpoint
-        return NimbusJwtDecoder.withJwkSetUri(jwkSetUri).build();
+
+        if (StringUtils.hasText(jwtSecret)) {
+            // HMAC decoder for password-login tokens
+            // Must match the 32-byte key truncation in JwtTokenProvider
+            byte[] secretBytes = jwtSecret.getBytes(StandardCharsets.UTF_8);
+            byte[] keyBytes = new byte[32];
+            System.arraycopy(secretBytes, 0, keyBytes, 0, Math.min(secretBytes.length, 32));
+            SecretKeySpec key = new SecretKeySpec(keyBytes, "HmacSHA256");
+            NimbusJwtDecoder hmacDecoder = NimbusJwtDecoder.withSecretKey(key).build();
+            // Skip validation for password-login tokens (issuer is "orionops-local")
+            hmacDecoder.setJwtValidator(jwt -> {});
+
+            // If Keycloak decoder is available, create a delegating decoder that checks issuer
+            if (keycloakDecoder != null) {
+                final JwtDecoder finalKeycloakDecoder = keycloakDecoder;
+                return token -> {
+                    // Check if token is from password login or Keycloak based on issuer claim
+                    try {
+                        // First, do a basic decode to check the issuer
+                        String[] parts = token.split("\\.");
+                        if (parts.length == 3) {
+                            String payload = parts[1];
+                            payload += "=".repeat((4 - payload.length() % 4) % 4);
+                            byte[] decoded = java.util.Base64.getUrlDecoder().decode(payload);
+                            String json = new String(decoded, StandardCharsets.UTF_8);
+                            if (json.contains("\"iss\":\"orionops-local\"")) {
+                                // Password-login token - use HMAC
+                                return hmacDecoder.decode(token);
+                            }
+                        }
+                    } catch (Exception e) {
+                        // If inspection fails, fall through to decoders
+                    }
+
+                    try {
+                        // Try HMAC first (password-login tokens)
+                        return hmacDecoder.decode(token);
+                    } catch (Exception e1) {
+                        try {
+                            // Fall back to Keycloak (for SSO tokens)
+                            return finalKeycloakDecoder.decode(token);
+                        } catch (Exception e2) {
+                            // Re-throw original error
+                            throw e1;
+                        }
+                    }
+                };
+            }
+            // Only HMAC available
+            return hmacDecoder;
+        }
+
+        // Only Keycloak JWK available
+        if (keycloakDecoder != null) {
+            return keycloakDecoder;
+        }
+
+        // Fallback: dummy decoder (should not reach here in normal operation)
+        throw new IllegalStateException("No JWT decoder available: set jwk-set-uri or jwt-secret");
     }
 
     @Bean

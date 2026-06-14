@@ -13,6 +13,7 @@ web-build/
 
 # Java
 backend/target/
+backend/*/target/
 *.class
 *.jar
 *.war
@@ -87,3 +88,15 @@ supabase/.temp/
 # Playwright test results
 apps/web/test-results/
 apps/web/playwright-report/
+
+# Claude Code
+.claude/
+.claude/**/*.lock
+
+# Build artifacts
+*.jar.original
+**/*.jar.original
+
+# Env file copies and local overrides
+*copy*.env*
+*copy*.local

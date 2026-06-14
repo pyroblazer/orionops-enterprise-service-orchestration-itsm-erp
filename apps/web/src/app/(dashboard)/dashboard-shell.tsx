@@ -40,6 +40,13 @@ interface CurrentUser {
   email: string;
 }
 
+interface Notification {
+  id: string;
+  read: boolean;
+  title: string;
+  message: string;
+}
+
 export function DashboardShell({
   children,
 }: {
@@ -54,9 +61,9 @@ export function DashboardShell({
   const { theme: currentTheme, setTheme } = useTheme();
   const { showTutorial, startTutorial, handleTutorialClose } = useTutorialState();
 
-  const { data: notifications } = useNotifications();
+  const { data: notifications = [] } = useNotifications() || {};
   const markAllRead = useMarkAllNotificationsRead();
-  const unreadCount = notifications?.filter((n) => !n.read).length ?? 0;
+  const unreadCount = (notifications as Notification[])?.filter((n) => !n.read).length ?? 0;
 
   useEffect(() => {
     const loadCurrentUser = async () => {
@@ -220,7 +227,7 @@ export function DashboardShell({
                       variant="ghost"
                       size="sm"
                       className="h-auto p-0 text-xs text-primary"
-                      onClick={() => markAllRead.mutate()}
+                      onClick={() => markAllRead?.mutate?.()}
                     >
                       Mark all read
                     </Button>

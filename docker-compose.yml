@@ -18,7 +18,7 @@ services:
   api:
     build:
       context: ./backend
-      dockerfile: Dockerfile
+      dockerfile: ./service-api/Dockerfile
     container_name: orionops-api
     ports:
       - "8080:8080"
@@ -29,6 +29,9 @@ services:
     environment:
       SERVICE_PROFILE: cloud-api
       SPRING_PROFILES_ACTIVE: cloud,cloud-api
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/orionops
+      SPRING_DATASOURCE_USERNAME: orionops
+      SPRING_DATASOURCE_PASSWORD: orionops_dev
       POSTGRES_HOST: postgres
       POSTGRES_PORT: 5432
       POSTGRES_DB: orionops
@@ -36,6 +39,7 @@ services:
       POSTGRES_PASSWORD: orionops_dev
       REDIS_HOST: redis
       REDIS_PORT: 6379
+      SPRING_DATA_REDIS_URL: redis://redis:6379/0
       KAFKA_BOOTSTRAP_SERVERS: kafka:29092
       OPENSEARCH_HOST: opensearch
       OPENSEARCH_PORT: 9200
@@ -73,7 +77,7 @@ services:
   workflow:
     build:
       context: ./backend
-      dockerfile: Dockerfile
+      dockerfile: ./service-workflow/Dockerfile
     container_name: orionops-workflow
     ports:
       - "8081:8080"
@@ -84,6 +88,9 @@ services:
     environment:
       SERVICE_PROFILE: cloud-workflow
       SPRING_PROFILES_ACTIVE: cloud,cloud-workflow
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/orionops_app
+      SPRING_DATASOURCE_USERNAME: orionops
+      SPRING_DATASOURCE_PASSWORD: orionops_dev
       POSTGRES_HOST: postgres
       POSTGRES_PORT: 5432
       POSTGRES_DB: orionops
@@ -91,6 +98,7 @@ services:
       POSTGRES_PASSWORD: orionops_dev
       REDIS_HOST: redis
       REDIS_PORT: 6379
+      SPRING_DATA_REDIS_URL: redis://redis:6379/0
       KAFKA_BOOTSTRAP_SERVERS: kafka:29092
       KEYCLOAK_AUTH_SERVER_URL: http://host.docker.internal:8081
       KEYCLOAK_REALM: orionops
@@ -117,7 +125,7 @@ services:
   worker:
     build:
       context: ./backend
-      dockerfile: Dockerfile
+      dockerfile: ./service-worker/Dockerfile
     container_name: orionops-worker
     ports:
       - "8082:8080"
@@ -135,6 +143,7 @@ services:
       POSTGRES_PASSWORD: orionops_dev
       REDIS_HOST: redis
       REDIS_PORT: 6379
+      SPRING_DATA_REDIS_URL: redis://redis:6379/0
       KAFKA_BOOTSTRAP_SERVERS: kafka:29092
       OPENSEARCH_HOST: opensearch
       OPENSEARCH_PORT: 9200
@@ -162,7 +171,7 @@ services:
   notifier:
     build:
       context: ./backend
-      dockerfile: Dockerfile
+      dockerfile: ./service-notifier/Dockerfile
     container_name: orionops-notifier
     ports:
       - "8083:8080"
@@ -180,6 +189,7 @@ services:
       POSTGRES_PASSWORD: orionops_dev
       REDIS_HOST: redis
       REDIS_PORT: 6379
+      SPRING_DATA_REDIS_URL: redis://redis:6379/0
       KAFKA_BOOTSTRAP_SERVERS: kafka:29092
     depends_on:
       postgres:
@@ -203,7 +213,7 @@ services:
   connector:
     build:
       context: ./backend
-      dockerfile: Dockerfile
+      dockerfile: ./service-connector/Dockerfile
     container_name: orionops-connector
     ports:
       - "8084:8080"
@@ -221,6 +231,7 @@ services:
       POSTGRES_PASSWORD: orionops_dev
       REDIS_HOST: redis
       REDIS_PORT: 6379
+      SPRING_DATA_REDIS_URL: redis://redis:6379/0
       KAFKA_BOOTSTRAP_SERVERS: kafka:29092
     depends_on:
       postgres:
@@ -254,7 +265,7 @@ services:
       NEXT_PUBLIC_KEYCLOAK_REALM: orionops
       NEXT_PUBLIC_KEYCLOAK_CLIENT_ID: orionops-web
     depends_on:
-      backend:
+      api:
         condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "curl -sf http://localhost:3000 || exit 1"]

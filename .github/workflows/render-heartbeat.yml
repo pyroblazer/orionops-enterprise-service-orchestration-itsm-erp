@@ -1,6 +1,6 @@
-name: Render Heartbeat
+name: Render Heartbeat (Multi-Service)
 
-# Pings the Render free-tier backend every 14 minutes to prevent the service
+# Pings all Render free-tier microservices every 14 minutes to prevent them
 # from sleeping (Render sleeps after 15 minutes of inactivity).
 # Uses ~3 GitHub Actions minutes/day — well within the 2000 min/month free tier.
 
@@ -11,14 +11,86 @@ on:
 
 jobs:
   ping:
-    name: Keep Render awake
+    name: Keep Render services awake
     runs-on: ubuntu-latest
     steps:
-      - name: Ping backend health endpoint
+      - name: Ping API service health endpoint
+        continue-on-error: true
         run: |
+          echo "🔄 Pinging API Service"
           STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 \
-            https://orionops-enterprise-service.onrender.com/api/actuator/health)
-          echo "Health check HTTP status: $STATUS"
-          if [ "$STATUS" != "200" ] && [ "$STATUS" != "000" ]; then
-            echo "::warning::Backend returned unexpected status $STATUS"
+            https://orionops-api.onrender.com/api/actuator/health)
+          echo "API health check HTTP status: $STATUS"
+          if [ "$STATUS" != "200" ] && [ "$STATUS" != "503" ]; then
+            echo "::warning::API Service returned unexpected status $STATUS"
           fi
+
+      - name: Ping Worker service health endpoint
+        continue-on-error: true
+        run: |
+          echo "🔄 Pinging Worker Service"
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 \
+            https://orionops-worker.onrender.com/api/actuator/health)
+          echo "Worker health check HTTP status: $STATUS"
+          if [ "$STATUS" != "200" ] && [ "$STATUS" != "503" ]; then
+            echo "::warning::Worker Service returned unexpected status $STATUS"
+          fi
+
+      - name: Ping Workflow service health endpoint
+        continue-on-error: true
+        run: |
+          echo "🔄 Pinging Workflow Service"
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 \
+            https://orionops-workflow.onrender.com/api/actuator/health)
+          echo "Workflow health check HTTP status: $STATUS"
+          if [ "$STATUS" != "200" ] && [ "$STATUS" != "503" ]; then
+            echo "::warning::Workflow Service returned unexpected status $STATUS"
+          fi
+
+      - name: Ping Notifier service health endpoint
+        continue-on-error: true
+        run: |
+          echo "🔄 Pinging Notifier Service"
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 \
+            https://orionops-notifier.onrender.com/api/actuator/health)
+          echo "Notifier health check HTTP status: $STATUS"
+          if [ "$STATUS" != "200" ] && [ "$STATUS" != "503" ]; then
+            echo "::warning::Notifier Service returned unexpected status $STATUS"
+          fi
+
+      - name: Ping Connector service health endpoint
+        continue-on-error: true
+        run: |
+          echo "🔄 Pinging Connector Service"
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 \
+            https://orionops-connector.onrender.com/api/actuator/health)
+          echo "Connector health check HTTP status: $STATUS"
+          if [ "$STATUS" != "200" ] && [ "$STATUS" != "503" ]; then
+            echo "::warning::Connector Service returned unexpected status $STATUS"
+          fi
+
+      - name: Ping Keycloak service health endpoint
+        continue-on-error: true
+        run: |
+          echo "🔄 Pinging Keycloak Service"
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 \
+            https://orionops-keycloak.onrender.com/health/ready)
+          echo "Keycloak health check HTTP status: $STATUS"
+          if [ "$STATUS" != "200" ] && [ "$STATUS" != "503" ]; then
+            echo "::warning::Keycloak Service returned unexpected status $STATUS"
+          fi
+
+      - name: Summary
+        run: |
+          echo "═══════════════════════════════════════════════════════"
+          echo "🎯 Render Services Heartbeat Completed"
+          echo "═══════════════════════════════════════════════════════"
+          echo "⏰ Time: $(date -u +'%Y-%m-%d %H:%M:%S UTC')"
+          echo "✅ Services pinged:"
+          echo "   - API:      https://orionops-api.onrender.com"
+          echo "   - Worker:   https://orionops-worker.onrender.com"
+          echo "   - Workflow: https://orionops-workflow.onrender.com"
+          echo "   - Notifier: https://orionops-notifier.onrender.com"
+          echo "   - Connector:https://orionops-connector.onrender.com"
+          echo "   - Keycloak: https://orionops-keycloak.onrender.com"
+          echo "═══════════════════════════════════════════════════════"

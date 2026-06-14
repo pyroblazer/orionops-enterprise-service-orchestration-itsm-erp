@@ -57,9 +57,9 @@ function LoginFormContent() {
         if (!syncRes.ok) console.warn('User sync failed, but login succeeded');
       }
 
-      // Set auth cookie
-      document.cookie = 'orionops_authenticated=true; path=/; max-age=1800; SameSite=Lax';
-      router.replace('/dashboard');
+      // Token is stored in localStorage by loginWithPassword
+      // Client-side auth protection will check the token on protected routes
+      router.push('/dashboard');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed.');
       setLoading(false);

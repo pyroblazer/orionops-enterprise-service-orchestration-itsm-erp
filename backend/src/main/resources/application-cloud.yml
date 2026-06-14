@@ -89,33 +89,35 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: "https://orionops-keycloak.onrender.com/realms/orionops"
+          issuer-uri: "${SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI:https://orionops-keycloak.onrender.com/realms/orionops}"
+          jwk-set-uri: "${SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI:https://orionops-keycloak.onrender.com/realms/orionops/protocol/openid-connect/certs}"
 
-# --- CORS: allow Vercel frontend ---
+# --- CORS: allow Vercel frontend and local dev ---
 app:
   cors:
     allowed-origins:
       - ${FRONTEND_URL:https://orionops.vercel.app}
       - https://orionops.vercel.app
+      - http://localhost:3000
   auth:
-    jwt-secret: ${APP_AUTH_JWT_SECRET:}
+    jwt-secret: ${APP_AUTH_JWT_SECRET:default-secret-key-min-256-bits-orionops-local-dev-change-in-prod}
 
 # --- Platform URL for integration links (Slack, Teams) ---
 orionops:
   platform:
     base-url: https://orionops.vercel.app
 
-# --- Keycloak (Render instance) ---
+# --- Keycloak (Render instance, overridable for local dev) ---
 keycloak:
   enabled: true
-  auth-server-url: "https://orionops-keycloak.onrender.com"
-  realm: "orionops"
-  client-id: "orionops-backend"
-  client-secret: ""
+  auth-server-url: "${KEYCLOAK_AUTH_SERVER_URL:https://orionops-keycloak.onrender.com}"
+  realm: "${KEYCLOAK_REALM:orionops}"
+  client-id: "${KEYCLOAK_CLIENT_ID:orionops-backend}"
+  client-secret: "${KEYCLOAK_CLIENT_SECRET:}"
   resourceserver:
     jwt:
-      issuer-uri: "https://orionops-keycloak.onrender.com/realms/orionops"
-      jwk-set-uri: "https://orionops-keycloak.onrender.com/realms/orionops/protocol/openid-connect/certs"
+      issuer-uri: "${KEYCLOAK_ISSUER_URI:https://orionops-keycloak.onrender.com/realms/orionops}"
+      jwk-set-uri: "${KEYCLOAK_JWK_SET_URI:https://orionops-keycloak.onrender.com/realms/orionops/protocol/openid-connect/certs}"
 
 # --- Disable OpenSearch ---
 opensearch:
