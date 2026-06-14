@@ -17,11 +17,6 @@ describe('DashboardShell', () => {
     (hooksModule.useNotifications as jest.Mock).mockReturnValue(mockUseNotifications([]));
     (hooksModule.useMarkAllNotificationsRead as jest.Mock).mockReturnValue(mockUseMarkAllNotificationsRead());
     (hooksModule.useTheme as jest.Mock).mockReturnValue(mockUseTheme());
-    (hooksModule.useTutorialState as jest.Mock).mockReturnValue({
-      showTutorial: false,
-      startTutorial: jest.fn(),
-      handleTutorialClose: jest.fn(),
-    });
   });
 
   it('renders dashboard shell', () => {
