@@ -28,7 +28,7 @@ import java.util.UUID;
  * auditing and tenant isolation behavior.</p>
  */
 @MappedSuperclass
-@EntityListeners(AuditingEntityListener.class)
+@EntityListeners({AuditingEntityListener.class, com.orionops.common.tenant.TenantIsolationListener.class})
 @Getter
 @Setter
 @NoArgsConstructor

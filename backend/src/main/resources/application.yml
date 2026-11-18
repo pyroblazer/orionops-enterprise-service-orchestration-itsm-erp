@@ -99,6 +99,9 @@ spring:
     baseline-version: "0"
     validate-on-migrate: true
     clean-disabled: true
+    placeholders:
+      # Demo logins (admin/admin, ...) seeded by V006-V012 are disabled by V014 unless this is "true".
+      demo_credentials: ${ORIONOPS_DEMO_CREDENTIALS:false}
 
   # --- Jackson ---
   jackson:

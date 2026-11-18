@@ -74,6 +74,9 @@ spring:
     baseline-on-migrate: true
     baseline-version: "12"
     validate-on-migrate: true
+    placeholders:
+      # Demo logins (admin/admin, ...) seeded by V006-V012 are disabled by V014 unless this is "true".
+      demo_credentials: ${ORIONOPS_DEMO_CREDENTIALS:false}
     clean-disabled: true
 
   # --- Disable unnecessary autoconfiguration ---
